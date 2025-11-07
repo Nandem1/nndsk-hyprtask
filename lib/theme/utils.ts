@@ -20,11 +20,26 @@ export function getThemeClasses(palette: ThemePalette) {
   };
 }
 
+// Tipo de retorno para las clases del tema
+export type ThemeClasses = {
+  gradient: string;
+  gradientBg: string;
+  gradientBgSubtle: string;
+  border: string;
+  borderHover: string;
+  shadow: string;
+  shadowHover: string;
+  textPrimary: string;
+  textSecondary: string;
+  textAccent: string;
+  iconGradient: string;
+};
+
 // Helper para construir clases dinámicas (Tailwind necesita las clases completas)
-export function getThemeClassesString(palette: ThemePalette) {
+export function getThemeClassesString(palette: ThemePalette): ThemeClasses {
   const theme = THEMES[palette];
   
-  const classMap: Record<string, string> = {
+  const classMap: Record<ThemePalette, ThemeClasses> = {
     'blue-cyan-teal': {
       gradient: 'from-blue-400 via-cyan-400 to-teal-400',
       gradientBg: 'from-blue-500/20 via-cyan-500/20 to-teal-500/20',
@@ -77,7 +92,7 @@ export function getThemeClassesString(palette: ThemePalette) {
       textAccent: 'text-cyan-300',
       iconGradient: 'from-blue-600 to-sky-400',
     },
-  };
+  } as const;
   
   return classMap[palette];
 }

@@ -8,6 +8,7 @@ import { Check, Plus, Trash2, AlertCircle, Target } from 'lucide-react';
 import { getTaskSettings } from '@/lib/tasks/storage';
 import { useActiveTasks, useToggleTask, useDeleteTask, useSetCurrentTask } from '@/hooks/use-tasks';
 import { useThemeContext } from '@/components/theme-provider-context';
+import type { Task } from '@/types/task';
 import { TaskForm } from './task-form';
 
 export function TaskList() {
