@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+---
+# SUPABASE - ESQUEMA Y CONSULTAS
+
+## PRIORIDAD TABLAS SUEÑO
+```sql
+-- CONFIGURACIÓN USUARIO
+CREATE TABLE sleep_settings (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES auth.users,
+  bedtime TIME NOT NULL,
+  wakeup_time TIME NOT NULL,
+  min_sleep_hours INTEGER DEFAULT 7
+);
+
+-- REGISTRO DIARIO
+CREATE TABLE sleep_logs (
+  id UUID PRIMARY KEY, 
+  user_id UUID REFERENCES auth.users,
+  date DATE NOT NULL,
+  actual_bedtime TIME,
+  actual_wakeup TIME,
+  quality_rating INTEGER
+);
+```

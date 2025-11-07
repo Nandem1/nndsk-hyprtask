@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+---
+# ARQUITECTURA - MANTENER SIMPLE ESTÚPIDO
+
+## ESTRUCTURA DE CARPETAS
+
+app/
+├── (sleep)/ # CARPETA PRINCIPAL - SUEÑO
+├── (tasks)/ # CARPETA SECUNDARIA - TAREAS
+├── components/
+│ ├── sleep/ # Componentes específicos sueño
+│ └── ui/ # Componentes base Shadcn
+└── lib/
+├── sleep/ # Lógica negocio sueño
+└── utils/ # Utilidades genéricas
+
+## PATRONES PROHIBIDOS
+- No over-engineering
+- No abstracciones prematuras  
+- No patrones complejos sin necesidad
+
+## GESTIÓN DE ESTADO
+- Server-first: Supabase directo cuando posible
+- Client state mínimo y local
+- No Redux/Zustand a menos que sea NECESARIO

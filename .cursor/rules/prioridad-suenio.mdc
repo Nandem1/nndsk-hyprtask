@@ -1,0 +1,21 @@
+---
+alwaysApply: true
+---
+# PRIORIDAD ABSOLUTA - CONTROL DE SUEÑO
+
+## ORDEN DE DESARROLLO (NO NEGOCIABLE)
+1. **TERMINAR CONTROL DE SUEÑO COMPLETO** antes de tocar cualquier tarea
+2. SleepTimer > SleepConfig > SleepStats > WindDown
+3. Solo después: sistema de tareas
+
+## COMPONENTES CRÍTICOS DE SUEÑO
+- SleepTimer: muestra tiempo hasta dormir (hh:mm)
+- SleepConfig: configura horarios y alarmas  
+- SleepStats: estadísticas semanales
+- WindDown: rutina pre-sueño
+
+## FUNCIONALIDADES ESENCIALES
+- Cálculo automático horas sueño disponible
+- Alertas inteligentes (2h, 1h, 30min antes)
+- Registro de sueño real vs ideal
+- Modo estudio con display discreto

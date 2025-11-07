@@ -1,0 +1,21 @@
+---
+alwaysApply: true
+---
+# TYPESCRIPT ESTRICTO - CERO TOLERANCIA
+
+## REGLAS ABSOLUTAS
+- **NUNCA usar `any`** - si no sabes el tipo, investígalo
+- Interfaces sobre types para contratos
+- Tipos explícitos siempre, nunca inferir
+
+## EJEMPLOS BUENOS/MALOS
+✅ BIEN: `interface SleepConfig { bedtime: string; wakeupTime: string; }`
+❌ MAL: `const config = { bedtime: '22:00' } // sin tipo`
+
+✅ BIEN: `function calculateSleepHours(bedtime: string): number`
+❌ MAL: `function calculateSleepHours(bedtime) { return 8 }`
+
+## VALIDACIÓN DE DATOS
+- Usar Zod para todas las entradas
+- Validar en boundaries del sistema
+- Tipos deben prevenir errores runtime

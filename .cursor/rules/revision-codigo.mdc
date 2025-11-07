@@ -1,0 +1,19 @@
+---
+alwaysApply: true
+---
+# CHECKLIST REVISIÓN DE CÓDIGO
+
+## PREGUNTAS OBLIGATORIAS
+- [ ] ¿Es esto más simple de lo que podría ser?
+- [ ] ¿Hay código duplicado? 
+- [ ] ¿Los tipos TypeScript previenen errores runtime?
+- [ ] ¿Las animaciones mejoran UX o solo decoran?
+- [ ] ¿El componente hace UNA cosa bien?
+- [ ] ¿Está el código de sueño terminado ANTES de tareas?
+
+## SEÑALES DE ALARMA
+- Funciones con más de 20 líneas
+- Componentes con más de 3 responsabilidades  
+- Múltiples niveles de abstracción
+- Cualquier `any` en TypeScript
+- Animaciones que bajan performance

@@ -1,0 +1,27 @@
+---
+alwaysApply: true
+---
+# UI/ANIMACIONES - PERFORMANCE PRIMERO
+
+## PRINCIPIO DE ANIMACIONES
+- Animaciones con propósito, no decorativas
+- 60fps o no hacerlas
+- Performance > Efectos bonitos
+
+## FRAMER MOTION (USAR CON MODERACIÓN)
+✅ PERMITIDO:
+- Transiciones de página
+- Micro-interacciones
+- Cambios de estado
+- Estados de loading
+
+❌ PROHIBIDO:
+- Parallax excesivo
+- Carrousels automáticos
+- Scroll jacking
+- Animaciones que bloquean
+
+## TAILWINDCSS
+- Utility-first siempre
+- Customizar solo lo necesario
+- No inventar clases complejas
