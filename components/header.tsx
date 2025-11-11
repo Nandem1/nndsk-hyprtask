@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { Moon, Settings, CheckSquare } from 'lucide-react';
+import { Moon, Settings, CheckSquare, Briefcase, Bed } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatMinutesToReadable } from '@/lib/sleep/calculations';
 import { useCurrentTask } from '@/hooks/use-tasks';
 import { useSleepCalculations } from '@/hooks/use-sleep-settings';
+import { useWorkCalculations } from '@/hooks/use-work-settings';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useThemeContext } from '@/components/theme-provider-context';
 
@@ -13,6 +14,7 @@ export function Header() {
   const { classes } = useThemeContext();
   const { data: currentTask } = useCurrentTask();
   const { data: sleepData } = useSleepCalculations();
+  const { data: workData } = useWorkCalculations();
 
   return (
     <motion.header
@@ -66,6 +68,7 @@ export function Header() {
               transition={{ duration: 0.3 }}
               className={`flex items-center gap-3 rounded-xl bg-gradient-to-r ${classes.gradientBg} px-4 py-2 border ${classes.borderHover} backdrop-blur-sm shadow-lg ${classes.shadowHover}`}
             >
+              <Bed className={`h-4 w-4 ${classes.textPrimary}`} />
               <div className="flex flex-col items-end">
                 <div className="text-xs text-muted-foreground/80">Dormir a las</div>
                 <div className={`text-sm font-semibold ${classes.textPrimary} dark:${classes.textSecondary}`}>
@@ -86,11 +89,38 @@ export function Header() {
                 </motion.div>
               </div>
             </motion.div>
-          ) : (
-            <div className="text-xs text-muted-foreground/60">
-              Configura tu sueño
-            </div>
-          )}
+          ) : null}
+
+          {/* Work Timer */}
+          {workData ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              className={`flex items-center gap-3 rounded-xl bg-gradient-to-r ${classes.gradientBg} px-4 py-2 border ${classes.borderHover} backdrop-blur-sm shadow-lg ${classes.shadowHover}`}
+            >
+              <Briefcase className={`h-4 w-4 ${classes.textPrimary}`} />
+              <div className="flex flex-col items-end">
+                <div className="text-xs text-muted-foreground/80">Salir a las</div>
+                <div className={`text-sm font-semibold ${classes.textPrimary} dark:${classes.textSecondary}`}>
+                  {workData.endTime}
+                </div>
+              </div>
+              <div className="h-8 w-px bg-gradient-to-b from-transparent via-border to-transparent" />
+              <div className="flex flex-col">
+                <div className="text-xs text-muted-foreground/80">Tiempo restante</div>
+                <motion.div
+                  key={workData.timeUntilEnd}
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`text-sm font-bold bg-gradient-to-r ${classes.gradient} bg-clip-text text-transparent`}
+                >
+                  {formatMinutesToReadable(workData.timeUntilEnd)}
+                </motion.div>
+              </div>
+            </motion.div>
+          ) : null}
 
           {/* Navegación */}
           <motion.div
@@ -102,7 +132,7 @@ export function Header() {
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent/50 border border-transparent hover:border-border/50"
             >
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Sueño</span>
+              <span className="hidden sm:inline">Configuración</span>
             </Link>
           </motion.div>
 

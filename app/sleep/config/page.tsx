@@ -1,11 +1,11 @@
 'use client';
 
 import LayoutWithHeader from '@/app/layout-with-header';
-import { SleepConfig } from '@/components/sleep/sleep-config';
+import { GeneralConfig } from '@/components/config/general-config';
 import { ThemePaletteSelector } from '@/components/theme-palette-selector';
 import { useThemeContext } from '@/components/theme-provider-context';
 
-function SleepConfigContent() {
+function ConfigContent() {
   const { classes } = useThemeContext();
   
   return (
@@ -20,17 +20,17 @@ function SleepConfigContent() {
       </div>
 
       <div className="space-y-6">
-        <SleepConfig />
+        <GeneralConfig />
         <ThemePaletteSelector />
       </div>
     </div>
   );
 }
 
-export default function SleepConfigPage() {
+export default function ConfigPage() {
   return (
     <LayoutWithHeader>
-      <SleepConfigContent />
+      <ConfigContent />
     </LayoutWithHeader>
   );
 }
