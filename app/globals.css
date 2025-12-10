@@ -118,12 +118,51 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-geist-mono), monospace;
   }
   
   /* Transiciones suaves para cambio de tema */
   * {
-    transition-property: background-color, border-color, color, fill, stroke;
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 200ms;
+  }
+
+  /* Efectos comfy/glassmorphism */
+  .glow {
+    box-shadow: 0 0 20px rgba(var(--glow-color, 59, 130, 246), 0.15);
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .terminal-border {
+    border: 1px solid;
+    border-radius: 0.75rem;
+  }
+
+  .neon-text {
+    text-shadow: 0 0 8px currentColor;
+  }
+
+  /* Grid orgánico */
+  .auto-rows-fr {
+    grid-auto-rows: minmax(120px, auto);
+  }
+
+  /* Efecto de profundidad en cards */
+  .card-depth {
+    transform-style: preserve-3d;
   }
 }

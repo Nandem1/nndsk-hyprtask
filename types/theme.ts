@@ -1,9 +1,10 @@
-// TIPOS PARA SISTEMA DE TEMAS
-export type ThemePalette = 'blue-cyan-teal' | 'pink-red-orange' | 'teal-cyan-blue' | 'deep-blue';
+// TIPOS PARA SISTEMA DE TEMAS - COMFY/INDIE/NERD
+export type ThemePalette = 'genshin' | 'zenless' | 'wuthering' | 'osu' | 'mario';
 
 export interface ThemeConfig {
   palette: ThemePalette;
   name: string;
+  emoji: string;
   colors: {
     primary: string;
     secondary: string;
@@ -11,56 +12,79 @@ export interface ThemeConfig {
     gradient: string;
     border: string;
     shadow: string;
+    glow: string;
   };
 }
 
 export const THEMES: Record<ThemePalette, ThemeConfig> = {
-  'blue-cyan-teal': {
-    palette: 'blue-cyan-teal',
-    name: 'Azul → Cyan → Teal',
+  'genshin': {
+    palette: 'genshin',
+    name: 'Genshin',
+    emoji: '✨',
     colors: {
       primary: 'blue',
       secondary: 'cyan',
       accent: 'teal',
-      gradient: 'from-blue-400 via-cyan-400 to-teal-400',
-      border: 'blue-500',
-      shadow: 'blue-500',
+      gradient: 'from-blue-300/80 via-cyan-300/80 to-teal-300/80',
+      border: 'blue-400/30',
+      shadow: 'blue-400/20',
+      glow: 'blue-300/40',
     },
   },
-  'pink-red-orange': {
-    palette: 'pink-red-orange',
-    name: 'Rosa → Rojo → Naranja',
+  'zenless': {
+    palette: 'zenless',
+    name: 'Zenless',
+    emoji: '🎮',
     colors: {
-      primary: 'pink',
-      secondary: 'red',
-      accent: 'orange',
-      gradient: 'from-pink-400 via-red-400 to-orange-400',
-      border: 'pink-500',
-      shadow: 'pink-500',
+      primary: 'purple',
+      secondary: 'pink',
+      accent: 'fuchsia',
+      gradient: 'from-purple-300/80 via-pink-300/80 to-fuchsia-300/80',
+      border: 'purple-400/30',
+      shadow: 'purple-400/20',
+      glow: 'purple-300/40',
     },
   },
-  'teal-cyan-blue': {
-    palette: 'teal-cyan-blue',
-    name: 'Verde Agua → Cyan → Azul',
+  'wuthering': {
+    palette: 'wuthering',
+    name: 'Wuthering',
+    emoji: '🌊',
     colors: {
       primary: 'teal',
       secondary: 'cyan',
-      accent: 'blue',
-      gradient: 'from-teal-400 via-cyan-400 to-blue-400',
-      border: 'teal-500',
-      shadow: 'teal-500',
+      accent: 'sky',
+      gradient: 'from-teal-300/80 via-cyan-300/80 to-sky-300/80',
+      border: 'teal-400/30',
+      shadow: 'teal-400/20',
+      glow: 'teal-300/40',
     },
   },
-  'deep-blue': {
-    palette: 'deep-blue',
-    name: 'Azul Profundo',
+  'osu': {
+    palette: 'osu',
+    name: 'osu!',
+    emoji: '💗',
     colors: {
-      primary: 'blue',
-      secondary: 'sky',
-      accent: 'cyan',
-      gradient: 'from-blue-600 via-sky-400 to-cyan-400',
-      border: 'blue-500',
-      shadow: 'blue-500',
+      primary: 'pink',
+      secondary: 'rose',
+      accent: 'fuchsia',
+      gradient: 'from-pink-300/80 via-rose-300/80 to-fuchsia-300/80',
+      border: 'pink-400/30',
+      shadow: 'pink-400/20',
+      glow: 'pink-300/40',
+    },
+  },
+  'mario': {
+    palette: 'mario',
+    name: 'Mario',
+    emoji: '🍄',
+    colors: {
+      primary: 'red',
+      secondary: 'orange',
+      accent: 'yellow',
+      gradient: 'from-red-300/80 via-orange-300/80 to-yellow-300/80',
+      border: 'red-400/30',
+      shadow: 'red-400/20',
+      glow: 'red-300/40',
     },
   },
 };

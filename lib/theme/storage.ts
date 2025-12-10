@@ -10,13 +10,19 @@ export function getThemePalette(): ThemePalette {
   // return await supabase.from('user_settings').select('theme_palette').single();
   
   if (typeof window === 'undefined') {
-    return 'blue-cyan-teal'; // Default
+    return 'genshin'; // Default
   }
   
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) return 'blue-cyan-teal';
+  if (!stored) return 'genshin';
   
-  return stored as ThemePalette;
+  // Validar que el tema almacenado sea válido
+  const validThemes: ThemePalette[] = ['genshin', 'zenless', 'wuthering', 'osu', 'mario'];
+  if (stored && validThemes.includes(stored as ThemePalette)) {
+    return stored as ThemePalette;
+  }
+  
+  return 'genshin';
 }
 
 export function saveThemePalette(palette: ThemePalette): void {

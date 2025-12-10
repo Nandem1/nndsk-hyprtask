@@ -6,8 +6,8 @@ import { THEMES } from '@/types/theme';
 import type { ThemePalette, ThemeConfig } from '@/types/theme';
 
 export function useThemePalette() {
-  const [palette, setPalette] = useState<ThemePalette>('blue-cyan-teal');
-  const [theme, setTheme] = useState<ThemeConfig>(THEMES['blue-cyan-teal']);
+  const [palette, setPalette] = useState<ThemePalette>('genshin');
+  const [theme, setTheme] = useState<ThemeConfig>(THEMES['genshin']);
 
   useEffect(() => {
     const savedPalette = getThemePalette();
