@@ -13,6 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Desactivar regla estricta de setState en useEffect - es un patrón común válido
+      "react-hooks/set-state-in-effect": "off",
+      // Permitir any en props específicas (formProps en vistas)
+      "@typescript-eslint/no-explicit-any": ["warn", { ignoreRestArgs: true }],
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -1,33 +1,39 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import LayoutWithHeader from '../layout-with-header';
-import { useThemeContext } from '@/components/theme-provider-context';
-import { ViewModeProvider } from '@/components/tasks/view-mode-provider';
-import { TaskList } from '@/components/tasks/task-list';
-import { Sidebar } from '@/components/tasks/sidebar';
-import { Button } from '@/components/ui/button';
-import { Filter } from 'lucide-react';
-import { autoArchiveCompletedTasks } from '@/lib/tasks/storage';
-import type { TaskProject, TaskCategory } from '@/types/task';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { TaskFiltersProvider } from "@/features/task-filters";
+import { useThemeContext, ViewModeProvider } from "@/features";
+import { TaskBoard, Header } from "@/widgets";
+import {
+  TaskSidebar,
+  autoArchiveCompletedTasks,
+  type TaskProject,
+  type TaskCategory,
+} from "@/entities/task";
+import { Button } from "@/shared/ui/button";
+import { Filter } from "lucide-react";
 
 function TasksPageContent() {
   const { classes } = useThemeContext();
-  const [selectedProject, setSelectedProject] = useState<TaskProject | 'all'>('all');
-  const [selectedCategory, setSelectedCategory] = useState<TaskCategory | 'all'>('all');
+  const [selectedProject, setSelectedProject] = useState<TaskProject | "all">(
+    "all",
+  );
+  const [selectedCategory, setSelectedCategory] = useState<
+    TaskCategory | "all"
+  >("all");
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  
+
   // Auto-archivar tareas completadas al cargar
   useEffect(() => {
     autoArchiveCompletedTasks();
   }, []);
-  
+
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] relative">
       {/* Sidebar Desktop */}
       <div className="hidden md:block">
-        <Sidebar
+        <TaskSidebar
           selectedProject={selectedProject}
           selectedCategory={selectedCategory}
           onProjectChange={setSelectedProject}
@@ -50,10 +56,10 @@ function TasksPageContent() {
               initial={{ x: -280 }}
               animate={{ x: 0 }}
               exit={{ x: -280 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed left-0 top-16 bottom-0 z-50 md:hidden"
             >
-              <Sidebar
+              <TaskSidebar
                 selectedProject={selectedProject}
                 selectedCategory={selectedCategory}
                 onProjectChange={(project) => {
@@ -70,7 +76,7 @@ function TasksPageContent() {
           </>
         )}
       </AnimatePresence>
-      
+
       {/* Contenido principal */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -81,7 +87,9 @@ function TasksPageContent() {
             className="mb-8 flex items-center justify-between"
           >
             <div>
-              <h1 className={`text-4xl font-bold tracking-tight mb-2 bg-linear-to-r ${classes.gradient} bg-clip-text text-transparent`}>
+              <h1
+                className={`text-4xl font-bold tracking-tight mb-2 bg-linear-to-r ${classes.gradient} bg-clip-text text-transparent`}
+              >
                 Tareas
               </h1>
               <p className="text-muted-foreground">
@@ -105,7 +113,7 @@ function TasksPageContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
           >
-            <TaskList 
+            <TaskBoard
               selectedProject={selectedProject}
               selectedCategory={selectedCategory}
             />
@@ -118,11 +126,13 @@ function TasksPageContent() {
 
 export default function TasksPage() {
   return (
-    <ViewModeProvider>
-      <LayoutWithHeader>
-        <TasksPageContent />
-      </LayoutWithHeader>
-    </ViewModeProvider>
+    <TaskFiltersProvider>
+      <ViewModeProvider>
+        <div className="min-h-screen bg-background">
+          <Header />
+          <TasksPageContent />
+        </div>
+      </ViewModeProvider>
+    </TaskFiltersProvider>
   );
 }
-
