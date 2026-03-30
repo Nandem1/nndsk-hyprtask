@@ -5,7 +5,7 @@
 import { AnimatePresence } from "framer-motion";
 import type { Task, TaskProject, TaskCategory } from "@/entities/task";
 import type { TaskViewMode } from "@/entities/task";
-import type { useThemeContext } from "@/features/theme-switcher";
+import type { useTheme } from "@/store/hooks";
 // TaskForm imported for future use
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { TaskForm } from "@/entities/task";
@@ -36,7 +36,7 @@ interface TaskListViewProps {
   onShowForm: () => void;
   selectedProject: TaskProject | "all";
   selectedCategory: TaskCategory | "all";
-  classes: ReturnType<typeof useThemeContext>["classes"];
+  themeClasses: ReturnType<typeof useTheme>["themeClasses"];
 }
 
 export function TaskListView({
@@ -58,14 +58,14 @@ export function TaskListView({
   onShowForm,
   selectedProject,
   selectedCategory,
-  classes,
+  themeClasses,
 }: TaskListViewProps) {
   const commonProps = {
     tasks,
     onToggle,
     onDelete,
     onSetCurrent,
-    classes,
+    classes: themeClasses,
   };
 
   const formProps = {

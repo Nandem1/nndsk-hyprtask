@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Settings, CheckSquare, Briefcase, Bed } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useThemeContext, ThemeToggle } from '@/features/theme-switcher';
-import { useCurrentTask } from '@/entities/task';
-import { useSleepCalculations } from '@/entities/sleep';
-import { useWorkCalculations } from '@/entities/work';
-import { formatMinutesToReadable } from '@/shared/lib/time-utils';
+import Link from "next/link";
+import { Settings, CheckSquare, Briefcase, Bed } from "lucide-react";
+import { motion } from "framer-motion";
+import { useThemeState } from "@/store/hooks";
+import { ThemeToggle } from "@/shared/theme";
+import { useCurrentTask } from "@/entities/task";
+import { useSleepCalculations } from "@/entities/sleep";
+import { useWorkCalculations } from "@/entities/work";
+import { formatMinutesToReadable } from "@/shared/lib/time-utils";
 
 export function Header() {
-  const { classes } = useThemeContext();
+  const { themeClasses } = useThemeState();
   const { data: currentTask } = useCurrentTask();
   const { data: sleepData } = useSleepCalculations();
   const { data: workData } = useWorkCalculations();
@@ -26,7 +27,9 @@ export function Header() {
         {/* Logo */}
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Link href="/tasks" className="flex items-center gap-2 font-semibold">
-            <span className={`text-xl ${classes.textPrimary}`}>hyprtask</span>
+            <span className={`text-xl ${themeClasses.textPrimary}`}>
+              hyprtask
+            </span>
           </Link>
         </motion.div>
 
@@ -41,10 +44,14 @@ export function Header() {
               className="glass rounded-lg px-3 py-2 border border-border/20"
             >
               <div className="flex items-center gap-2">
-                <CheckSquare className={`h-3.5 w-3.5 ${classes.textPrimary}`} />
+                <CheckSquare
+                  className={`h-3.5 w-3.5 ${themeClasses.textPrimary}`}
+                />
                 <div className="flex flex-col">
                   <div className="text-xs text-muted-foreground">Actual</div>
-                  <div className={`text-sm font-medium ${classes.textPrimary} max-w-[150px] truncate`}>
+                  <div
+                    className={`text-sm font-medium ${themeClasses.textPrimary} max-w-[150px] truncate`}
+                  >
                     {currentTask.title}
                   </div>
                 </div>
@@ -61,10 +68,12 @@ export function Header() {
               className="glass rounded-lg px-3 py-2 border border-border/20"
             >
               <div className="flex items-center gap-3">
-                <Bed className={`h-3.5 w-3.5 ${classes.textPrimary}`} />
+                <Bed className={`h-3.5 w-3.5 ${themeClasses.textPrimary}`} />
                 <div className="flex flex-col items-end">
                   <div className="text-xs text-muted-foreground">Sueno</div>
-                  <div className={`text-sm font-medium ${classes.textPrimary}`}>
+                  <div
+                    className={`text-sm font-medium ${themeClasses.textPrimary}`}
+                  >
                     {sleepData.recommendedBedtime}
                   </div>
                 </div>
@@ -76,7 +85,7 @@ export function Header() {
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
-                    className={`text-sm font-medium ${classes.textPrimary}`}
+                    className={`text-sm font-medium ${themeClasses.textPrimary}`}
                   >
                     {formatMinutesToReadable(sleepData.timeUntilBedtime)}
                   </motion.div>
@@ -94,10 +103,14 @@ export function Header() {
               className="glass rounded-lg px-3 py-2 border border-border/20"
             >
               <div className="flex items-center gap-3">
-                <Briefcase className={`h-3.5 w-3.5 ${classes.textPrimary}`} />
+                <Briefcase
+                  className={`h-3.5 w-3.5 ${themeClasses.textPrimary}`}
+                />
                 <div className="flex flex-col items-end">
                   <div className="text-xs text-muted-foreground">Trabajo</div>
-                  <div className={`text-sm font-medium ${classes.textPrimary}`}>
+                  <div
+                    className={`text-sm font-medium ${themeClasses.textPrimary}`}
+                  >
                     {workData.endTime}
                   </div>
                 </div>
@@ -109,7 +122,7 @@ export function Header() {
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
-                    className={`text-sm font-medium ${classes.textPrimary}`}
+                    className={`text-sm font-medium ${themeClasses.textPrimary}`}
                   >
                     {formatMinutesToReadable(workData.timeUntilEnd)}
                   </motion.div>
@@ -124,7 +137,7 @@ export function Header() {
               href="/sleep/config"
               className="flex items-center gap-2 rounded-lg glass border border-border/20 px-3 py-2 text-sm font-medium transition-all hover:border-border/40"
             >
-              <Settings className={`h-4 w-4 ${classes.textPrimary}`} />
+              <Settings className={`h-4 w-4 ${themeClasses.textPrimary}`} />
               <span className="hidden sm:inline">Config</span>
             </Link>
           </motion.div>

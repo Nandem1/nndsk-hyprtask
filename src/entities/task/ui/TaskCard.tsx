@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check, Trash2, Play } from "lucide-react";
-import { useThemeContext } from "@/features/theme-switcher";
+import { useTheme } from "@/store/hooks";
 import { getProjectById, getCategoryById } from "../lib/constants";
 import type { Task } from "../model/types";
 
@@ -21,7 +21,7 @@ export function TaskCard({
   onSetCurrent,
   variant = "default",
 }: TaskCardProps) {
-  const { classes } = useThemeContext();
+  const { themeClasses } = useTheme();
   const project = task.project ? getProjectById(task.project) : null;
   const category = task.category ? getCategoryById(task.category) : null;
 
@@ -40,7 +40,7 @@ export function TaskCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className={`flex items-center gap-2 p-2 rounded border ${task.isCompleted ? "opacity-50" : ""} ${task.isCurrent ? classes.border : "border-border/30"}`}
+        className={`flex items-center gap-2 p-2 rounded border ${task.isCompleted ? "opacity-50" : ""} ${task.isCurrent ? themeClasses.border : "border-border/30"}`}
       >
         <button
           onClick={() => onToggle(task.id)}
@@ -65,7 +65,7 @@ export function TaskCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className={`group relative p-4 rounded-xl border ${task.isCurrent ? classes.border : "border-border/30"} bg-background/30 backdrop-blur-sm transition-all hover:border-border/50 ${task.isCompleted ? "opacity-50" : ""}`}
+      className={`group relative p-4 rounded-xl border ${task.isCurrent ? themeClasses.border : "border-border/30"} bg-background/30 backdrop-blur-sm transition-all hover:border-border/50 ${task.isCompleted ? "opacity-50" : ""}`}
     >
       <div className="flex items-start gap-3">
         <button
@@ -132,7 +132,7 @@ export function TaskCard({
 
       {task.isCurrent && (
         <div
-          className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r ${classes.gradientBg}`}
+          className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r ${themeClasses.gradientBg}`}
         />
       )}
     </motion.div>

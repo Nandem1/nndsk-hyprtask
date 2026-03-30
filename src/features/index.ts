@@ -1,3 +1,3 @@
-export { ThemeProvider, ThemeProviderContext, useThemeContext, ThemeToggle, ThemePaletteSelector, useThemePalette } from './theme-switcher';
-export { ViewModeProvider, useTaskViewMode } from './task-view-mode';
-export { TaskFiltersProvider, useTaskFilters } from './task-filters';
+// Features exports - todas las funcionalidades ahora usan Zustand directamente
+export { useViewMode } from "./task-view-mode";
+export { useTaskFilters } from "./task-filters";

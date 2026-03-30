@@ -1,21 +1,25 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { LayoutGrid, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
-import { useThemeContext } from '@/features/theme-switcher';
-import { VIEW_MODES, TaskViewMode } from '../model/view-mode';
+import { motion } from "framer-motion";
+import { LayoutGrid, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { useTheme } from "@/store/hooks";
+import { VIEW_MODES, TaskViewMode } from "../model/view-mode";
 
 interface ViewModeSelectorProps {
   viewMode: TaskViewMode;
   onChange: (mode: TaskViewMode) => void;
 }
 
-export function ViewModeSelector({ viewMode, onChange }: ViewModeSelectorProps) {
-  const { classes } = useThemeContext();
+export function ViewModeSelector({
+  viewMode,
+  onChange,
+}: ViewModeSelectorProps) {
+  const { themeClasses } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentMode = VIEW_MODES.find(m => m.id === viewMode) || VIEW_MODES[0];
+  const currentMode =
+    VIEW_MODES.find((m) => m.id === viewMode) || VIEW_MODES[0];
 
   return (
     <div className="relative">
@@ -25,14 +29,21 @@ export function ViewModeSelector({ viewMode, onChange }: ViewModeSelectorProps) 
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 rounded-lg glass border border-border/20 hover:border-border/40 transition-all text-sm font-medium"
       >
-        <LayoutGrid className={`h-4 w-4 ${classes.textPrimary}`} />
-        <span className="hidden sm:inline">{currentMode.emoji} {currentMode.name}</span>
-        <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <LayoutGrid className={`h-4 w-4 ${themeClasses.textPrimary}`} />
+        <span className="hidden sm:inline">
+          {currentMode.emoji} {currentMode.name}
+        </span>
+        <ChevronDown
+          className={`h-3 w-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
       </motion.button>
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
           <motion.div
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -54,13 +65,15 @@ export function ViewModeSelector({ viewMode, onChange }: ViewModeSelectorProps) 
                   }}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all text-left ${
                     viewMode === mode.id
-                      ? `glass border ${classes.borderHover} ${classes.shadowHover}`
-                      : 'border border-transparent hover:glass hover:border-border/30'
+                      ? `glass border ${themeClasses.borderHover} ${themeClasses.shadowHover}`
+                      : "border border-transparent hover:glass hover:border-border/30"
                   }`}
                 >
                   <span className="text-lg">{mode.emoji}</span>
                   <div className="flex-1">
-                    <div className={`font-medium ${viewMode === mode.id ? classes.textPrimary : 'text-foreground'}`}>
+                    <div
+                      className={`font-medium ${viewMode === mode.id ? themeClasses.textPrimary : "text-foreground"}`}
+                    >
                       {mode.name}
                     </div>
                     <div className="text-xs text-muted-foreground">
@@ -71,7 +84,7 @@ export function ViewModeSelector({ viewMode, onChange }: ViewModeSelectorProps) 
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className={`w-2 h-2 rounded-full ${classes.gradientBg}`}
+                      className={`w-2 h-2 rounded-full ${themeClasses.gradientBg}`}
                     />
                   )}
                 </motion.button>

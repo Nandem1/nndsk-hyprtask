@@ -1,16 +1,18 @@
-'use client';
+"use client";
 
-import { useThemeContext } from '@/features/theme-switcher';
-import { SleepTimerCard, SleepStatsCard, WindDownCard } from '@/entities/sleep';
-import { WorkTimerCard } from '@/entities/work';
+import { useTheme } from "@/store/hooks";
+import { SleepTimerCard, SleepStatsCard, WindDownCard } from "@/entities/sleep";
+import { WorkTimerCard } from "@/entities/work";
 
 export function SleepDashboard() {
-  const { classes } = useThemeContext();
+  const { themeClasses } = useTheme();
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
-        <h1 className={`text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r ${classes.gradient} bg-clip-text text-transparent`}>
+        <h1
+          className={`text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
+        >
           Control de Sueno
         </h1>
         <p className="text-muted-foreground">

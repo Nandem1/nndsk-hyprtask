@@ -11,11 +11,11 @@ import {
 } from "@/shared/ui/card";
 import { BarChart3, TrendingUp } from "lucide-react";
 import { getSleepLogs } from "../lib/storage";
-import { useThemeContext } from "@/features/theme-switcher";
+import { useTheme } from "@/store/hooks";
 import type { SleepLog } from "../model/types";
 
 export function SleepStatsCard() {
-  const { classes } = useThemeContext();
+  const { themeClasses } = useTheme();
   const [logs, setLogs] = useState<SleepLog[]>([]);
   const [averageHours, setAverageHours] = useState<number>(0);
   const [averageQuality, setAverageQuality] = useState<number>(0);
@@ -75,10 +75,10 @@ export function SleepStatsCard() {
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
     >
       <Card
-        className={`relative overflow-hidden border ${classes.border} bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-xl ${classes.shadow} transition-all duration-300 hover:shadow-2xl ${classes.shadowHover} hover:${classes.borderHover}`}
+        className={`relative overflow-hidden border ${themeClasses.border} bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-xl ${themeClasses.shadow} transition-all duration-300 hover:shadow-2xl ${themeClasses.shadowHover} hover:${themeClasses.borderHover}`}
       >
         <div
-          className={`absolute inset-0 bg-gradient-to-r ${classes.gradientBgSubtle} opacity-50`}
+          className={`absolute inset-0 bg-gradient-to-r ${themeClasses.gradientBgSubtle} opacity-50`}
         />
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2">

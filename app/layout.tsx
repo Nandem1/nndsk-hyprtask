@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider, ThemeProviderContext } from "@/features/theme-switcher";
+import { ThemeProvider } from "@/shared/theme";
 import { QueryProvider } from "@/shared/lib/query-client";
+import { StoreInitializer } from "@/store/StoreInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HyprTasks - Control de Sueño y Tareas",
-  description: "Sistema de gestión de tareas y control inteligente de sueño",
+  title: "HyprTasks - Control de Sueno y Tareas",
+  description: "Sistema de gestion de tareas y control inteligente de sueno",
 };
 
 export default function RootLayout({
@@ -36,7 +37,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange={false}
           >
-            <ThemeProviderContext>{children}</ThemeProviderContext>
+            <StoreInitializer />
+            {children}
           </ThemeProvider>
         </QueryProvider>
       </body>

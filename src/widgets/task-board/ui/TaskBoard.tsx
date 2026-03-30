@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { AlertCircle } from 'lucide-react';
-import { useThemeContext } from '@/features/theme-switcher';
-import { useTaskViewMode } from '@/features/task-view-mode';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { AlertCircle } from "lucide-react";
+import { useTheme, useViewMode } from "@/store/hooks";
 import {
   useActiveTasks,
   useToggleTask,
@@ -12,26 +11,31 @@ import {
   useSetCurrentTask,
   getTaskSettings,
   ViewModeSelector,
-} from '@/entities/task';
-import type { TaskProject, TaskCategory } from '@/entities/task';
-import { TaskListView } from './TaskListView';
+} from "@/entities/task";
+import type { TaskProject, TaskCategory } from "@/entities/task";
+import { TaskListView } from "./TaskListView";
 
 interface TaskBoardProps {
-  selectedProject?: TaskProject | 'all';
-  selectedCategory?: TaskCategory | 'all';
+  selectedProject?: TaskProject | "all";
+  selectedCategory?: TaskCategory | "all";
 }
 
-export function TaskBoard({ selectedProject = 'all', selectedCategory = 'all' }: TaskBoardProps) {
-  const { classes } = useThemeContext();
-  const { viewMode, changeViewMode } = useTaskViewMode();
+export function TaskBoard({
+  selectedProject = "all",
+  selectedCategory = "all",
+}: TaskBoardProps) {
+  const { themeClasses } = useTheme();
+  const { viewMode, setViewModeImmediate } = useViewMode();
   const { data: allTasks = [] } = useActiveTasks();
   const [maxTasks, setMaxTasks] = useState<number>(5);
   const [showForm, setShowForm] = useState<boolean>(false);
 
   // Filtrar tareas
   const tasks = allTasks.filter((task) => {
-    if (selectedProject !== 'all' && task.project !== selectedProject) return false;
-    if (selectedCategory !== 'all' && task.category !== selectedCategory) return false;
+    if (selectedProject !== "all" && task.project !== selectedProject)
+      return false;
+    if (selectedCategory !== "all" && task.category !== selectedCategory)
+      return false;
     return true;
   });
 
@@ -68,14 +72,16 @@ export function TaskBoard({ selectedProject = 'all', selectedCategory = 'all' }:
             animate={{ scale: 1 }}
             className="flex items-baseline gap-2"
           >
-            <span className={`text-3xl font-bold ${classes.textPrimary}`}>
+            <span className={`text-3xl font-bold ${themeClasses.textPrimary}`}>
               {filteredCount}
             </span>
             {filteredCount !== totalCount && (
-              <span className="text-sm text-muted-foreground">/ {totalCount}</span>
+              <span className="text-sm text-muted-foreground">
+                / {totalCount}
+              </span>
             )}
             <span className="text-sm text-muted-foreground ml-2">
-              {filteredCount === 1 ? 'tarea' : 'tareas'}
+              {filteredCount === 1 ? "tarea" : "tareas"}
             </span>
           </motion.div>
           <div className="h-6 w-px bg-border/30" />
@@ -84,7 +90,10 @@ export function TaskBoard({ selectedProject = 'all', selectedCategory = 'all' }:
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <ViewModeSelector viewMode={viewMode} onChange={changeViewMode} />
+          <ViewModeSelector
+            viewMode={viewMode}
+            onChange={setViewModeImmediate}
+          />
           {!canAddTask && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass border border-yellow-400/30 text-yellow-300">
               <AlertCircle className="h-3.5 w-3.5" />
@@ -93,7 +102,9 @@ export function TaskBoard({ selectedProject = 'all', selectedCategory = 'all' }:
           )}
           {canAddTask && remainingSlots <= 2 && (
             <div className="px-3 py-1.5 rounded-lg glass border border-border/30 text-muted-foreground">
-              <span className="text-xs font-medium">{remainingSlots} restantes</span>
+              <span className="text-xs font-medium">
+                {remainingSlots} restantes
+              </span>
             </div>
           )}
         </div>
@@ -118,7 +129,7 @@ export function TaskBoard({ selectedProject = 'all', selectedCategory = 'all' }:
         onShowForm={() => setShowForm(true)}
         selectedProject={selectedProject}
         selectedCategory={selectedCategory}
-        classes={classes}
+        themeClasses={themeClasses}
       />
     </div>
   );

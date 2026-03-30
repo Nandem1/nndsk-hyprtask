@@ -1,1 +1,7 @@
-export { TaskFiltersProvider, useTaskFilters } from './model/filter-context';
+export {
+  useTaskFilters,
+  useHasActiveFilters,
+  useTaskSearch,
+  useSelectedProject,
+  useSelectedCategory,
+} from "@/store/hooks";

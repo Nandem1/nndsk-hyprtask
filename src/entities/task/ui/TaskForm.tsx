@@ -7,7 +7,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { X } from "lucide-react";
 import { useCreateTask } from "../hooks/use-tasks";
-import { useThemeContext } from "@/features/theme-switcher";
+import { useTheme } from "@/store/hooks";
 import { PROJECTS, CATEGORIES } from "../lib/constants";
 import type { TaskPriority, TaskProject, TaskCategory } from "../model/types";
 
@@ -28,7 +28,7 @@ export function TaskForm({
   defaultProject,
   defaultCategory,
 }: TaskFormProps) {
-  const { classes } = useThemeContext();
+  const { themeClasses } = useTheme();
   const [title, setTitle] = useState<string>("");
   const [priority, setPriority] = useState<TaskPriority>("low");
   const [project, setProject] = useState<TaskProject | undefined>(
@@ -174,7 +174,7 @@ export function TaskForm({
                   onClick={() => setPriority(option.value)}
                   className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                     priority === option.value
-                      ? `${option.color} border-opacity-50 ${classes.shadowHover}`
+                      ? `${option.color} border-opacity-50 ${themeClasses.shadowHover}`
                       : "border-border/30 hover:border-border/50 bg-background/30"
                   }`}
                 >
@@ -198,7 +198,7 @@ export function TaskForm({
                   createTaskMutation.isPending ||
                   currentTasks >= maxTasks
                 }
-                className={`w-full ${classes.gradientBg} border border-border/30 ${classes.shadowHover} text-base font-medium py-3 rounded-lg transition-all`}
+                className={`w-full ${themeClasses.gradientBg} border border-border/30 ${themeClasses.shadowHover} text-base font-medium py-3 rounded-lg transition-all`}
               >
                 {createTaskMutation.isPending ? "Guardando..." : "Crear Tarea"}
               </Button>

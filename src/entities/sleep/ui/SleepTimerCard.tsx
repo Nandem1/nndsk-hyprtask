@@ -16,10 +16,10 @@ import {
 } from "../hooks/use-sleep-settings";
 import { generateSleepAlert } from "../lib/calculations";
 import { formatMinutesToReadable } from "@/shared/lib/time-utils";
-import { useThemeContext } from "@/features/theme-switcher";
+import { useTheme } from "@/store/hooks";
 
 export function SleepTimerCard() {
-  const { classes } = useThemeContext();
+  const { themeClasses } = useTheme();
   const { data: settings } = useSleepSettings();
   const { data: sleepData } = useSleepCalculations();
 
@@ -37,10 +37,10 @@ export function SleepTimerCard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Moon className="h-5 w-5" />
-            Control de Sueño
+            Control de Sueno
           </CardTitle>
           <CardDescription>
-            Configura tus horarios de sueño para comenzar
+            Configura tus horarios de sueno para comenzar
           </CardDescription>
         </CardHeader>
       </Card>
@@ -54,10 +54,10 @@ export function SleepTimerCard() {
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
     >
       <Card
-        className={`relative overflow-hidden border-2 ${classes.border} bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-xl ${classes.shadow} transition-all duration-300 hover:shadow-2xl ${classes.shadowHover} hover:${classes.borderHover}`}
+        className={`relative overflow-hidden border-2 ${themeClasses.border} bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-xl ${themeClasses.shadow} transition-all duration-300 hover:shadow-2xl ${themeClasses.shadowHover} hover:${themeClasses.borderHover}`}
       >
         <div
-          className={`absolute inset-0 bg-gradient-to-r ${classes.gradientBgSubtle} opacity-50`}
+          className={`absolute inset-0 bg-gradient-to-r ${themeClasses.gradientBgSubtle} opacity-50`}
         />
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export function SleepTimerCard() {
           </CardTitle>
           <CardDescription>
             Alarma: {settings.wakeupTime} | {settings.desiredSleepHours}h de
-            sueño
+            sueno
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative">
@@ -77,7 +77,7 @@ export function SleepTimerCard() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className={`text-5xl font-bold tracking-tight bg-gradient-to-r ${classes.gradient} bg-clip-text text-transparent`}
+              className={`text-5xl font-bold tracking-tight bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
             >
               {sleepData?.recommendedBedtime || "--:--"}
             </motion.div>
@@ -88,11 +88,11 @@ export function SleepTimerCard() {
               className="text-sm text-muted-foreground mt-2"
             >
               Debes dormir a las{" "}
-              <span className={`font-semibold ${classes.textPrimary}`}>
+              <span className={`font-semibold ${themeClasses.textPrimary}`}>
                 {sleepData?.recommendedBedtime || "--:--"}
               </span>{" "}
               para despertar a las{" "}
-              <span className={`font-semibold ${classes.textSecondary}`}>
+              <span className={`font-semibold ${themeClasses.textSecondary}`}>
                 {settings.wakeupTime}
               </span>
             </motion.div>
@@ -124,14 +124,14 @@ export function SleepTimerCard() {
             </div>
           )}
 
-          {/* Información de sueño */}
+          {/* Informacion de sueno */}
           <div className="grid grid-cols-2 gap-4 pt-4 border-t">
             <div>
               <div className="text-2xl font-semibold">
                 {sleepData ? sleepData.totalSleepHours.toFixed(1) : "0.0"}h
               </div>
               <div className="text-xs text-muted-foreground">
-                Horas de sueño
+                Horas de sueno
               </div>
             </div>
             <div>

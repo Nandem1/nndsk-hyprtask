@@ -1,1 +1,7 @@
-export { ViewModeProvider, useTaskViewMode } from './model/view-mode-context';
+export {
+  useViewMode,
+  useViewModeOnly,
+  useIsKanbanView,
+  useIsTerminalView,
+  useViewModeLabel,
+} from "@/store/hooks";

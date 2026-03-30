@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TaskFiltersProvider } from "@/features/task-filters";
-import { useThemeContext, ViewModeProvider } from "@/features";
+import { useTheme } from "@/store/hooks";
 import { TaskBoard, Header } from "@/widgets";
 import {
   TaskSidebar,
@@ -15,7 +14,7 @@ import { Button } from "@/shared/ui/button";
 import { Filter } from "lucide-react";
 
 function TasksPageContent() {
-  const { classes } = useThemeContext();
+  const { themeClasses } = useTheme();
   const [selectedProject, setSelectedProject] = useState<TaskProject | "all">(
     "all",
   );
@@ -88,15 +87,15 @@ function TasksPageContent() {
           >
             <div>
               <h1
-                className={`text-4xl font-bold tracking-tight mb-2 bg-linear-to-r ${classes.gradient} bg-clip-text text-transparent`}
+                className={`text-4xl font-bold tracking-tight mb-2 bg-linear-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
               >
                 Tareas
               </h1>
               <p className="text-muted-foreground">
-                Enfócate en lo importante. Máximo 5 tareas activas.
+                Enfocate en lo importante. Maximo 5 tareas activas.
               </p>
             </div>
-            {/* Botón filtros móvil */}
+            {/* Boton filtros movil */}
             <Button
               variant="outline"
               size="icon"
@@ -126,13 +125,9 @@ function TasksPageContent() {
 
 export default function TasksPage() {
   return (
-    <TaskFiltersProvider>
-      <ViewModeProvider>
-        <div className="min-h-screen bg-background">
-          <Header />
-          <TasksPageContent />
-        </div>
-      </ViewModeProvider>
-    </TaskFiltersProvider>
+    <div className="min-h-screen bg-background">
+      <Header />
+      <TasksPageContent />
+    </div>
   );
 }

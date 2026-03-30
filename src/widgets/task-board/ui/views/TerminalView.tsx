@@ -9,14 +9,14 @@ import {
   getCategoryBadgeClasses,
 } from "@/entities/task";
 import type { Task } from "@/entities/task";
-import type { useThemeContext } from "@/features/theme-switcher";
+import type { useTheme } from "@/store/hooks";
 
 interface TerminalViewProps {
   tasks: Task[];
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetCurrent: (id: string) => void;
-  classes: ReturnType<typeof useThemeContext>["classes"];
+  classes: ReturnType<typeof useTheme>["themeClasses"];
   showForm: boolean;
   canAddTask: boolean;
   onShowForm: () => void;
