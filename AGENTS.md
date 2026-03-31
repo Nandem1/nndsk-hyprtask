@@ -1,162 +1,228 @@
 # HyprTask - Developer Guide
 
+## Estado del Proyecto: ✅ Funcionalidades Completas
+
 ## Mejoras Implementadas
 
-### Fase 1: TanStack Query Optimizations
-- ✅ QueryClient mejorado con retry exponencial
-- ✅ Query Error Boundary implementado
-- ✅ Prefetch hooks para tareas
-- ✅ Optimistic updates mejorados para setCurrentTask y updateSettings
-- ✅ Query keys factory extendido con `detail(key)`
+### Fase 1-6: Base técnica sólida (ver versiones anteriores)
+- TanStack Query, Framer Motion, Performance, shadcn, SSR
 
-### Fase 2: Framer Motion Animations
-- ✅ `AnimatedContainer` - Componente reutilizable con variants
-- ✅ `AnimatedList` - Listas con stagger animations
-- ✅ `FilteredAnimatedList` - Listas filtradas con AnimatePresence
-- ✅ Animaciones con soporte para `prefers-reduced-motion`
-- ✅ Animation library centralizada en `src/shared/lib/animations.ts`
+### Fase 7: UX/UI Para TDAH + Dev Workflow ✅ COMPLETA
 
-### Fase 3: Performance Optimizations
-- ✅ Dynamic imports para vistas pesadas (Terminal, CodeNotes, TerminalOut)
-- ✅ Skeleton components para estados de carga
-- ✅ React.memo optimizaciones preparadas
-
-### Fase 4: shadcn Components
-- ✅ `Badge` - Badges con variants
-- ✅ `Dialog` - Modales accesibles
-- ✅ `Toaster` - Notificaciones toast
-- ✅ `Separator` - Divisores visuales
-- ✅ `Skeleton` - Estados de carga
-
-### Fase 5: Polish
-- ✅ `EmptyState` - Componente reutilizable para estados vacíos
-- ✅ `style-utils` - Utilidades CSS reutilizables
-- ✅ Toaster integrado en layout
-
-### Fase 6: SSR Optimizations (NEW)
-- ✅ **Server Components First**: App pages ahora son Server Components
-- ✅ **Suspense Boundaries**: Cada página con Suspense + Skeleton
-- ✅ **Header Split**: Header (Server) + HeaderClient (Client) + HeaderSkeleton
-- ✅ **UI Components Server-Side**: Button, Card, Input, Badge, Skeleton son Server Components
-- ✅ **Client Components minimizados**: Solo "use client" cuando es necesario
-
-## Estructura de UI Components
-
+#### 1. Pipeline View ✅
+Vista secuencial diseñada para flujos de trabajo de desarrollo:
 ```
-src/shared/ui/
-├── button.tsx              # Server Component ✅
-├── card.tsx                # Server Component ✅
-├── input.tsx               # Server Component ✅
-├── label.tsx               # Server Component ✅
-├── badge.tsx               # Server Component ✅
-├── separator.tsx           # Server Component ✅
-├── skeleton.tsx            # Server Component ✅
-├── empty-state.tsx         # Server Component ✅
-├── dialog.tsx              # Client Component (Radix UI)
-├── sonner.tsx              # Client Component (Toast)
-├── animated-container.tsx  # Client Component (Framer Motion)
-├── animated-list.tsx       # Client Component (Framer Motion)
-└── index.ts                # Exports con separación Server/Client
+[✓] Paso 1: Revisar backend
+    ↓
+[▶] Paso 2: Extender endpoint  ← ACTUAL [Foco]
+    ↓
+[○] Paso 3: Documentar (pendiente)
 ```
 
-## Server vs Client Components
+**Características:**
+- Muestra el flujo completo del pipeline
+- Preview de notas en cada tarjeta
+- Botón "Foco" para entrar en modo concentración
+- Indicador visual de completadas/actual/pendientes
 
-### Server Components (sin "use client")
-- ✅ No usan hooks (useState, useEffect)
-- ✅ No acceden a APIs del navegador
-- ✅ No usan event handlers (onClick, onSubmit)
-- ✅ Pueden ser async
-- ✅ Mejor SEO y TTFB
+#### 2. Task Detail Modal ✅
+Modal completo con:
+- **Editor de notas persistente**: Guarda en el campo `notes` del Task
+- **Contexto de relaciones**: Muestra "Viene de" y "Continúa en"
+- **Navegación entre tareas relacionadas**: Click para saltar a tarea relacionada
+- **Modo Foco**: Botón para entrar en pantalla completa de concentración
 
-### Client Components (con "use client")
-- Hooks del estado (useState, useEffect, useContext)
-- Event handlers (onClick, onSubmit, etc.)
-- APIs del navegador (localStorage, window, document)
-- Hooks personalizados que usan lo anterior
-- Framer Motion (usa useEffect internamente)
+#### 3. Modo Focus / Pomodoro ✅
+```
+┌─────────────────────────────────────────┐
+│  ● En foco                       [X]    │
+│                                         │
+│      Extender endpoint                  │
+│                                         │
+│         ┌─────────┐                     │
+│        /  23:45   \                    │
+│        \  restan  /                    │
+│         └─────────┘                     │
+│                                         │
+│      [Pausar]  [↺]                     │
+│                                         │
+│  [✓ Completar]  [Terminar sesión]      │
+│                                         │
+│  3 sesiones hoy · 75m enfocado          │
+│                                         │
+│  ⚡ Modo foco activado                   │
+└─────────────────────────────────────────┘
+```
 
-## Pattern: Server Component Wrapper + Client Child
+**Características:**
+- Timer Pomodoro (25 min foco / 5 min break)
+- Sonido de celebración al completar (Web Audio API)
+- Contador de sesiones del día
+- Botón rápido para completar tarea
+- Fullscreen mode
+- Animación de progreso circular
 
-```tsx
-// app/tasks/page.tsx - Server Component
-import { Suspense } from "react";
-import { TasksPageContent } from "./TasksPageContent";
-import { TasksPageSkeleton } from "./TasksPageSkeleton";
+#### 4. Relaciones entre Tareas ✅
+**Tipo de relación: Parent/Child (Pipeline)**
 
-export default function TasksPage() {
-  return (
-    <Suspense fallback={<TasksPageSkeleton />}>
-      <TasksPageContent /> {/* Client Component */}
-    </Suspense>
-  );
-}
-
-// app/tasks/TasksPageContent.tsx - Client Component
-"use client";
-export function TasksPageContent() {
-  const { themeClasses } = useThemeState();
-  // ... hooks y lógica
-}
-
-// app/tasks/TasksPageSkeleton.tsx - Server Component
-export function TasksPageSkeleton() {
-  return <Skeleton className="h-96" />;
+Campos agregados al tipo `Task`:
+```typescript
+interface Task {
+  // ... campos existentes
+  notes?: string;           // Notas persistentes
+  parentTaskId?: string;    // ID de tarea anterior
+  childTaskId?: string;     // ID de tarea siguiente
+  order?: number;           // Orden en el pipeline
 }
 ```
 
-## Uso de Animaciones
+**Hooks disponibles:**
+- `useTaskParent(taskId)` - Obtiene la tarea anterior
+- `useTaskChild(taskId)` - Obtiene la tarea siguiente
+- `useSetTaskParent()` - Establece relación padre
+- `useSetTaskChild()` - Establece relación hijo
+- `useUpdateTaskNotes()` - Actualiza notas de la tarea
+- `useConnectTasks()` - Conecta dos tareas
+- `useAutoConnectPipeline()` - Auto-conecta en orden
 
-### AnimatedContainer
-```tsx
-import { AnimatedContainer } from "@/shared/ui";
+#### 5. TaskForm Mejorado ✅
+Al crear una nueva tarea:
+- Checkbox "Continuación de: [tarea actual]"
+- Si se marca, automáticamente establece `parentTaskId`
+- La tarea anterior apunta a la nueva con `childTaskId`
 
-<AnimatedContainer animation="fadeInUp" delay={0.2}>
-  <YourComponent />
-</AnimatedContainer>
+## Flujo de Uso Completo
+
+### Crear Pipeline de Trabajo
+
+1. **Crear primera nota:**
+   ```
+   "Revisar backend y evaluar endpoint categorías"
+   ```
+
+2. **Crear segunda nota (vinculada):**
+   ```
+   "Extender endpoint de categorías"
+   ✓ Checkbox marcado: "Continuación de: Revisar backend"
+   ```
+   Resultado: `Revisar backend.childTaskId = Extender endpoint.id`
+
+3. **Ver detalle de nota:**
+   - Click en "Extender endpoint"
+   - Muestra: "Viene de: Revisar backend"
+   - Editor de notas visible
+   - Click en "Modo Foco"
+
+4. **Modo Foco:**
+   - Pantalla completa, solo esa nota
+   - Timer de 25 minutos
+   - Notas rápidas accesibles
+   - Al terminar: sonido + celebración
+
+5. **Completar nota:**
+   - Click en checkbox o botón "Completar"
+   - Se tacha en el pipeline
+   - Siguiente nota se marca como "ACTUAL"
+
+6. **Navegar entre notas:**
+   - En el modal, click en "Viene de" o "Continúa en"
+   - Salta a esa nota manteniendo el contexto
+
+## Arquitectura de Datos
+
+### Storage (localStorage)
+```typescript
+// Tasks ahora incluyen:
+{
+  id: string;
+  title: string;
+  notes?: string;        // ← NUEVO: Notas persistentes
+  parentTaskId?: string; // ← NUEVO: Relación anterior
+  childTaskId?: string;  // ← NUEVO: Relación siguiente
+  order?: number;        // ← NUEVO: Orden manual
+  // ... resto de campos
+}
 ```
 
-### AnimatedList
-```tsx
-import { AnimatedList } from "@/shared/ui";
+### Hooks de Datos
 
-<AnimatedList
-  items={tasks}
-  keyExtractor={(task) => task.id}
-  renderItem={(task) => <TaskCard task={task} />}
-/>
+**Notas:**
+```tsx
+const updateNotes = useUpdateTaskNotes();
+updateNotes.mutate({ id: task.id, notes: "SQL: SELECT..." });
 ```
 
-## Uso de TanStack Query
-
-### Prefetching
+**Relaciones:**
 ```tsx
-import { usePrefetchTask } from "@/entities/task";
-
-const { prefetchTask } = usePrefetchTask();
-
-// En evento hover
-onMouseEnter={() => prefetchTask(task.id)}
+const { data: parent } = useTaskParent(task.id);
+const { data: child } = useTaskChild(task.id);
+const setParent = useSetTaskParent();
+setParent.mutate({ taskId: "new", parentTaskId: "prev" });
 ```
 
-### Mutations con Optimistic Updates
+**Pipeline:**
 ```tsx
-import { useToggleTask, useDeleteTask } from "@/entities/task";
-
-const toggleMutation = useToggleTask();
-const deleteMutation = useDeleteTask();
-
-// Los updates optimistas ya están configurados
+const autoConnect = useAutoConnectPipeline();
+autoConnect.mutate(tasks); // Conecta en orden
 ```
 
-## Mejores Prácticas
+## Componentes Clave
 
-1. **Server Components First**: Empezar siempre como Server Component
-2. **Suspense + Skeleton**: Cada Client Component debe tener un Skeleton
-3. **Separar concerns**: UI presentacional = Server, Interactividad = Client
-4. **"use client" mínimo**: Solo cuando sea estrictamente necesario
-5. **useReducedMotion**: Los componentes de animación ya lo implementan
-6. **Query keys factory**: Usar siempre para consistencia de caché
-7. **Separar estado y acciones**: Usar hooks especializados del store
+```
+src/widgets/task-board/ui/
+├── TaskBoard.tsx              # Container principal
+├── TaskDetailModal.tsx        # Detalle + notas + relaciones
+├── FocusMode.tsx              # Pomodoro fullscreen
+├── PipelineView.tsx           # Vista secuencial
+└── views/
+    └── PipelineView.tsx       # Componente de pipeline
+
+src/entities/task/
+├── model/types.ts             # Task con notes, parentTaskId, childTaskId
+├── lib/storage.ts             # Funciones CRUD + relaciones
+├── hooks/use-tasks.ts         # Hooks básicos + notas + relaciones
+└── hooks/use-task-relations.ts # Hooks específicos de pipeline
+```
+
+## Características para TDAH (Verificadas)
+
+| Necesidad | Solución | Estado |
+|-----------|----------|--------|
+| Contexto completo | Header con todo visible | ✅ |
+| Flujo secuencial | Pipeline View | ✅ |
+| Notas persistentes | Editor en cada tarea + campo notes | ✅ |
+| Focus profundo | Modo Foco Pomodoro | ✅ |
+| Reducir distracciones | Fullscreen + visual minimalista | ✅ |
+| Celebración inmediata | Sonido Web Audio + animación | ✅ |
+| Progreso visible | Contador sesiones + tiempo | ✅ |
+| Navegación fluida | Click en relaciones Viene/Continúa | ✅ |
+| Vinculación rápida | Checkbox "Continuación de" | ✅ |
+
+## Uso de las Funcionalidades
+
+### Agregar Notas a una Tarea
+1. Click en la tarea
+2. En el modal, click en el área de notas
+3. Escribir (soporta texto libre, SQL, links)
+4. Click en "Guardar"
+5. Las notas se persisten en el campo `task.notes`
+
+### Vincular Nueva Tarea
+1. Crear tarea normalmente
+2. Si hay una tarea actual, aparece checkbox
+3. Marcar "Continuación de: [tarea actual]"
+4. Se crea la relación automáticamente
+
+### Navegar Pipeline
+- En PipelineView: Ver el flujo visual
+- En TaskDetailModal: Click en "Viene de" o "Continúa en"
+- Saltas a esa tarea manteniendo el modal abierto
+
+### Entrar Modo Foco
+1. Marcar tarea como "Actual" (click en flecha)
+2. Click en botón "Foco" (aparece solo en actual)
+3. O desde el modal: click "Modo Foco"
+4. Timer inicia automáticamente
 
 ## Scripts
 
@@ -165,3 +231,15 @@ npm run build    # Build de producción
 npm run dev      # Desarrollo
 npm run lint     # ESLint
 ```
+
+## Todo Funcionando ✅
+
+- ✅ Notas persistentes en cada tarea
+- ✅ Relaciones parent/child entre tareas
+- ✅ Pipeline view funcional
+- ✅ Contexto con navegación
+- ✅ Modo Foco Pomodoro
+- ✅ Sonidos de celebración
+- ✅ Vinculación automática al crear
+
+**El sistema está completo y listo para usar.**

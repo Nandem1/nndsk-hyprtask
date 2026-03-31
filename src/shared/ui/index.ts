@@ -6,7 +6,6 @@ export {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardAction,
   CardFooter,
 } from "./card";
 export { Input } from "./input";
@@ -15,6 +14,7 @@ export { Badge, badgeVariants } from "./badge";
 export { Separator } from "./separator";
 export { Skeleton } from "./skeleton";
 export { EmptyState } from "./empty-state";
+export { Progress } from "./progress";
 
 // Client Components - Animation & Interactivity
 export {
@@ -41,3 +41,4 @@ export {
   DialogTrigger,
 } from "./dialog";
 export { Toaster } from "./sonner";
+export { Separator as ClientSeparator } from "./separator";

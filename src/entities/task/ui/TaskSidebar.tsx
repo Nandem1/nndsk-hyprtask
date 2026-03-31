@@ -1,136 +1,130 @@
 "use client";
 
-import { useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Grid3x3, X } from "lucide-react";
+import { useState } from "react";
+import { X, Settings, FolderKanban, Tag } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import { useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
 import { useActiveTasks } from "../hooks/use-tasks";
-import {
-  PROJECTS as PROJECTS_CONFIG,
-  CATEGORIES as CATEGORIES_CONFIG,
-} from "../lib/constants";
+import { useActiveProjects } from "../hooks/use-projects";
+import { useActiveCategories } from "../hooks/use-categories";
+import { Button } from "@/shared/ui/button";
+import { ProjectConfigModal } from "./ProjectConfigModal";
+import { CategoryConfigModal } from "./CategoryConfigModal";
+import * as Icons from "lucide-react";
 
 interface TaskSidebarProps {
   onClose?: () => void;
 }
 
-const PROJECTS = [
-  {
-    id: "all" as const,
-    label: "Todos",
-    icon: Grid3x3,
-    color: "text-muted-foreground",
-  },
-  ...PROJECTS_CONFIG,
-];
-
-const CATEGORIES = [
-  {
-    id: "all" as const,
-    label: "Todos",
-    icon: Grid3x3,
-    color: "text-muted-foreground",
-  },
-  ...CATEGORIES_CONFIG,
-];
-
 export function TaskSidebar({ onClose }: TaskSidebarProps) {
   const { themeClasses } = useThemeState();
-  const { selectedProject, selectedCategory } = useTaskFiltersState();
+  const { selectedProjectId, selectedCategoryId } = useTaskFiltersState();
   const { setSelectedProject, setSelectedCategory } = useTaskFiltersActions();
   const { data: tasks = [] } = useActiveTasks();
+  const { data: projects = [] } = useActiveProjects();
+  const { data: categories = [] } = useActiveCategories();
 
-  const projectCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: tasks.length };
-    PROJECTS_CONFIG.forEach((p) => {
-      counts[p.id] = tasks.filter((t) => t.project === p.id).length;
-    });
-    return counts;
-  }, [tasks]);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: tasks.length };
-    CATEGORIES_CONFIG.forEach((c) => {
-      counts[c.id] = tasks.filter((t) => t.category === c.id).length;
-    });
-    return counts;
-  }, [tasks]);
+  // Contar tareas por proyecto
+  const projectCounts = projects.map((project) => ({
+    ...project,
+    count: tasks.filter((t) => t.projectId === project.id).length,
+  }));
 
-  const handleProjectChange = (project: (typeof PROJECTS)[number]["id"]) => {
-    setSelectedProject(project);
+  // Contar tareas por categoría
+  const categoryCounts = categories.map((category) => ({
+    ...category,
+    count: tasks.filter((t) => t.categoryId === category.id).length,
+  }));
+
+  const handleProjectChange = (projectId: string | "all") => {
+    setSelectedProject(projectId);
     if (onClose) onClose();
   };
 
-  const handleCategoryChange = (
-    category: (typeof CATEGORIES)[number]["id"],
-  ) => {
-    setSelectedCategory(category);
+  const handleCategoryChange = (categoryId: string | "all") => {
+    setSelectedCategory(categoryId);
     if (onClose) onClose();
   };
+
+  const getIconComponent = (iconName: string) => {
+    const IconComponent = Icons[
+      iconName as keyof typeof Icons
+    ] as React.ComponentType<{ className?: string }>;
+    return IconComponent || Icons.FolderKanban;
+  };
+
+  const hasActiveFilters =
+    selectedProjectId !== "all" || selectedCategoryId !== "all";
 
   return (
-    <aside className="w-80 border-r border-border/20 glass-dark h-full overflow-y-auto relative">
-      <div className="p-5 space-y-6 relative z-10">
+    <aside className="w-72 border-r border-border bg-card h-full overflow-y-auto">
+      <div className="p-4 space-y-6">
         {onClose && (
           <div className="flex justify-end mb-4 md:hidden">
-            <motion.button
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={onClose}
-              className={`p-2 rounded border-2 ${themeClasses.border} hover:${themeClasses.borderHover} transition-all font-mono`}
-            >
+            <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-4 w-4" />
-            </motion.button>
+            </Button>
           </div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass rounded-xl p-4 border border-border/20"
-        >
-          <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-            <span>Tareas Activas</span>
+        {/* Header con contador y limpiar filtros */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Tareas Activas</div>
+            <div className={`text-3xl font-bold ${themeClasses.textPrimary}`}>
+              {tasks.length}
+            </div>
           </div>
-          <motion.div
-            key={tasks.length}
-            initial={{ scale: 1.1, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className={`text-3xl font-bold ${themeClasses.textPrimary}`}
-          >
-            {tasks.length}
-          </motion.div>
-        </motion.div>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedProject("all");
+                setSelectedCategory("all");
+              }}
+            >
+              Limpiar filtros
+            </Button>
+          )}
+        </div>
 
         {/* Proyectos */}
         <div>
-          <div className="text-xs font-medium text-muted-foreground mb-3 px-2 uppercase tracking-wider">
-            Proyectos
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              <FolderKanban className="h-4 w-4" />
+              Proyectos
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setIsProjectModalOpen(true)}
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
           </div>
-          <div className="space-y-1.5">
-            {PROJECTS.map((project, index) => {
-              const Icon = project.icon;
-              const isSelected = selectedProject === project.id;
-              const count = projectCounts[project.id] || 0;
+          <div className="space-y-1">
+            {projectCounts.map((project) => {
+              const IconComponent = getIconComponent(project.icon);
+              const isSelected = selectedProjectId === project.id;
 
               return (
-                <motion.button
+                <button
                   key={project.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                  whileHover={{ x: 2 }}
-                  whileTap={{ scale: 0.98 }}
                   onClick={() => handleProjectChange(project.id)}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-all relative group ${
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
                     isSelected
-                      ? `glass border ${themeClasses.borderHover} ${themeClasses.shadowHover}`
-                      : `border border-transparent hover:glass hover:border-border/30`
+                      ? `bg-accent border ${themeClasses.border}`
+                      : "border border-transparent hover:bg-accent/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon
+                    <IconComponent
                       className={`h-4 w-4 ${isSelected ? themeClasses.textPrimary : "text-muted-foreground"}`}
                     />
                     <span
@@ -140,60 +134,59 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
                           : "text-foreground"
                       }
                     >
-                      {project.label}
+                      {project.name}
                     </span>
                   </div>
-                  <AnimatePresence mode="wait">
-                    {count > 0 && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        key={count}
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          isSelected
-                            ? `${themeClasses.textPrimary} bg-primary/20`
-                            : "text-muted-foreground bg-muted/50"
-                        }`}
-                      >
-                        {count}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
+                  {project.count > 0 && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        isSelected
+                          ? `${themeClasses.textPrimary} bg-primary/10`
+                          : "text-muted-foreground bg-muted"
+                      }`}
+                    >
+                      {project.count}
+                    </span>
+                  )}
+                </button>
               );
             })}
           </div>
         </div>
 
-        {/* Categorias */}
+        {/* Categorías */}
         <div>
-          <div className="text-xs font-medium text-muted-foreground mb-3 px-2 uppercase tracking-wider">
-            Categorias
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              <Tag className="h-4 w-4" />
+              Categorías
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setIsCategoryModalOpen(true)}
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
           </div>
-          <div className="space-y-1.5">
-            {CATEGORIES.map((category, index) => {
-              const Icon = category.icon;
-              const isSelected = selectedCategory === category.id;
-              const count = categoryCounts[category.id] || 0;
+          <div className="space-y-1">
+            {categoryCounts.map((category) => {
+              const IconComponent = getIconComponent(category.icon);
+              const isSelected = selectedCategoryId === category.id;
 
               return (
-                <motion.button
+                <button
                   key={category.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: (index + PROJECTS.length) * 0.03 }}
-                  whileHover={{ x: 2 }}
-                  whileTap={{ scale: 0.98 }}
                   onClick={() => handleCategoryChange(category.id)}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-all relative group ${
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
                     isSelected
-                      ? `glass border ${themeClasses.borderHover} ${themeClasses.shadowHover}`
-                      : `border border-transparent hover:glass hover:border-border/30`
+                      ? `bg-accent border ${themeClasses.border}`
+                      : "border border-transparent hover:bg-accent/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon
+                    <IconComponent
                       className={`h-4 w-4 ${isSelected ? themeClasses.textPrimary : "text-muted-foreground"}`}
                     />
                     <span
@@ -203,32 +196,36 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
                           : "text-foreground"
                       }
                     >
-                      {category.label}
+                      {category.name}
                     </span>
                   </div>
-                  <AnimatePresence mode="wait">
-                    {count > 0 && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        key={count}
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          isSelected
-                            ? `${themeClasses.textPrimary} bg-primary/20`
-                            : "text-muted-foreground bg-muted/50"
-                        }`}
-                      >
-                        {count}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
+                  {category.count > 0 && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        isSelected
+                          ? `${themeClasses.textPrimary} bg-primary/10`
+                          : "text-muted-foreground bg-muted"
+                      }`}
+                    >
+                      {category.count}
+                    </span>
+                  )}
+                </button>
               );
             })}
           </div>
         </div>
       </div>
+
+      {/* Modales de configuración */}
+      <ProjectConfigModal
+        isOpen={isProjectModalOpen}
+        onClose={() => setIsProjectModalOpen(false)}
+      />
+      <CategoryConfigModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+      />
     </aside>
   );
 }

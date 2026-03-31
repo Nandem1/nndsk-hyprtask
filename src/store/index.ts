@@ -72,8 +72,8 @@ export const useStore = create<AppStore>()(
         // Persist theme, filters and view mode
         partialize: (state) => ({
           palette: state.palette,
-          selectedProject: state.selectedProject,
-          selectedCategory: state.selectedCategory,
+          selectedProjectId: state.selectedProjectId,
+          selectedCategoryId: state.selectedCategoryId,
           searchQuery: state.searchQuery,
           viewMode: state.viewMode,
         }),
@@ -81,26 +81,34 @@ export const useStore = create<AppStore>()(
         merge: (persistedState, currentState) => {
           const persisted = persistedState as {
             palette?: typeof DEFAULT_PALETTE;
-            selectedProject?: TaskFiltersState["selectedProject"];
-            selectedCategory?: TaskFiltersState["selectedCategory"];
+            selectedProjectId?: TaskFiltersState["selectedProjectId"];
+            selectedCategoryId?: TaskFiltersState["selectedCategoryId"];
             searchQuery?: string;
             viewMode?: ViewModeState["viewMode"];
+            // Legacy fields for migration
+            selectedProject?: string;
+            selectedCategory?: string;
           };
 
           const palette = persisted.palette ?? DEFAULT_PALETTE;
-          const selectedProject = persisted.selectedProject ?? "all";
-          const selectedCategory = persisted.selectedCategory ?? "all";
+
+          // Migrate legacy field names
+          const selectedProjectId =
+            persisted.selectedProjectId ?? persisted.selectedProject ?? "all";
+          const selectedCategoryId =
+            persisted.selectedCategoryId ?? persisted.selectedCategory ?? "all";
+
           const searchQuery = persisted.searchQuery ?? "";
-          const viewMode = persisted.viewMode ?? "kanban";
+          const viewMode = persisted.viewMode ?? "pipeline";
 
           // Re-compute computed values
           const hasActiveFilters =
-            selectedProject !== "all" ||
-            selectedCategory !== "all" ||
+            selectedProjectId !== "all" ||
+            selectedCategoryId !== "all" ||
             searchQuery !== "";
           const activeFiltersCount =
-            (selectedProject !== "all" ? 1 : 0) +
-            (selectedCategory !== "all" ? 1 : 0) +
+            (selectedProjectId !== "all" ? 1 : 0) +
+            (selectedCategoryId !== "all" ? 1 : 0) +
             (searchQuery !== "" ? 1 : 0);
 
           return {
@@ -110,27 +118,13 @@ export const useStore = create<AppStore>()(
             themeClasses: computeThemeClasses(palette),
             isDarkPalette: computeIsDarkPalette(palette),
             // Filters
-            selectedProject,
-            selectedCategory,
+            selectedProjectId,
+            selectedCategoryId,
             searchQuery,
             hasActiveFilters,
             activeFiltersCount,
             // View Mode
             viewMode,
-            isKanbanView: viewMode === "kanban",
-            isTerminalView:
-              viewMode === "terminal" || viewMode === "terminal-out",
-            viewModeLabel:
-              {
-                kanban: "Kanban",
-                timeline: "Timeline",
-                minimal: "Minimal",
-                "post-its": "Post-its",
-                sticky: "Sticky Notes",
-                terminal: "Terminal",
-                "terminal-out": "Terminal Output",
-                "code-notes": "Code Notes",
-              }[viewMode] ?? "",
             _hasHydrated: true,
           };
         },
@@ -147,13 +141,3 @@ export const useStore = create<AppStore>()(
 // ============================================================================
 
 export { StoreInitializer } from "./StoreInitializer";
-
-// ============================================================================
-// Re-exports
-// ============================================================================
-
-export * from "./types";
-export * from "./utils";
-export * from "./slices/theme-slice";
-export * from "./slices/task-filters-slice";
-export * from "./slices/view-mode-slice";

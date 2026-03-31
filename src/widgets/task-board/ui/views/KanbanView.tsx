@@ -4,10 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, Plus, Trash2, Target, Circle } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { TaskForm } from "@/entities/task";
-import {
-  getProjectBadgeClasses,
-  getCategoryBadgeClasses,
-} from "@/entities/task";
 import type { Task } from "@/entities/task";
 import type { useTheme } from "@/store/hooks";
 
@@ -50,187 +46,180 @@ export function KanbanView({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="group mb-2"
+      transition={{ duration: 0.2, delay: index * 0.03 }}
+      className="group"
     >
       <div
-        className={`glass rounded-lg border border-border/20 p-3 hover:border-border/40 transition-all ${
+        className={`rounded-lg border p-3 transition-all hover:shadow-sm ${
           task.isCurrent
-            ? `${classes.borderHover} ${classes.gradientBgSubtle}`
-            : ""
+            ? `${classes.border} bg-accent`
+            : "border-border bg-card hover:border-border/80"
         }`}
       >
-        <div className="flex items-start gap-2">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+        <div className="flex items-start gap-3">
+          <button
             onClick={() => onToggle(task.id)}
-            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
+            className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0 ${
               task.isCompleted
-                ? `${classes.borderHover} ${classes.gradientBgSubtle}`
-                : "border-border/40"
+                ? "bg-primary border-primary"
+                : "border-border hover:border-primary"
             }`}
           >
             {task.isCompleted && (
-              <Check className={`h-3 w-3 ${classes.textPrimary}`} />
+              <Check className="h-3 w-3 text-primary-foreground" />
             )}
-          </motion.button>
+          </button>
           <div className="flex-1 min-w-0">
             <p
-              className={`text-sm ${
+              className={`text-sm leading-relaxed ${
                 task.isCompleted
                   ? "line-through text-muted-foreground"
                   : task.isCurrent
-                    ? `${classes.textPrimary} font-semibold`
+                    ? `${classes.textPrimary} font-medium`
                     : "text-foreground"
               }`}
             >
               {task.title}
             </p>
-            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-              {task.project &&
-                task.project !== "general" &&
-                !task.isCompleted && (
-                  <span
-                    className={`text-xs px-1.5 py-0.5 rounded border ${getProjectBadgeClasses(task.project)}`}
-                  >
-                    {task.project}
+            {(task.projectId || task.categoryId) && !task.isCompleted && (
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                {task.projectId && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                    Proyecto
                   </span>
                 )}
-              {task.category &&
-                task.category !== "general" &&
-                !task.isCompleted && (
-                  <span
-                    className={`text-xs px-1.5 py-0.5 rounded border ${getCategoryBadgeClasses(task.category)}`}
-                  >
-                    {task.category}
+                {task.categoryId && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                    Categoría
                   </span>
                 )}
-            </div>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {!task.isCurrent && !task.isCompleted && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={() => onSetCurrent(task.id)}
-                className="p-1 rounded glass border border-border/20"
+                className="p-1.5 rounded-md border border-border hover:bg-accent transition-colors"
+                title="Marcar como actual"
               >
-                <Target className={`h-3 w-3 ${classes.textPrimary}`} />
-              </motion.button>
+                <Target className={`h-3.5 w-3.5 ${classes.textPrimary}`} />
+              </button>
             )}
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+            <button
               onClick={() => onDelete(task.id)}
-              className="p-1 rounded glass border border-border/20 text-muted-foreground hover:text-destructive"
+              className="p-1.5 rounded-md border border-border hover:bg-accent text-muted-foreground hover:text-destructive transition-colors"
+              title="Eliminar"
             >
-              <Trash2 className="h-3 w-3" />
-            </motion.button>
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       </div>
     </motion.div>
   );
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/* To Do */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 mb-3">
-          <Circle className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase">
-            To Do
-          </h3>
-          <span className="text-xs text-muted-foreground ml-auto">
-            ({todoTasks.length})
-          </span>
-        </div>
-        <AnimatePresence mode="popLayout">
-          {todoTasks.map((task, index) => renderTask(task, index))}
-        </AnimatePresence>
+  const renderColumn = (
+    title: string,
+    icon: React.ReactNode,
+    count: number,
+    columnTasks: Task[],
+    isActiveColumn = false,
+  ) => (
+    <div className="flex flex-col h-full">
+      {/* Header de columna */}
+      <div className="flex items-center gap-2 mb-3 px-1">
+        {icon}
+        <h3
+          className={`text-sm font-semibold uppercase tracking-wide ${
+            isActiveColumn ? classes.textPrimary : "text-muted-foreground"
+          }`}
+        >
+          {title}
+        </h3>
+        <span
+          className={`text-xs ml-auto ${isActiveColumn ? classes.textPrimary : "text-muted-foreground"}`}
+        >
+          {count}
+        </span>
       </div>
 
-      {/* Active */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 mb-3">
-          <Circle className={`h-4 w-4 ${classes.textPrimary} fill-current`} />
-          <h3
-            className={`text-sm font-semibold ${classes.textPrimary} uppercase`}
-          >
-            Active
-          </h3>
-          <span className={`text-xs ${classes.textPrimary} ml-auto`}>
-            ({activeTask ? 1 : 0})
-          </span>
-        </div>
+      {/* Lista de tareas */}
+      <div className="flex-1 space-y-2 min-h-[100px]">
         <AnimatePresence mode="popLayout">
-          {activeTask && renderTask(activeTask, 0)}
+          {columnTasks.map((task, index) => renderTask(task, index))}
         </AnimatePresence>
-        {!activeTask && (
-          <div className="glass rounded-lg border border-border/20 p-4 text-center text-sm text-muted-foreground">
-            No active task
+        {columnTasks.length === 0 && (
+          <div className="rounded-lg border border-dashed border-border p-4 text-center text-sm text-muted-foreground bg-muted/30">
+            Sin tareas
           </div>
         )}
       </div>
+    </div>
+  );
 
-      {/* Done */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 mb-3">
-          <Check className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase">
-            Done
-          </h3>
-          <span className="text-xs text-muted-foreground ml-auto">
-            ({doneTasks.length})
-          </span>
-        </div>
-        <AnimatePresence mode="popLayout">
-          {doneTasks.map((task, index) => renderTask(task, index))}
-        </AnimatePresence>
+  return (
+    <div className="space-y-4">
+      {/* Grid de columnas */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* To Do */}
+        {renderColumn(
+          "Por Hacer",
+          <Circle className="h-4 w-4 text-muted-foreground" />,
+          todoTasks.length,
+          todoTasks,
+        )}
+
+        {/* Active */}
+        {renderColumn(
+          "En Progreso",
+          <Circle className={`h-4 w-4 ${classes.textPrimary} fill-current`} />,
+          activeTask ? 1 : 0,
+          activeTask ? [activeTask] : [],
+          true,
+        )}
+
+        {/* Done */}
+        {renderColumn(
+          "Completadas",
+          <Check className="h-4 w-4 text-muted-foreground" />,
+          doneTasks.length,
+          doneTasks,
+        )}
       </div>
 
       {/* Formulario */}
       {showForm && canAddTask && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="col-span-full"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
         >
           <TaskForm {...formProps} />
         </motion.div>
       )}
 
+      {/* Botón para agregar */}
       {!showForm && canAddTask && (
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="col-span-full"
-        >
-          <Button
-            onClick={onShowForm}
-            className={`w-full ${classes.gradientBg} border border-border/30 ${classes.shadowHover} transition-all text-sm font-medium py-3 rounded-xl`}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
-        </motion.div>
+        <Button onClick={onShowForm} variant="outline" className="w-full">
+          <Plus className="h-4 w-4 mr-2" />
+          Nueva nota
+        </Button>
       )}
 
+      {/* Estado vacío */}
       {tasks.length === 0 && !showForm && (
-        <div className="col-span-full">
-          <div className="glass rounded-xl border border-border/20 p-8 text-center">
-            <p className="text-foreground text-base font-medium mb-1">
-              {totalCount === 0
-                ? "No tasks yet"
-                : "No tasks match these filters"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {totalCount === 0
-                ? "Add your first task to get started"
-                : "Try changing the filters"}
-            </p>
-          </div>
+        <div className="rounded-xl border border-border p-8 text-center bg-card">
+          <p className="text-foreground text-base font-medium mb-1">
+            {totalCount === 0
+              ? "Sin notas aún"
+              : "No hay notas con estos filtros"}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {totalCount === 0
+              ? "Crea tu primera nota para comenzar"
+              : "Prueba cambiando los filtros"}
+          </p>
         </div>
       )}
     </div>

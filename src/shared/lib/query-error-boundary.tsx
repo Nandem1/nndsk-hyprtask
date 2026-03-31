@@ -1,14 +1,17 @@
-'use client';
+"use client";
 
-import { useQueryErrorResetBoundary } from '@tanstack/react-query';
-import { ReactNode } from 'react';
+import React, { ReactNode } from "react";
+import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 
 interface QueryErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
 }
 
-export function QueryErrorBoundary({ children, fallback }: QueryErrorBoundaryProps) {
+export function QueryErrorBoundary({
+  children,
+  fallback,
+}: QueryErrorBoundaryProps) {
   const { reset } = useQueryErrorResetBoundary();
 
   return (
@@ -29,7 +32,10 @@ interface ErrorBoundaryState {
   error?: Error;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -40,7 +46,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Query Error Boundary caught an error:', error, errorInfo);
+    console.error("Query Error Boundary caught an error:", error, errorInfo);
   }
 
   handleReset = () => {
@@ -61,7 +67,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
               Error al cargar datos
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              {this.state.error?.message || 'Ocurrió un error inesperado'}
+              {this.state.error?.message || "Ocurrió un error inesperado"}
             </p>
             <button
               onClick={this.handleReset}
@@ -77,6 +83,3 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     return this.props.children;
   }
 }
-
-// Need to import React for class component
-import React from 'react';

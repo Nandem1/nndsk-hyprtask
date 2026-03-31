@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { Header } from "@/widgets";
 import { TasksPageContent } from "./TasksPageContent";
 import { TasksPageSkeleton } from "./TasksPageSkeleton";

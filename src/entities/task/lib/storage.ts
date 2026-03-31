@@ -13,9 +13,6 @@ const STORAGE_KEYS = {
 // ============================================
 
 export async function getTasks(): Promise<Task[]> {
-  // TODO: Migrar a Supabase cuando esté listo
-  // return await supabase.from('tasks').select('*').order('createdAt', { ascending: false });
-
   if (typeof window === "undefined") return [];
 
   const stored = localStorage.getItem(STORAGE_KEYS.TASKS);
@@ -29,15 +26,7 @@ export async function getActiveTasks(): Promise<Task[]> {
   return tasks.filter((task) => !task.isCompleted);
 }
 
-export async function getCompletedTasks(): Promise<Task[]> {
-  const tasks = await getTasks();
-  return tasks.filter((task) => task.isCompleted);
-}
-
 export async function saveTask(task: Task): Promise<void> {
-  // TODO: Migrar a Supabase cuando esté listo
-  // await supabase.from('tasks').upsert(task);
-
   const tasks = await getTasks();
   const existingIndex = tasks.findIndex((t) => t.id === task.id);
 
@@ -51,9 +40,6 @@ export async function saveTask(task: Task): Promise<void> {
 }
 
 export async function deleteTask(id: string): Promise<void> {
-  // TODO: Migrar a Supabase cuando esté listo
-  // await supabase.from('tasks').delete().eq('id', id);
-
   const tasks = await getTasks();
   const filtered = tasks.filter((task) => task.id !== id);
   localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(filtered));
@@ -108,8 +94,6 @@ export async function getTaskById(id: string): Promise<Task | null> {
 // ============================================
 
 export async function getTaskSettings(): Promise<TaskSettings> {
-  // TODO: Migrar a Supabase cuando esté listo
-
   if (typeof window === "undefined") {
     return { maxActiveTasks: 5, autoArchiveDays: 7 };
   }
@@ -128,8 +112,6 @@ export async function getTaskSettings(): Promise<TaskSettings> {
 }
 
 export async function saveTaskSettings(settings: TaskSettings): Promise<void> {
-  // TODO: Migrar a Supabase cuando esté listo
-
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
 }
 
@@ -160,4 +142,114 @@ export async function autoArchiveCompletedTasks(): Promise<number> {
 
   localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(filtered));
   return archived;
+}
+
+// ============================================
+// TASK NOTES
+// ============================================
+
+export async function updateTaskNotes(
+  id: string,
+  notes: string,
+): Promise<void> {
+  const tasks = await getTasks();
+  const task = tasks.find((t) => t.id === id);
+
+  if (!task) return;
+
+  task.notes = notes;
+  localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
+}
+
+// ============================================
+// TASK RELATIONS
+// ============================================
+
+export async function setTaskParent(
+  taskId: string,
+  parentTaskId: string | undefined,
+): Promise<void> {
+  const tasks = await getTasks();
+  const task = tasks.find((t) => t.id === taskId);
+
+  if (!task) return;
+
+  // Remover relación anterior si existe
+  if (task.parentTaskId) {
+    const oldParent = tasks.find((t) => t.id === task.parentTaskId);
+    if (oldParent) {
+      oldParent.childTaskId = undefined;
+    }
+  }
+
+  // Establecer nueva relación
+  task.parentTaskId = parentTaskId;
+
+  if (parentTaskId) {
+    const parent = tasks.find((t) => t.id === parentTaskId);
+    if (parent) {
+      parent.childTaskId = taskId;
+    }
+  }
+
+  localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
+}
+
+export async function setTaskChild(
+  taskId: string,
+  childTaskId: string | undefined,
+): Promise<void> {
+  const tasks = await getTasks();
+  const task = tasks.find((t) => t.id === taskId);
+
+  if (!task) return;
+
+  // Remover relación anterior si existe
+  if (task.childTaskId) {
+    const oldChild = tasks.find((t) => t.id === task.childTaskId);
+    if (oldChild) {
+      oldChild.parentTaskId = undefined;
+    }
+  }
+
+  // Establecer nueva relación
+  task.childTaskId = childTaskId;
+
+  if (childTaskId) {
+    const child = tasks.find((t) => t.id === childTaskId);
+    if (child) {
+      child.parentTaskId = taskId;
+    }
+  }
+
+  localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
+}
+
+export async function getTaskParent(taskId: string): Promise<Task | null> {
+  const task = await getTaskById(taskId);
+  if (!task?.parentTaskId) return null;
+  return getTaskById(task.parentTaskId);
+}
+
+export async function getTaskChild(taskId: string): Promise<Task | null> {
+  const task = await getTaskById(taskId);
+  if (!task?.childTaskId) return null;
+  return getTaskById(task.childTaskId);
+}
+
+// ============================================
+// TASK ORDERING
+// ============================================
+
+export async function reorderTasks(orderedIds: string[]): Promise<void> {
+  const tasks = await getTasks();
+
+  orderedIds.forEach((id, index) => {
+    const task = tasks.find((t) => t.id === id);
+    if (task) {
+      task.order = index;
+    }
+  });
+
+  localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
 }

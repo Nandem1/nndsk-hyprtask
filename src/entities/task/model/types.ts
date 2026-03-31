@@ -1,9 +1,6 @@
 // TIPOS PARA SISTEMA DE TAREAS
-// Preparados para migrar a Supabase sin cambios
 
-export type TaskPriority = 'low' | 'medium' | 'high';
-export type TaskProject = 'MH-Backend' | 'Wails-Letter-MH' | 'MH-Next' | 'La Cantera' | 'general';
-export type TaskCategory = 'issues' | 'fixes' | 'hotfix' | 'features' | 'general';
+export type TaskPriority = "low" | "medium" | "high";
 
 export interface Task {
   id: string;
@@ -15,8 +12,16 @@ export interface Task {
   createdAt: string;
   completedAt?: string;
   dueDate?: string; // Formato YYYY-MM-DD
-  project?: TaskProject; // Proyecto al que pertenece (opcional para compatibilidad)
-  category?: TaskCategory; // Categoría de la tarea (opcional para compatibilidad)
+
+  // Referencias por ID a proyectos/categorías configurables
+  projectId?: string; // ID del proyecto
+  categoryId?: string; // ID de la categoría
+
+  // Campos para relaciones y notas
+  notes?: string; // Notas persistentes de la tarea
+  parentTaskId?: string; // ID de la tarea anterior en el pipeline
+  childTaskId?: string; // ID de la tarea siguiente en el pipeline
+  order?: number; // Orden en el pipeline (para ordenamiento manual)
 }
 
 // Configuración de límites

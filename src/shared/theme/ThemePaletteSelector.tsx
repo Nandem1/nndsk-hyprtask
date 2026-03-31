@@ -10,31 +10,31 @@ import {
 import { useTheme } from "@/store/hooks";
 import { THEMES } from "@/shared/types/theme";
 import type { ThemePalette } from "@/shared/types/theme";
-import { Palette } from "lucide-react";
+import { Palette, Check } from "lucide-react";
 
 export function ThemePaletteSelector() {
   const { palette, changePalette, themeClasses } = useTheme();
 
   const getThemeBorder = (themeKey: ThemePalette) => {
     const borders: Record<ThemePalette, string> = {
-      genshin: "border-blue-400/30 bg-blue-400/10",
-      zenless: "border-purple-400/30 bg-purple-400/10",
-      wuthering: "border-teal-400/30 bg-teal-400/10",
-      osu: "border-pink-400/30 bg-pink-400/10",
-      mario: "border-red-400/30 bg-red-400/10",
+      genshin: "border-blue-500/30 bg-blue-500/10",
+      zenless: "border-purple-500/30 bg-purple-500/10",
+      wuthering: "border-teal-500/30 bg-teal-500/10",
+      osu: "border-pink-500/30 bg-pink-500/10",
+      mario: "border-red-500/30 bg-red-500/10",
     };
     return borders[themeKey];
   };
 
   return (
-    <Card className={`terminal-border ${themeClasses.border} scanlines`}>
+    <Card className={themeClasses.border}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-mono">
+        <CardTitle className="flex items-center gap-2">
           <Palette className={`h-5 w-5 ${themeClasses.textPrimary}`} />
-          <span className={themeClasses.textPrimary}>theme_palette</span>
+          <span>Tema de color</span>
         </CardTitle>
-        <CardDescription className="font-mono text-xs">
-          $ select your vibe
+        <CardDescription>
+          Selecciona la paleta de colores de la aplicacion
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -46,10 +46,10 @@ export function ThemePaletteSelector() {
             return (
               <label
                 key={themeKey}
-                className={`relative flex items-center gap-3 rounded border-2 p-4 cursor-pointer transition-all font-mono ${
+                className={`relative flex items-center gap-3 rounded-md border p-4 cursor-pointer transition-colors ${
                   isSelected
-                    ? `${getThemeBorder(themeKey)} ${themeClasses.shadowHover} ${themeClasses.glow}`
-                    : `${themeClasses.border} hover:${themeClasses.borderHover} bg-background/50`
+                    ? `${getThemeBorder(themeKey)}`
+                    : `border-border hover:border-border/80 bg-card`
                 }`}
               >
                 <input
@@ -61,39 +61,22 @@ export function ThemePaletteSelector() {
                   className="sr-only"
                 />
                 <div className="flex-1 flex items-center gap-3">
-                  <span
-                    className={
-                      isSelected
-                        ? themeClasses.textPrimary
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {isSelected ? ">" : " "}
-                  </span>
                   <div
-                    className={`w-12 h-12 rounded border-2 ${themeClasses.border} bg-linear-to-r ${theme.colors.gradient} shrink-0`}
+                    className={`w-10 h-10 rounded-md border ${themeClasses.border} bg-gradient-to-r ${theme.colors.gradient} shrink-0`}
                   />
                   <div className="flex-1">
                     <div
-                      className={`font-bold ${isSelected ? themeClasses.textPrimary : "text-foreground"}`}
+                      className={`font-medium ${isSelected ? themeClasses.textPrimary : "text-foreground"}`}
                     >
                       {theme.emoji} {theme.name}
                     </div>
-                    <div
-                      className={`text-xs font-mono ${isSelected ? themeClasses.textSecondary : "text-muted-foreground"}`}
-                    >
+                    <div className={`text-xs text-muted-foreground`}>
                       {theme.colors.primary} → {theme.colors.secondary} →{" "}
                       {theme.colors.accent}
                     </div>
                   </div>
                   {isSelected && (
-                    <div
-                      className={`w-3 h-3 rounded border-2 ${themeClasses.borderHover} ${themeClasses.gradientBg} flex items-center justify-center`}
-                    >
-                      <div
-                        className={`w-1.5 h-1.5 rounded-full ${themeClasses.textPrimary}`}
-                      />
-                    </div>
+                    <Check className={`w-5 h-5 ${themeClasses.textPrimary}`} />
                   )}
                 </div>
               </label>

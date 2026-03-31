@@ -7,9 +7,6 @@ import {
   getSleepLogs,
 } from "../lib/storage";
 import { calculateSleepData } from "../lib/calculations";
-// SleepSettings type is used implicitly via return types
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { SleepSettings } from "../model/types";
 import { sleepKeys } from "../model/query-keys";
 
 export { sleepKeys };

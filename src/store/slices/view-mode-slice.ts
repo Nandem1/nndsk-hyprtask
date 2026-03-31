@@ -8,40 +8,11 @@ import type { TaskViewMode } from "@/entities/task";
 export interface ViewModeState {
   viewMode: TaskViewMode;
   isTransitioning: boolean;
-  isKanbanView: boolean;
-  isTerminalView: boolean;
-  viewModeLabel: string;
-}
-
-const VIEW_MODE_LABELS: Record<TaskViewMode, string> = {
-  kanban: "Kanban",
-  timeline: "Timeline",
-  minimal: "Minimal",
-  "post-its": "Post-its",
-  sticky: "Sticky Notes",
-  terminal: "Terminal",
-  "terminal-out": "Terminal Output",
-  "code-notes": "Code Notes",
-};
-
-function computeIsKanbanView(mode: TaskViewMode): boolean {
-  return mode === "kanban";
-}
-
-function computeIsTerminalView(mode: TaskViewMode): boolean {
-  return mode === "terminal" || mode === "terminal-out";
-}
-
-function computeViewModeLabel(mode: TaskViewMode): string {
-  return VIEW_MODE_LABELS[mode] ?? "";
 }
 
 export const initialViewModeState: ViewModeState = {
-  viewMode: "kanban",
+  viewMode: "pipeline",
   isTransitioning: false,
-  isKanbanView: true,
-  isTerminalView: false,
-  viewModeLabel: "Kanban",
 };
 
 // ============================================================================
@@ -63,23 +34,6 @@ export class ViewModeActionImpl {
   }
 
   // --------------------------------------------------------------------------
-  // Internal Helpers
-  // --------------------------------------------------------------------------
-
-  private _updateViewModeState = (
-    viewMode: TaskViewMode,
-    isTransitioning: boolean,
-  ): void => {
-    this._set({
-      viewMode,
-      isTransitioning,
-      isKanbanView: computeIsKanbanView(viewMode),
-      isTerminalView: computeIsTerminalView(viewMode),
-      viewModeLabel: computeViewModeLabel(viewMode),
-    });
-  };
-
-  // --------------------------------------------------------------------------
   // Public Actions
   // --------------------------------------------------------------------------
 
@@ -87,8 +41,9 @@ export class ViewModeActionImpl {
    * Cambia el modo de vista con animación de transición
    */
   setViewMode = (mode: TaskViewMode): void => {
-    // Iniciar transición
-    this._updateViewModeState(mode, true);
+    if (this._get().viewMode === mode) return;
+
+    this._set({ viewMode: mode, isTransitioning: true });
 
     // Finalizar transición después del delay
     setTimeout(() => {
@@ -100,7 +55,8 @@ export class ViewModeActionImpl {
    * Cambio inmediato sin animación
    */
   setViewModeImmediate = (mode: TaskViewMode): void => {
-    this._updateViewModeState(mode, false);
+    if (this._get().viewMode === mode) return;
+    this._set({ viewMode: mode, isTransitioning: false });
   };
 }
 

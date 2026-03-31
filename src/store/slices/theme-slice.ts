@@ -11,19 +11,19 @@ export const DEFAULT_PALETTE: ThemePalette = "genshin";
 
 // Default theme classes for SSR safety
 export const DEFAULT_THEME_CLASSES: ThemeClasses = {
-  gradient: "from-blue-300 via-cyan-300 to-teal-300",
-  gradientBg: "from-blue-400/10 via-cyan-400/10 to-teal-400/10",
-  gradientBgSubtle: "from-blue-400/5 via-cyan-400/5 to-teal-400/5",
-  border: "border-blue-400/20",
-  borderHover: "border-blue-400/40",
-  shadow: "shadow-blue-400/10",
-  shadowHover: "shadow-blue-400/15",
-  textPrimary: "text-blue-200",
-  textSecondary: "text-cyan-200",
-  textAccent: "text-teal-200",
-  iconGradient: "from-blue-300 to-cyan-300",
-  glow: "shadow-blue-300/20",
-  glowStrong: "shadow-blue-300/30",
+  gradient: "from-blue-500 to-cyan-500",
+  gradientBg: "bg-blue-500/10",
+  gradientBgSubtle: "bg-blue-500/5",
+  border: "border-blue-500/30",
+  borderHover: "border-blue-500/50",
+  shadow: "shadow-blue-500/5",
+  shadowHover: "shadow-blue-500/10",
+  textPrimary: "text-blue-400",
+  textSecondary: "text-cyan-400",
+  textAccent: "text-teal-400",
+  iconGradient: "text-blue-400",
+  glow: "shadow-blue-500/10",
+  glowStrong: "shadow-blue-500/20",
 };
 
 // ============================================================================
@@ -94,13 +94,6 @@ export class ThemeActionImpl {
    * Nota: La persistencia se maneja via middleware persist
    */
   changePalette = (palette: ThemePalette): void => {
-    this._updateThemeState(palette);
-  };
-
-  /**
-   * Action to hydrate theme from storage (called by persist middleware)
-   */
-  hydrateFromStorage = (palette: ThemePalette): void => {
     this._updateThemeState(palette);
   };
 }

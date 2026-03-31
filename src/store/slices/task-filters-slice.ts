@@ -1,45 +1,44 @@
 import { StoreSetter, StoreGetter, PublicActions } from "../types";
-import type { TaskProject, TaskCategory } from "@/entities/task";
 
 // ============================================================================
 // State
 // ============================================================================
 
 export interface TaskFiltersState {
-  selectedProject: TaskProject | "all";
-  selectedCategory: TaskCategory | "all";
+  selectedProjectId: string | "all";
+  selectedCategoryId: string | "all";
   searchQuery: string;
   hasActiveFilters: boolean;
   activeFiltersCount: number;
 }
 
 function computeHasActiveFilters(
-  selectedProject: TaskProject | "all",
-  selectedCategory: TaskCategory | "all",
+  selectedProjectId: string | "all",
+  selectedCategoryId: string | "all",
   searchQuery: string,
 ): boolean {
   return (
-    selectedProject !== "all" ||
-    selectedCategory !== "all" ||
+    selectedProjectId !== "all" ||
+    selectedCategoryId !== "all" ||
     searchQuery !== ""
   );
 }
 
 function computeActiveFiltersCount(
-  selectedProject: TaskProject | "all",
-  selectedCategory: TaskCategory | "all",
+  selectedProjectId: string | "all",
+  selectedCategoryId: string | "all",
   searchQuery: string,
 ): number {
   let count = 0;
-  if (selectedProject !== "all") count++;
-  if (selectedCategory !== "all") count++;
+  if (selectedProjectId !== "all") count++;
+  if (selectedCategoryId !== "all") count++;
   if (searchQuery !== "") count++;
   return count;
 }
 
 export const initialTaskFiltersState: TaskFiltersState = {
-  selectedProject: "all",
-  selectedCategory: "all",
+  selectedProjectId: "all",
+  selectedCategoryId: "all",
   searchQuery: "",
   hasActiveFilters: false,
   activeFiltersCount: 0,
@@ -68,22 +67,22 @@ export class TaskFiltersActionImpl {
   // --------------------------------------------------------------------------
 
   private _updateFiltersState = (
-    selectedProject: TaskProject | "all",
-    selectedCategory: TaskCategory | "all",
+    selectedProjectId: string | "all",
+    selectedCategoryId: string | "all",
     searchQuery: string,
   ): void => {
     this._set({
-      selectedProject,
-      selectedCategory,
+      selectedProjectId,
+      selectedCategoryId,
       searchQuery,
       hasActiveFilters: computeHasActiveFilters(
-        selectedProject,
-        selectedCategory,
+        selectedProjectId,
+        selectedCategoryId,
         searchQuery,
       ),
       activeFiltersCount: computeActiveFiltersCount(
-        selectedProject,
-        selectedCategory,
+        selectedProjectId,
+        selectedCategoryId,
         searchQuery,
       ),
     });
@@ -93,11 +92,11 @@ export class TaskFiltersActionImpl {
   // Public Actions - Project
   // --------------------------------------------------------------------------
 
-  setSelectedProject = (project: TaskProject | "all"): void => {
+  setSelectedProject = (projectId: string | "all"): void => {
     const state = this._get();
     this._updateFiltersState(
-      project,
-      state.selectedCategory,
+      projectId,
+      state.selectedCategoryId,
       state.searchQuery,
     );
   };
@@ -106,11 +105,11 @@ export class TaskFiltersActionImpl {
   // Public Actions - Category
   // --------------------------------------------------------------------------
 
-  setSelectedCategory = (category: TaskCategory | "all"): void => {
+  setSelectedCategory = (categoryId: string | "all"): void => {
     const state = this._get();
     this._updateFiltersState(
-      state.selectedProject,
-      category,
+      state.selectedProjectId,
+      categoryId,
       state.searchQuery,
     );
   };
@@ -122,15 +121,19 @@ export class TaskFiltersActionImpl {
   setSearchQuery = (query: string): void => {
     const state = this._get();
     this._updateFiltersState(
-      state.selectedProject,
-      state.selectedCategory,
+      state.selectedProjectId,
+      state.selectedCategoryId,
       query,
     );
   };
 
   clearSearchQuery = (): void => {
     const state = this._get();
-    this._updateFiltersState(state.selectedProject, state.selectedCategory, "");
+    this._updateFiltersState(
+      state.selectedProjectId,
+      state.selectedCategoryId,
+      "",
+    );
   };
 
   // --------------------------------------------------------------------------

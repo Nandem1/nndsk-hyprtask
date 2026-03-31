@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getActiveTasks,
   getCurrentTask,
@@ -16,6 +11,11 @@ import {
   setCurrentTask,
   getTaskSettings,
   saveTaskSettings,
+  updateTaskNotes,
+  getTaskParent,
+  getTaskChild,
+  setTaskParent,
+  setTaskChild,
 } from "../lib/storage";
 import type { TaskSettings } from "../model/types";
 import type { Task } from "../model/types";
@@ -248,6 +248,98 @@ export function useUpdateTaskSettings() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.settings() });
+    },
+  });
+}
+
+// ============================================================================
+// Notes Hooks
+// ============================================================================
+
+// Hook para actualizar notas de una tarea
+export function useUpdateTaskNotes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, notes }: { id: string; notes: string }) =>
+      updateTaskNotes(id, notes),
+    onMutate: async ({ id, notes }) => {
+      await queryClient.cancelQueries({ queryKey: taskKeys.all });
+      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
+
+      queryClient.setQueryData<Task[]>(
+        taskKeys.active(),
+        (old) => old?.map((t) => (t.id === id ? { ...t, notes } : t)) || [],
+      );
+
+      return { previousTasks };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(taskKeys.active(), context.previousTasks);
+      }
+    },
+    onSettled: (_data, _error, vars) => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.detail(vars.id) });
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
+}
+
+// ============================================================================
+// Relations Hooks
+// ============================================================================
+
+// Hook para obtener tarea padre
+export function useTaskParent(taskId: string) {
+  return useQuery({
+    queryKey: [...taskKeys.detail(taskId), "parent"],
+    queryFn: () => getTaskParent(taskId),
+    enabled: !!taskId,
+  });
+}
+
+// Hook para obtener tarea hija
+export function useTaskChild(taskId: string) {
+  return useQuery({
+    queryKey: [...taskKeys.detail(taskId), "child"],
+    queryFn: () => getTaskChild(taskId),
+    enabled: !!taskId,
+  });
+}
+
+// Hook para establecer relación padre
+export function useSetTaskParent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      parentTaskId,
+    }: {
+      taskId: string;
+      parentTaskId?: string;
+    }) => setTaskParent(taskId, parentTaskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
+}
+
+// Hook para establecer relación hija
+export function useSetTaskChild() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      childTaskId,
+    }: {
+      taskId: string;
+      childTaskId?: string;
+    }) => setTaskChild(taskId, childTaskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
     },
   });
 }

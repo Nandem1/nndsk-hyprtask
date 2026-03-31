@@ -1,7 +1,7 @@
 import { useStore } from "./index";
 import { useShallow } from "zustand/react/shallow";
 import type { ThemePalette } from "@/shared/types/theme";
-import type { TaskProject, TaskCategory, TaskViewMode } from "@/entities/task";
+import type { TaskViewMode } from "@/entities/task";
 
 // ============================================================================
 // Theme Hooks
@@ -83,8 +83,8 @@ export function useIsDarkPalette(): boolean {
 export function useTaskFiltersState() {
   return useStore(
     useShallow((state) => ({
-      selectedProject: state.selectedProject,
-      selectedCategory: state.selectedCategory,
+      selectedProjectId: state.selectedProjectId,
+      selectedCategoryId: state.selectedCategoryId,
       searchQuery: state.searchQuery,
       hasActiveFilters: state.hasActiveFilters,
       activeFiltersCount: state.activeFiltersCount,
@@ -117,8 +117,8 @@ export function useTaskFiltersActions() {
 export function useTaskFilters() {
   return useStore(
     useShallow((state) => ({
-      selectedProject: state.selectedProject,
-      selectedCategory: state.selectedCategory,
+      selectedProjectId: state.selectedProjectId,
+      selectedCategoryId: state.selectedCategoryId,
       searchQuery: state.searchQuery,
       setSelectedProject: state.setSelectedProject,
       setSelectedCategory: state.setSelectedCategory,
@@ -155,15 +155,15 @@ export function useActiveFiltersCount(): number {
  * Hook individual para proyecto seleccionado
  * Útil para componentes que solo necesitan este valor
  */
-export function useSelectedProject(): TaskProject | "all" {
-  return useStore((state) => state.selectedProject);
+export function useSelectedProjectId(): string | "all" {
+  return useStore((state) => state.selectedProjectId);
 }
 
 /**
  * Hook individual para categoría seleccionada
  */
-export function useSelectedCategory(): TaskCategory | "all" {
-  return useStore((state) => state.selectedCategory);
+export function useSelectedCategoryId(): string | "all" {
+  return useStore((state) => state.selectedCategoryId);
 }
 
 /**
@@ -195,9 +195,6 @@ export function useViewModeState() {
     useShallow((state) => ({
       viewMode: state.viewMode,
       isTransitioning: state.isTransitioning,
-      isKanbanView: state.isKanbanView,
-      isTerminalView: state.isTerminalView,
-      viewModeLabel: state.viewModeLabel,
     })),
   );
 }
@@ -228,9 +225,6 @@ export function useViewMode() {
       isTransitioning: state.isTransitioning,
       setViewMode: state.setViewMode,
       setViewModeImmediate: state.setViewModeImmediate,
-      isKanbanView: state.isKanbanView,
-      isTerminalView: state.isTerminalView,
-      viewModeLabel: state.viewModeLabel,
     })),
   );
 }
@@ -248,21 +242,14 @@ export function useViewModeOnly(): TaskViewMode {
  * const isKanban = useIsKanbanView();
  */
 export function useIsKanbanView(): boolean {
-  return useStore((state) => state.isKanbanView);
+  return useStore((state) => state.viewMode === "kanban");
 }
 
 /**
- * Hook para verificar si es vista tipo terminal
+ * Hook para verificar si está en modo pipeline
  */
-export function useIsTerminalView(): boolean {
-  return useStore((state) => state.isTerminalView);
-}
-
-/**
- * Hook para el label del modo de vista
- */
-export function useViewModeLabel(): string {
-  return useStore((state) => state.viewModeLabel);
+export function useIsPipelineView(): boolean {
+  return useStore((state) => state.viewMode === "pipeline");
 }
 
 // ============================================================================

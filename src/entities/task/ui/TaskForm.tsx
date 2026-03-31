@@ -1,23 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { X } from "lucide-react";
-import { useCreateTask } from "../hooks/use-tasks";
-import { useThemeState } from "@/store/hooks";
-import { PROJECTS, CATEGORIES } from "../lib/constants";
-import type { TaskPriority, TaskProject, TaskCategory } from "../model/types";
+import { X, ArrowRight, GitBranch } from "lucide-react";
+import {
+  useCreateTask,
+  useSetTaskChild,
+  useCurrentTask,
+} from "../hooks/use-tasks";
+import { useActiveProjects } from "../hooks/use-projects";
+import { useActiveCategories } from "../hooks/use-categories";
+import type { TaskPriority } from "../model/types";
 
 interface TaskFormProps {
   onTaskAdded: () => void;
   onCancel: () => void;
   maxTasks: number;
   currentTasks: number;
-  defaultProject?: TaskProject;
-  defaultCategory?: TaskCategory;
+  defaultProjectId?: string;
+  defaultCategoryId?: string;
 }
 
 export function TaskForm({
@@ -25,19 +28,24 @@ export function TaskForm({
   onCancel,
   maxTasks,
   currentTasks,
-  defaultProject,
-  defaultCategory,
+  defaultProjectId,
+  defaultCategoryId,
 }: TaskFormProps) {
-  const { themeClasses } = useThemeState();
   const [title, setTitle] = useState<string>("");
   const [priority, setPriority] = useState<TaskPriority>("low");
-  const [project, setProject] = useState<TaskProject | undefined>(
-    defaultProject,
+  const [projectId, setProjectId] = useState<string | undefined>(
+    defaultProjectId,
   );
-  const [category, setCategory] = useState<TaskCategory | undefined>(
-    defaultCategory,
+  const [categoryId, setCategoryId] = useState<string | undefined>(
+    defaultCategoryId,
   );
+  const [linkToCurrent, setLinkToCurrent] = useState(true);
+
   const createTaskMutation = useCreateTask();
+  const setTaskChildMutation = useSetTaskChild();
+  const { data: currentTask } = useCurrentTask();
+  const { data: projects = [] } = useActiveProjects();
+  const { data: categories = [] } = useActiveCategories();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,12 +60,20 @@ export function TaskForm({
       isCurrent: false,
       priority,
       createdAt: new Date().toISOString(),
-      project,
-      category,
+      projectId,
+      categoryId,
+      notes: "",
+      parentTaskId: linkToCurrent && currentTask ? currentTask.id : undefined,
     };
 
     createTaskMutation.mutate(newTask, {
       onSuccess: () => {
+        if (linkToCurrent && currentTask) {
+          setTaskChildMutation.mutate({
+            taskId: currentTask.id,
+            childTaskId: newTask.id,
+          });
+        }
         setTitle("");
         onTaskAdded();
       },
@@ -68,22 +84,24 @@ export function TaskForm({
     {
       value: "low" as TaskPriority,
       label: "Baja",
-      color: "bg-green-500/20 border-green-500/30",
+      color:
+        "bg-green-500/10 border-green-500/30 text-green-600 dark:text-green-400",
     },
     {
       value: "medium" as TaskPriority,
       label: "Media",
-      color: "bg-yellow-500/20 border-yellow-500/30",
+      color:
+        "bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400",
     },
     {
       value: "high" as TaskPriority,
       label: "Alta",
-      color: "bg-red-500/20 border-red-500/30",
+      color: "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400",
     },
   ];
 
   return (
-    <Card className="glass rounded-xl border border-border/20">
+    <Card className="border-border">
       <CardContent className="p-5">
         <div className="mb-4">
           <h3 className="text-sm font-semibold text-foreground mb-1">
@@ -93,13 +111,8 @@ export function TaskForm({
             Agrega una nueva tarea a tu lista
           </p>
         </div>
-        <motion.form
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
-          <motion.div whileFocus={{ scale: 1.01 }} className="relative">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
             <label className="text-xs font-medium text-muted-foreground mb-2 block">
               Titulo de la tarea
             </label>
@@ -108,55 +121,53 @@ export function TaskForm({
               placeholder="Que necesitas hacer?"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full py-2.5 border border-border/30 bg-background/30 focus:border-border/50 focus:bg-background/50 transition-all focus:outline-none rounded-lg"
+              className="w-full"
               autoFocus
               maxLength={100}
             />
             {title.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground mt-4"
-              >
+              <div className="absolute right-2 top-[34px] text-xs text-muted-foreground">
                 {title.length}/100
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Proyecto y Categoria */}
           <div className="grid grid-cols-2 gap-3">
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">
                 Proyecto
               </label>
               <select
-                value={project || "general"}
-                onChange={(e) => setProject(e.target.value as TaskProject)}
-                className="w-full px-3 py-2.5 rounded-lg border border-border/30 bg-background/30 text-sm focus:outline-none focus:border-border/50 focus:bg-background/50 transition-all"
+                value={projectId || ""}
+                onChange={(e) => setProjectId(e.target.value || undefined)}
+                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                {PROJECTS.map((proj) => (
+                <option value="">Sin proyecto</option>
+                {projects.map((proj) => (
                   <option key={proj.id} value={proj.id}>
-                    {proj.label}
+                    {proj.name}
                   </option>
                 ))}
               </select>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            </div>
+            <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">
                 Categoria
               </label>
               <select
-                value={category || "general"}
-                onChange={(e) => setCategory(e.target.value as TaskCategory)}
-                className="w-full px-3 py-2.5 rounded-lg border border-border/30 bg-background/30 text-sm focus:outline-none focus:border-border/50 focus:bg-background/50 transition-all"
+                value={categoryId || ""}
+                onChange={(e) => setCategoryId(e.target.value || undefined)}
+                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                {CATEGORIES.map((cat) => (
+                <option value="">Sin categoría</option>
+                {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
-                    {cat.label}
+                    {cat.name}
                   </option>
                 ))}
               </select>
-            </motion.div>
+            </div>
           </div>
 
           {/* Prioridad */}
@@ -166,55 +177,64 @@ export function TaskForm({
             </label>
             <div className="flex gap-2">
               {priorityOptions.map((option) => (
-                <motion.button
+                <button
                   key={option.value}
                   type="button"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   onClick={() => setPriority(option.value)}
-                  className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                  className={`flex-1 px-3 py-2 rounded-md border text-sm font-medium transition-colors ${
                     priority === option.value
-                      ? `${option.color} border-opacity-50 ${themeClasses.shadowHover}`
-                      : "border-border/30 hover:border-border/50 bg-background/30"
+                      ? option.color
+                      : "border-border hover:border-border/80 bg-muted/50"
                   }`}
                 >
                   {option.label}
-                </motion.button>
+                </button>
               ))}
             </div>
           </div>
 
+          {/* Vincular a tarea actual */}
+          {currentTask && (
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted">
+              <input
+                type="checkbox"
+                id="linkToCurrent"
+                checked={linkToCurrent}
+                onChange={(e) => setLinkToCurrent(e.target.checked)}
+                className="w-4 h-4 rounded border-border"
+              />
+              <label
+                htmlFor="linkToCurrent"
+                className="flex items-center gap-2 text-sm cursor-pointer"
+              >
+                <GitBranch className="w-4 h-4 text-muted-foreground" />
+                <span>Continuación de:</span>
+                <span className="font-medium truncate max-w-[200px]">
+                  {currentTask.title}
+                </span>
+                <ArrowRight className="w-3 h-3 text-muted-foreground" />
+              </label>
+            </div>
+          )}
+
           {/* Botones */}
           <div className="flex gap-3 pt-2">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <Button
+              type="submit"
+              disabled={
+                !title.trim() ||
+                createTaskMutation.isPending ||
+                currentTasks >= maxTasks
+              }
               className="flex-1"
             >
-              <Button
-                type="submit"
-                disabled={
-                  !title.trim() ||
-                  createTaskMutation.isPending ||
-                  currentTasks >= maxTasks
-                }
-                className={`w-full ${themeClasses.gradientBg} border border-border/30 ${themeClasses.shadowHover} text-base font-medium py-3 rounded-lg transition-all`}
-              >
-                {createTaskMutation.isPending ? "Guardando..." : "Crear Tarea"}
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="px-4 py-3"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </motion.div>
+              {createTaskMutation.isPending ? "Guardando..." : "Crear Tarea"}
+            </Button>
+            <Button type="button" variant="outline" onClick={onCancel}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-        </motion.form>
+        </form>
       </CardContent>
     </Card>
   );

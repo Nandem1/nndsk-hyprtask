@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -11,11 +10,9 @@ import {
 } from "@/shared/ui/card";
 import { BarChart3, TrendingUp } from "lucide-react";
 import { getSleepLogs } from "../lib/storage";
-import { useThemeState } from "@/store/hooks";
 import type { SleepLog } from "../model/types";
 
 export function SleepStatsCard() {
-  const { themeClasses } = useThemeState();
   const [logs, setLogs] = useState<SleepLog[]>([]);
   const [averageHours, setAverageHours] = useState<number>(0);
   const [averageQuality, setAverageQuality] = useState<number>(0);
@@ -69,83 +66,72 @@ export function SleepStatsCard() {
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
-    >
-      <Card
-        className={`relative overflow-hidden border ${themeClasses.border} bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-xl ${themeClasses.shadow} transition-all duration-300 hover:shadow-2xl ${themeClasses.shadowHover} hover:${themeClasses.borderHover}`}
-      >
-        <div
-          className={`absolute inset-0 bg-gradient-to-r ${themeClasses.gradientBgSubtle} opacity-50`}
-        />
-        <CardHeader className="relative">
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Estadisticas Semanales
-          </CardTitle>
-          <CardDescription>Resumen de tus ultimos 7 dias</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 relative">
-          {logs.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No hay registros aun</p>
-              <p className="text-sm mt-2">
-                Registra tu sueno para ver estadisticas
-              </p>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5" />
+          Estadisticas Semanales
+        </CardTitle>
+        <CardDescription>Resumen de tus ultimos 7 dias</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {logs.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No hay registros aun</p>
+            <p className="text-sm mt-2">
+              Registra tu sueno para ver estadisticas
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-2xl font-semibold">
+                  {averageHours > 0 ? averageHours.toFixed(1) : "--"}h
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Promedio de sueno
+                </div>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">
+                  {averageQuality > 0 ? averageQuality.toFixed(1) : "--"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Calidad promedio
+                </div>
+              </div>
             </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-2xl font-semibold">
-                    {averageHours > 0 ? averageHours.toFixed(1) : "--"}h
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Promedio de sueno
-                  </div>
-                </div>
-                <div>
-                  <div className="text-2xl font-semibold">
-                    {averageQuality > 0 ? averageQuality.toFixed(1) : "--"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Calidad promedio
-                  </div>
-                </div>
-              </div>
 
-              <div className="pt-4 border-t">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Registros recientes
-                </div>
-                <div className="space-y-2">
-                  {logs.slice(0, 3).map((log) => (
-                    <div
-                      key={log.id}
-                      className="flex justify-between items-center text-sm"
-                    >
-                      <span>
-                        {new Date(log.date).toLocaleDateString("es-ES", {
-                          weekday: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {log.actualBedtime && log.actualWakeup
-                          ? `${log.actualBedtime} - ${log.actualWakeup}`
-                          : "Sin registro"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+            <div className="pt-4 border-t">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                <TrendingUp className="h-4 w-4" />
+                Registros recientes
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
+              <div className="space-y-2">
+                {logs.slice(0, 3).map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex justify-between items-center text-sm"
+                  >
+                    <span>
+                      {new Date(log.date).toLocaleDateString("es-ES", {
+                        weekday: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {log.actualBedtime && log.actualWakeup
+                        ? `${log.actualBedtime} - ${log.actualWakeup}`
+                        : "Sin registro"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }
