@@ -1,33 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
-import { useTheme, useViewMode } from "@/store/hooks";
+import {
+  useThemeState,
+  useViewModeState,
+  useTaskFiltersState,
+} from "@/store/hooks";
 import {
   useActiveTasks,
   useToggleTask,
   useDeleteTask,
   useSetCurrentTask,
-  getTaskSettings,
+  useTaskSettings,
   ViewModeSelector,
 } from "@/entities/task";
-import type { TaskProject, TaskCategory } from "@/entities/task";
 import { TaskListView } from "./TaskListView";
 
-interface TaskBoardProps {
-  selectedProject?: TaskProject | "all";
-  selectedCategory?: TaskCategory | "all";
-}
-
-export function TaskBoard({
-  selectedProject = "all",
-  selectedCategory = "all",
-}: TaskBoardProps) {
-  const { themeClasses } = useTheme();
-  const { viewMode, setViewModeImmediate } = useViewMode();
+export function TaskBoard() {
+  const { themeClasses } = useThemeState();
+  const { viewMode } = useViewModeState();
+  const { selectedProject, selectedCategory } = useTaskFiltersState();
   const { data: allTasks = [] } = useActiveTasks();
-  const [maxTasks, setMaxTasks] = useState<number>(5);
+  const { data: settings } = useTaskSettings();
+  const maxTasks = settings?.maxActiveTasks ?? 5;
   const [showForm, setShowForm] = useState<boolean>(false);
 
   // Filtrar tareas
@@ -42,14 +39,6 @@ export function TaskBoard({
   const toggleTaskMutation = useToggleTask();
   const deleteTaskMutation = useDeleteTask();
   const setCurrentTaskMutation = useSetCurrentTask();
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      const settings = await getTaskSettings();
-      setMaxTasks(settings.maxActiveTasks);
-    };
-    loadSettings();
-  }, []);
 
   const handleToggle = (id: string) => toggleTaskMutation.mutate(id);
   const handleDelete = (id: string) => deleteTaskMutation.mutate(id);
@@ -90,10 +79,7 @@ export function TaskBoard({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <ViewModeSelector
-            viewMode={viewMode}
-            onChange={setViewModeImmediate}
-          />
+          <ViewModeSelector />
           {!canAddTask && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass border border-yellow-400/30 text-yellow-300">
               <AlertCircle className="h-3.5 w-3.5" />
@@ -127,8 +113,6 @@ export function TaskBoard({
         onTaskAdded={handleTaskAdded}
         onCancelForm={() => setShowForm(false)}
         onShowForm={() => setShowForm(true)}
-        selectedProject={selectedProject}
-        selectedCategory={selectedCategory}
         themeClasses={themeClasses}
       />
     </div>

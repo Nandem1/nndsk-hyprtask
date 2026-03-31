@@ -7,7 +7,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { X } from "lucide-react";
 import { useCreateTask } from "../hooks/use-tasks";
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
 import { PROJECTS, CATEGORIES } from "../lib/constants";
 import type { TaskPriority, TaskProject, TaskCategory } from "../model/types";
 
@@ -28,7 +28,7 @@ export function TaskForm({
   defaultProject,
   defaultCategory,
 }: TaskFormProps) {
-  const { themeClasses } = useTheme();
+  const { themeClasses } = useThemeState();
   const [title, setTitle] = useState<string>("");
   const [priority, setPriority] = useState<TaskPriority>("low");
   const [project, setProject] = useState<TaskProject | undefined>(

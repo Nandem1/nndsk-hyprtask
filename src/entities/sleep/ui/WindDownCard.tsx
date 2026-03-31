@@ -11,7 +11,7 @@ import {
 } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Wind, Play, Pause, RotateCcw } from "lucide-react";
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
 
 interface WindDownStep {
   id: string;
@@ -45,7 +45,7 @@ export function WindDownCard() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
-  const { themeClasses } = useTheme();
+  const { themeClasses } = useThemeState();
 
   const startRoutine = () => {
     if (currentStep >= WIND_DOWN_STEPS.length) {

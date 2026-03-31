@@ -17,11 +17,11 @@ import {
   useWorkSettings,
   useSaveWorkSettings,
 } from "../hooks/use-work-settings";
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
 import type { WorkSettings } from "../model/types";
 
 export function WorkConfigForm() {
-  const { themeClasses } = useTheme();
+  const { themeClasses } = useThemeState();
   const { data: settings } = useWorkSettings();
   const saveSettingsMutation = useSaveWorkSettings();
 

@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useStore } from "./index";
 import { useShallow } from "zustand/react/shallow";
 import type { ThemePalette } from "@/shared/types/theme";
@@ -15,16 +14,11 @@ import type { TaskProject, TaskCategory, TaskViewMode } from "@/entities/task";
  */
 export function useThemeState() {
   return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({
-          palette: state.palette,
-          themeClasses: state.themeClasses,
-          isDarkPalette: state.isDarkPalette,
-        }),
-        [],
-      ),
-    ),
+    useShallow((state) => ({
+      palette: state.palette,
+      themeClasses: state.themeClasses,
+      isDarkPalette: state.isDarkPalette,
+    })),
   );
 }
 
@@ -35,12 +29,9 @@ export function useThemeState() {
  */
 export function useThemeActions() {
   return useStore(
-    useCallback(
-      (state) => ({
-        changePalette: state.changePalette,
-      }),
-      [],
-    ),
+    useShallow((state) => ({
+      changePalette: state.changePalette,
+    })),
   );
 }
 
@@ -52,17 +43,12 @@ export function useThemeActions() {
  */
 export function useTheme() {
   return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({
-          palette: state.palette,
-          themeClasses: state.themeClasses,
-          isDarkPalette: state.isDarkPalette,
-          changePalette: state.changePalette,
-        }),
-        [],
-      ),
-    ),
+    useShallow((state) => ({
+      palette: state.palette,
+      themeClasses: state.themeClasses,
+      isDarkPalette: state.isDarkPalette,
+      changePalette: state.changePalette,
+    })),
   );
 }
 
@@ -96,18 +82,13 @@ export function useIsDarkPalette(): boolean {
  */
 export function useTaskFiltersState() {
   return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({
-          selectedProject: state.selectedProject,
-          selectedCategory: state.selectedCategory,
-          searchQuery: state.searchQuery,
-          hasActiveFilters: state.hasActiveFilters,
-          activeFiltersCount: state.activeFiltersCount,
-        }),
-        [],
-      ),
-    ),
+    useShallow((state) => ({
+      selectedProject: state.selectedProject,
+      selectedCategory: state.selectedCategory,
+      searchQuery: state.searchQuery,
+      hasActiveFilters: state.hasActiveFilters,
+      activeFiltersCount: state.activeFiltersCount,
+    })),
   );
 }
 
@@ -118,16 +99,13 @@ export function useTaskFiltersState() {
  */
 export function useTaskFiltersActions() {
   return useStore(
-    useCallback(
-      (state) => ({
-        setSelectedProject: state.setSelectedProject,
-        setSelectedCategory: state.setSelectedCategory,
-        setSearchQuery: state.setSearchQuery,
-        clearSearchQuery: state.clearSearchQuery,
-        clearFilters: state.clearFilters,
-      }),
-      [],
-    ),
+    useShallow((state) => ({
+      setSelectedProject: state.setSelectedProject,
+      setSelectedCategory: state.setSelectedCategory,
+      setSearchQuery: state.setSearchQuery,
+      clearSearchQuery: state.clearSearchQuery,
+      clearFilters: state.clearFilters,
+    })),
   );
 }
 
@@ -138,23 +116,18 @@ export function useTaskFiltersActions() {
  */
 export function useTaskFilters() {
   return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({
-          selectedProject: state.selectedProject,
-          selectedCategory: state.selectedCategory,
-          searchQuery: state.searchQuery,
-          setSelectedProject: state.setSelectedProject,
-          setSelectedCategory: state.setSelectedCategory,
-          setSearchQuery: state.setSearchQuery,
-          clearSearchQuery: state.clearSearchQuery,
-          clearFilters: state.clearFilters,
-          hasActiveFilters: state.hasActiveFilters,
-          activeFiltersCount: state.activeFiltersCount,
-        }),
-        [],
-      ),
-    ),
+    useShallow((state) => ({
+      selectedProject: state.selectedProject,
+      selectedCategory: state.selectedCategory,
+      searchQuery: state.searchQuery,
+      setSelectedProject: state.setSelectedProject,
+      setSelectedCategory: state.setSelectedCategory,
+      setSearchQuery: state.setSearchQuery,
+      clearSearchQuery: state.clearSearchQuery,
+      clearFilters: state.clearFilters,
+      hasActiveFilters: state.hasActiveFilters,
+      activeFiltersCount: state.activeFiltersCount,
+    })),
   );
 }
 
@@ -200,16 +173,11 @@ export function useSelectedCategory(): TaskCategory | "all" {
  */
 export function useTaskSearch() {
   return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({
-          searchQuery: state.searchQuery,
-          setSearchQuery: state.setSearchQuery,
-          clearSearchQuery: state.clearSearchQuery,
-        }),
-        [],
-      ),
-    ),
+    useShallow((state) => ({
+      searchQuery: state.searchQuery,
+      setSearchQuery: state.setSearchQuery,
+      clearSearchQuery: state.clearSearchQuery,
+    })),
   );
 }
 
@@ -224,18 +192,13 @@ export function useTaskSearch() {
  */
 export function useViewModeState() {
   return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({
-          viewMode: state.viewMode,
-          isTransitioning: state.isTransitioning,
-          isKanbanView: state.isKanbanView,
-          isTerminalView: state.isTerminalView,
-          viewModeLabel: state.viewModeLabel,
-        }),
-        [],
-      ),
-    ),
+    useShallow((state) => ({
+      viewMode: state.viewMode,
+      isTransitioning: state.isTransitioning,
+      isKanbanView: state.isKanbanView,
+      isTerminalView: state.isTerminalView,
+      viewModeLabel: state.viewModeLabel,
+    })),
   );
 }
 
@@ -246,13 +209,10 @@ export function useViewModeState() {
  */
 export function useViewModeActions() {
   return useStore(
-    useCallback(
-      (state) => ({
-        setViewMode: state.setViewMode,
-        setViewModeImmediate: state.setViewModeImmediate,
-      }),
-      [],
-    ),
+    useShallow((state) => ({
+      setViewMode: state.setViewMode,
+      setViewModeImmediate: state.setViewModeImmediate,
+    })),
   );
 }
 
@@ -263,20 +223,15 @@ export function useViewModeActions() {
  */
 export function useViewMode() {
   return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({
-          viewMode: state.viewMode,
-          isTransitioning: state.isTransitioning,
-          setViewMode: state.setViewMode,
-          setViewModeImmediate: state.setViewModeImmediate,
-          isKanbanView: state.isKanbanView,
-          isTerminalView: state.isTerminalView,
-          viewModeLabel: state.viewModeLabel,
-        }),
-        [],
-      ),
-    ),
+    useShallow((state) => ({
+      viewMode: state.viewMode,
+      isTransitioning: state.isTransitioning,
+      setViewMode: state.setViewMode,
+      setViewModeImmediate: state.setViewModeImmediate,
+      isKanbanView: state.isKanbanView,
+      isTerminalView: state.isTerminalView,
+      viewModeLabel: state.viewModeLabel,
+    })),
   );
 }
 

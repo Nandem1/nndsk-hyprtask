@@ -1,11 +1,11 @@
 "use client";
 
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
 import { SleepTimerCard, SleepStatsCard, WindDownCard } from "@/entities/sleep";
 import { WorkTimerCard } from "@/entities/work";
 
 export function SleepDashboard() {
-  const { themeClasses } = useTheme();
+  const { themeClasses } = useThemeState();
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">

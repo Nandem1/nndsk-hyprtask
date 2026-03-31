@@ -1,13 +1,17 @@
-"use client";
+import { Suspense } from "react";
+import { Header } from "@/widgets";
+import { SleepDashboard } from "@/widgets";
+import { SleepPageSkeleton } from "./SleepPageSkeleton";
 
-import { SleepDashboard, Header } from "@/widgets";
-
+// Server Component - Main Page
 export default function SleepPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <SleepDashboard />
+        <Suspense fallback={<SleepPageSkeleton />}>
+          <SleepDashboard />
+        </Suspense>
       </main>
     </div>
   );

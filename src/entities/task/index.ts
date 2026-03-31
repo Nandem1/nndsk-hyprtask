@@ -22,6 +22,7 @@ export {
   getTasks,
   getActiveTasks,
   getCurrentTask,
+  getTaskById,
   getTaskSettings,
   saveTask,
   saveTaskSettings,
@@ -34,10 +35,14 @@ export { getTaskViewMode, saveTaskViewMode } from "./lib/view-mode-storage";
 export {
   useActiveTasks,
   useCurrentTask,
+  useTaskById,
   useCreateTask,
   useToggleTask,
   useDeleteTask,
   useSetCurrentTask,
+  useTaskSettings,
+  useUpdateTaskSettings,
+  usePrefetchTask,
 } from "./hooks/use-tasks";
 
 // UI Components

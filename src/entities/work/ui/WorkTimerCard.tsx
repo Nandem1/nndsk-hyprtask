@@ -14,10 +14,10 @@ import {
   useWorkCalculations,
 } from "../hooks/use-work-settings";
 import { formatMinutesToReadable } from "@/shared/lib/time-utils";
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
 
 export function WorkTimerCard() {
-  const { themeClasses } = useTheme();
+  const { themeClasses } = useThemeState();
   const { data: settings } = useWorkSettings();
   const { data: workData } = useWorkCalculations();
 

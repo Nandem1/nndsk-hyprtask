@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check, Trash2, Play } from "lucide-react";
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
 import { getProjectById, getCategoryById } from "../lib/constants";
 import type { Task } from "../model/types";
 
@@ -21,7 +21,7 @@ export function TaskCard({
   onSetCurrent,
   variant = "default",
 }: TaskCardProps) {
-  const { themeClasses } = useTheme();
+  const { themeClasses } = useThemeState();
   const project = task.project ? getProjectById(task.project) : null;
   const category = task.category ? getCategoryById(task.category) : null;
 

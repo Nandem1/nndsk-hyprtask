@@ -3,19 +3,15 @@
 import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Grid3x3, X } from "lucide-react";
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
+import { useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
 import { useActiveTasks } from "../hooks/use-tasks";
 import {
   PROJECTS as PROJECTS_CONFIG,
   CATEGORIES as CATEGORIES_CONFIG,
 } from "../lib/constants";
-import type { TaskProject, TaskCategory } from "../model/types";
 
 interface TaskSidebarProps {
-  selectedProject: TaskProject | "all";
-  selectedCategory: TaskCategory | "all";
-  onProjectChange: (project: TaskProject | "all") => void;
-  onCategoryChange: (category: TaskCategory | "all") => void;
   onClose?: () => void;
 }
 
@@ -39,14 +35,10 @@ const CATEGORIES = [
   ...CATEGORIES_CONFIG,
 ];
 
-export function TaskSidebar({
-  selectedProject,
-  selectedCategory,
-  onProjectChange,
-  onCategoryChange,
-  onClose,
-}: TaskSidebarProps) {
-  const { themeClasses } = useTheme();
+export function TaskSidebar({ onClose }: TaskSidebarProps) {
+  const { themeClasses } = useThemeState();
+  const { selectedProject, selectedCategory } = useTaskFiltersState();
+  const { setSelectedProject, setSelectedCategory } = useTaskFiltersActions();
   const { data: tasks = [] } = useActiveTasks();
 
   const projectCounts = useMemo(() => {
@@ -64,6 +56,18 @@ export function TaskSidebar({
     });
     return counts;
   }, [tasks]);
+
+  const handleProjectChange = (project: (typeof PROJECTS)[number]["id"]) => {
+    setSelectedProject(project);
+    if (onClose) onClose();
+  };
+
+  const handleCategoryChange = (
+    category: (typeof CATEGORIES)[number]["id"],
+  ) => {
+    setSelectedCategory(category);
+    if (onClose) onClose();
+  };
 
   return (
     <aside className="w-80 border-r border-border/20 glass-dark h-full overflow-y-auto relative">
@@ -118,7 +122,7 @@ export function TaskSidebar({
                   transition={{ delay: index * 0.03 }}
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => onProjectChange(project.id)}
+                  onClick={() => handleProjectChange(project.id)}
                   className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-all relative group ${
                     isSelected
                       ? `glass border ${themeClasses.borderHover} ${themeClasses.shadowHover}`
@@ -181,7 +185,7 @@ export function TaskSidebar({
                   transition={{ delay: (index + PROJECTS.length) * 0.03 }}
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => onCategoryChange(category.id)}
+                  onClick={() => handleCategoryChange(category.id)}
                   className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-all relative group ${
                     isSelected
                       ? `glass border ${themeClasses.borderHover} ${themeClasses.shadowHover}`

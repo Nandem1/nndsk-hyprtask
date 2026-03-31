@@ -11,11 +11,11 @@ import {
 } from "@/shared/ui/card";
 import { BarChart3, TrendingUp } from "lucide-react";
 import { getSleepLogs } from "../lib/storage";
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
 import type { SleepLog } from "../model/types";
 
 export function SleepStatsCard() {
-  const { themeClasses } = useTheme();
+  const { themeClasses } = useThemeState();
   const [logs, setLogs] = useState<SleepLog[]>([]);
   const [averageHours, setAverageHours] = useState<number>(0);
   const [averageQuality, setAverageQuality] = useState<number>(0);

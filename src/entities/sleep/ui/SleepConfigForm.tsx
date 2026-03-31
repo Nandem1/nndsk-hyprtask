@@ -17,11 +17,11 @@ import {
   useSleepSettings,
   useSaveSleepSettings,
 } from "../hooks/use-sleep-settings";
-import { useTheme } from "@/store/hooks";
+import { useThemeState } from "@/store/hooks";
 import type { SleepSettings } from "../model/types";
 
 export function SleepConfigForm() {
-  const { themeClasses } = useTheme();
+  const { themeClasses } = useThemeState();
   const { data: settings } = useSleepSettings();
   const saveSettingsMutation = useSaveSleepSettings();
 

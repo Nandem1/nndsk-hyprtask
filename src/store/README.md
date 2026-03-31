@@ -12,7 +12,7 @@ src/store/
 ├── hooks.ts              # Hooks especializados con useShallow
 ├── StoreInitializer.tsx  # Manejo de hidratación SSR
 └── slices/
-    ├── theme-slice.ts    # Estado del tema con computed values
+    ├── theme-slice.ts    # Estado del tema
     ├── task-filters-slice.ts  # Filtros de tareas
     └── view-mode-slice.ts     # Modo de vista
 ```
@@ -20,14 +20,13 @@ src/store/
 ## Mejores Prácticas Aplicadas
 
 ### ✅ 1. Persist Middleware Oficial
-Usamos el middleware `persist` de Zustand en lugar de manual localStorage:
 - Maneja automáticamente SSR con `skipHydration`
 - Rehidratación automática en cliente
 - `partialize` para seleccionar qué guardar
 - `merge` para reconstruir computed values al hidratar
 
 ### ✅ 2. Separación Estado / Acciones
-Las acciones nunca cambian, el estado sí. Separamos los hooks:
+Las acciones nunca cambian, el estado sí:
 
 ```tsx
 // Solo estado (se re-renderiza cuando cambia)
@@ -36,237 +35,135 @@ const { palette, themeClasses } = useThemeState();
 // Solo acciones (nunca causa re-render)
 const { changePalette } = useThemeActions();
 
-// Ambos (usar solo cuando se necesiten ambos)
+// Ambos (cuando se necesiten ambos)
 const { palette, changePalette } = useTheme();
 ```
 
 ### ✅ 3. useShallow para Objetos
-Cuando seleccionamos múltiples valores, usamos `useShallow` para comparación superficial:
+Para comparación superficial de objetos (Zustand v5 API):
 
 ```tsx
-// ✅ Correcto - shallow comparison
-const { palette, themeClasses } = useStore(
-  useShallow((state) => ({ palette: state.palette, themeClasses: state.themeClasses }))
+useStore(
+  useShallow((state) => ({ 
+    palette: state.palette, 
+    themeClasses: state.themeClasses 
+  }))
 );
-
-// ❌ Evitar - objeto nuevo en cada render
-const { palette, themeClasses } = useStore((state) => ({ 
-  palette: state.palette, 
-  themeClasses: state.themeClasses 
-}));
 ```
 
-### ✅ 4. Computed Values en Estado
-Para SSR safety, los valores computados se almacenan en el estado:
+### ✅ 4. SSR Safety
+- Computed values en estado con defaults
+- `_hasHydrated` flag para UI condicional
+- `useHasHydrated()` hook para skeletons
 
-```typescript
-export interface ThemeState {
-  palette: ThemePalette;
-  themeClasses: ThemeClasses;  // Computed
-  isDarkPalette: boolean;      // Computed
-}
-```
-
-### ✅ 5. Hydration Safety
-- `skipHydration: typeof window === "undefined"` evita hydration mismatch
-- `_hasHydrated` flag para UI que depende de localStorage
-- `StoreInitializer` component para forzar rehidratación si es necesario
-
-## Uso Básico
+## Uso
 
 ### Theme
 
 ```tsx
 import { useTheme, useThemeState, useThemeActions } from '@/store/hooks';
 
-// Opción 1: Solo estado (recomendado para UI)
-function ThemeDisplay() {
+// Solo lectura de estado (recomendado)
+function Component() {
   const { palette, themeClasses } = useThemeState();
   return <div className={themeClasses.textPrimary}>{palette}</div>;
 }
 
-// Opción 2: Solo acciones (recomendado para handlers)
+// Solo acciones
 function ThemeSelector() {
   const { changePalette } = useThemeActions();
   return <button onClick={() => changePalette('zenless')}>Cambiar</button>;
 }
-
-// Opción 3: Ambos (cuando se necesiten en el mismo componente)
-function ThemeSettings() {
-  const { palette, changePalette, themeClasses } = useTheme();
-  // ...
-}
 ```
 
-### Task Filters
+### Task Filters (Ahora en Zustand)
 
 ```tsx
-import { useTaskFilters, useTaskFiltersState, useTaskFiltersActions } from '@/store/hooks';
+import { useTaskFiltersState, useTaskFiltersActions } from '@/store/hooks';
 
-function TaskFilters() {
-  const { selectedProject, hasActiveFilters } = useTaskFiltersState();
-  const { setSelectedProject, clearFilters } = useTaskFiltersActions();
-  // ...
+function TaskSidebar() {
+  const { selectedProject, selectedCategory } = useTaskFiltersState();
+  const { setSelectedProject, setSelectedCategory } = useTaskFiltersActions();
+  
+  // Los filtros persisten automáticamente
+  // No más props drilling desde page.tsx
 }
 ```
 
 ### View Mode
 
 ```tsx
-import { useViewMode, useViewModeState, useViewModeActions } from '@/store/hooks';
+import { useViewModeState, useViewModeActions } from '@/store/hooks';
 
 function ViewSelector() {
   const { viewMode, viewModeLabel } = useViewModeState();
-  const { setViewMode } = useViewModeActions();
+  const { setViewModeImmediate } = useViewModeActions();
   
   return (
     <div>
       <span>Modo: {viewModeLabel}</span>
-      <button onClick={() => setViewMode('kanban')}>Kanban</button>
+      <button onClick={() => setViewModeImmediate('kanban')}>Kanban</button>
     </div>
   );
 }
 ```
 
-### Hydration Safety
+## Flujo de Datos
 
-```tsx
-import { useHasHydrated } from '@/store/hooks';
-
-function MyComponent() {
-  const hasHydrated = useHasHydrated();
-  
-  if (!hasHydrated) {
-    return <Skeleton />; // o null, o spinner
-  }
-  
-  return <ActualContent />;
-}
+```
+┌─────────────────────────────────────────────────────────────┐
+│  PAGES (app/)                                               │
+│  ├── tasks/page.tsx        → Layout limpio, sin estado      │
+├─────────────────────────────────────────────────────────────┤
+│  WIDGETS (src/widgets/)                                     │
+│  ├── TaskBoard             → useTaskFiltersState()          │
+│  ├── Header                → useThemeState()                │
+├─────────────────────────────────────────────────────────────┤
+│  ENTITIES (src/entities/)                                   │
+│  ├── task/ui/TaskSidebar   → setSelectedProject()           │
+├─────────────────────────────────────────────────────────────┤
+│  STORE (src/store/)                                         │
+│  ├── theme-slice.ts        ✅                               │
+│  ├── task-filters-slice.ts ✅ (AHORA SÍ USADO)              │
+│  └── view-mode-slice.ts    ✅                               │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Crear un Nuevo Slice
+## Cambios Realizados
 
-1. Crear archivo en `src/store/slices/my-slice.ts`:
+### ✅ Eliminada capa `features/`
+- Ya no existe `src/features/`
+- Los hooks se consumen directamente desde `@/store/hooks`
 
-```typescript
-import { StoreSetter, StoreGetter, PublicActions } from '../types';
+### ✅ Filtros migrados a Zustand
+- Eliminado props drilling de filtros (3 niveles)
+- `TaskSidebar` y `TaskBoard` usan el store directamente
+- Los filtros persisten en localStorage
 
-// State - incluir computed values
-export interface MyState {
-  value: string;
-  computedValue: boolean;  // Computed & stored for SSR
-}
-
-export const initialMyState: MyState = {
-  value: '',
-  computedValue: false,
-};
-
-// Actions Class
-export class MyActionImpl {
-  private readonly _get: Getter;
-  private readonly _set: Setter;
-
-  constructor(set: Setter, get: Getter, _api?: unknown) {
-    void _api;
-    this._set = set;
-    this._get = get;
-  }
-
-  setValue = (value: string): void => {
-    this._set({ 
-      value,
-      computedValue: value.length > 0  // Update computed
-    });
-  };
-}
-
-export type MyActions = PublicActions<MyActionImpl>;
-export const createMySlice = (set: Setter, get: Getter, api?: unknown) =>
-  new MyActionImpl(set, get, api);
-```
-
-2. Registrar en `src/store/index.ts` con persist opcional:
-
-```typescript
-import {
-  createMySlice,
-  initialMyState,
-  type MyState,
-  type MyActions,
-} from './slices/my-slice';
-
-export interface AppStore extends 
-  MyState,
-  MyActions { _hasHydrated?: boolean }
-
-const initialState = { ...initialMyState };
-
-export const useStore = create<AppStore>()(
-  persist(
-    (...params) => ({
-      ...initialState,
-      ...flattenActions<MyActions>([createMySlice(...params)]),
-      _hasHydrated: false,
-    }),
-    {
-      name: "hyprtask-store",
-      partialize: (state) => ({ myValue: state.value }),
-      skipHydration: typeof window === "undefined",
-    }
-  )
-);
-```
-
-3. Crear hooks en `src/store/hooks.ts`:
-
-```typescript
-export function useMyState() {
-  return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({ value: state.value, computedValue: state.computedValue }),
-        []
-      )
-    )
-  );
-}
-
-export function useMyActions() {
-  return useStore(
-    useCallback((state) => ({ setValue: state.setValue }), [])
-  );
-}
-
-export function useMy() {
-  return useStore(
-    useShallow(
-      useCallback(
-        (state) => ({ 
-          value: state.value, 
-          computedValue: state.computedValue,
-          setValue: state.setValue 
-        }),
-        []
-      )
-    )
-  );
-}
-```
+### ✅ Hooks theme optimizados
+- ~10 componentes actualizados a `useThemeState()`
+- Menos re-renders innecesarios
 
 ## Ventajas
 
-- ✅ **Middleware persist oficial**: Manejo robusto de SSR y localStorage
-- ✅ **Separación estado/acciones**: Optimización de renders
-- ✅ **useShallow**: Comparación eficiente de objetos
-- ✅ **TypeScript**: Tipado completo y seguro
-- ✅ **SSR First**: No más hydration mismatches
-- ✅ **Escalable**: Patrón class-based para lógica compleja
-- ✅ **DevTools**: Integrado con Redux DevTools
+- ✅ **Sin capas redundantes**: 5 capas en lugar de 6
+- **Sin props drilling**: Filtros en store global
+- **Persistencia automática**: Tema, filtros y view mode se guardan
+- **SSR First**: No hydration mismatches
+- **Performance**: `useShallow` + separación estado/acciones
+- **DevTools**: Redux DevTools middleware incluido
+- **TypeScript**: 100% tipado
 
-## Migración desde Context API (Completada)
+## Testing
 
-- ❌ `useThemeContext` → ✅ `useThemeState` / `useThemeActions`
-- ❌ `useTaskFilters` (Context) → ✅ `useTaskFiltersState` / `useTaskFiltersActions`
-- ❌ `useTaskViewMode` (Context) → ✅ `useViewModeState` / `useViewModeActions`
-- ❌ Manual localStorage → ✅ `persist` middleware
+```bash
+npm run lint      # ✅ Sin errores
+npx tsc --noEmit  # ✅ Sin errores
+npm run build     # ✅ 7/7 páginas estáticas
+```
+
+## DevTools
+
+El store incluye Redux DevTools middleware para debugging:
+- Instala la extensión [Redux DevTools](https://github.com/reduxjs/redux-devtools) en tu navegador
+- El store aparecerá como "hyprtask-store" en el panel de DevTools

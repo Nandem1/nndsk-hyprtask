@@ -3,19 +3,17 @@
 import { motion } from "framer-motion";
 import { LayoutGrid, ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { useTheme } from "@/store/hooks";
-import { VIEW_MODES, TaskViewMode } from "../model/view-mode";
+import {
+  useThemeState,
+  useViewModeState,
+  useViewModeActions,
+} from "@/store/hooks";
+import { VIEW_MODES } from "../model/view-mode";
 
-interface ViewModeSelectorProps {
-  viewMode: TaskViewMode;
-  onChange: (mode: TaskViewMode) => void;
-}
-
-export function ViewModeSelector({
-  viewMode,
-  onChange,
-}: ViewModeSelectorProps) {
-  const { themeClasses } = useTheme();
+export function ViewModeSelector() {
+  const { themeClasses } = useThemeState();
+  const { viewMode } = useViewModeState();
+  const { setViewModeImmediate } = useViewModeActions();
   const [isOpen, setIsOpen] = useState(false);
 
   const currentMode =
@@ -60,7 +58,7 @@ export function ViewModeSelector({
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
-                    onChange(mode.id);
+                    setViewModeImmediate(mode.id);
                     setIsOpen(false);
                   }}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all text-left ${

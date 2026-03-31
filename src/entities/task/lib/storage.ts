@@ -1,11 +1,11 @@
 // ABSTRACCIÓN DE ALMACENAMIENTO PARA TAREAS
 // localStorage por ahora, preparado para migrar a Supabase
 
-import type { Task, TaskSettings } from '../model/types';
+import type { Task, TaskSettings } from "../model/types";
 
 const STORAGE_KEYS = {
-  TASKS: 'hyprtodo_tasks',
-  SETTINGS: 'hyprtodo_task_settings',
+  TASKS: "hyprtodo_tasks",
+  SETTINGS: "hyprtodo_task_settings",
 } as const;
 
 // ============================================
@@ -16,7 +16,7 @@ export async function getTasks(): Promise<Task[]> {
   // TODO: Migrar a Supabase cuando esté listo
   // return await supabase.from('tasks').select('*').order('createdAt', { ascending: false });
 
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
 
   const stored = localStorage.getItem(STORAGE_KEYS.TASKS);
   if (!stored) return [];
@@ -26,12 +26,12 @@ export async function getTasks(): Promise<Task[]> {
 
 export async function getActiveTasks(): Promise<Task[]> {
   const tasks = await getTasks();
-  return tasks.filter(task => !task.isCompleted);
+  return tasks.filter((task) => !task.isCompleted);
 }
 
 export async function getCompletedTasks(): Promise<Task[]> {
   const tasks = await getTasks();
-  return tasks.filter(task => task.isCompleted);
+  return tasks.filter((task) => task.isCompleted);
 }
 
 export async function saveTask(task: Task): Promise<void> {
@@ -39,7 +39,7 @@ export async function saveTask(task: Task): Promise<void> {
   // await supabase.from('tasks').upsert(task);
 
   const tasks = await getTasks();
-  const existingIndex = tasks.findIndex(t => t.id === task.id);
+  const existingIndex = tasks.findIndex((t) => t.id === task.id);
 
   if (existingIndex >= 0) {
     tasks[existingIndex] = task;
@@ -55,13 +55,13 @@ export async function deleteTask(id: string): Promise<void> {
   // await supabase.from('tasks').delete().eq('id', id);
 
   const tasks = await getTasks();
-  const filtered = tasks.filter(task => task.id !== id);
+  const filtered = tasks.filter((task) => task.id !== id);
   localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(filtered));
 }
 
 export async function toggleTask(id: string): Promise<void> {
   const tasks = await getTasks();
-  const task = tasks.find(t => t.id === id);
+  const task = tasks.find((t) => t.id === id);
 
   if (!task) return;
 
@@ -79,7 +79,7 @@ export async function setCurrentTask(id: string): Promise<void> {
   const tasks = await getTasks();
 
   // Quitar current de todas las tareas
-  tasks.forEach(task => {
+  tasks.forEach((task) => {
     if (task.id === id) {
       task.isCurrent = true;
     } else {
@@ -93,8 +93,14 @@ export async function setCurrentTask(id: string): Promise<void> {
 
 export async function getCurrentTask(): Promise<Task | null> {
   const tasks = await getTasks();
-  const current = tasks.find(t => t.isCurrent && !t.isCompleted);
+  const current = tasks.find((t) => t.isCurrent && !t.isCompleted);
   return current || null;
+}
+
+export async function getTaskById(id: string): Promise<Task | null> {
+  const tasks = await getTasks();
+  const task = tasks.find((t) => t.id === id);
+  return task || null;
 }
 
 // ============================================
@@ -104,13 +110,16 @@ export async function getCurrentTask(): Promise<Task | null> {
 export async function getTaskSettings(): Promise<TaskSettings> {
   // TODO: Migrar a Supabase cuando esté listo
 
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return { maxActiveTasks: 5, autoArchiveDays: 7 };
   }
 
   const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
   if (!stored) {
-    const defaultSettings: TaskSettings = { maxActiveTasks: 5, autoArchiveDays: 7 };
+    const defaultSettings: TaskSettings = {
+      maxActiveTasks: 5,
+      autoArchiveDays: 7,
+    };
     await saveTaskSettings(defaultSettings);
     return defaultSettings;
   }
@@ -134,11 +143,12 @@ export async function autoArchiveCompletedTasks(): Promise<number> {
   const now = new Date();
   let archived = 0;
 
-  const filtered = tasks.filter(task => {
+  const filtered = tasks.filter((task) => {
     if (!task.isCompleted || !task.completedAt) return true;
 
     const completedDate = new Date(task.completedAt);
-    const daysSinceCompleted = (now.getTime() - completedDate.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceCompleted =
+      (now.getTime() - completedDate.getTime()) / (1000 * 60 * 60 * 24);
 
     if (daysSinceCompleted >= settings.autoArchiveDays) {
       archived++;
