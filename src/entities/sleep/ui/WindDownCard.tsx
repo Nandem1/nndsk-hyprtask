@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { cn } from "@/shared/lib/utils";
 import {
   Card,
   CardContent,
@@ -14,7 +15,7 @@ import { Wind, Play, Pause, RotateCcw } from "lucide-react";
 interface WindDownStep {
   id: string;
   title: string;
-  duration: number; // minutos
+  duration: number;
   description: string;
 }
 
@@ -63,7 +64,6 @@ export function WindDownCard() {
     setTimeRemaining(0);
   };
 
-  // Efecto para avanzar al siguiente paso cuando el tiempo llega a 0
   useEffect(() => {
     if (isActive && timeRemaining === 0) {
       if (currentStep < WIND_DOWN_STEPS.length - 1) {
@@ -77,7 +77,6 @@ export function WindDownCard() {
     }
   }, [isActive, timeRemaining, currentStep]);
 
-  // Timer effect
   useEffect(() => {
     if (!isActive || timeRemaining <= 0) {
       return;
@@ -102,12 +101,12 @@ export function WindDownCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Wind className="h-5 w-5" />
+          <Wind className="size-5" />
           Rutina Pre-Sueno
         </CardTitle>
         <CardDescription>Preparate para un descanso reparador</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col gap-4">
         {currentStep < WIND_DOWN_STEPS.length ? (
           <>
             <div className="text-center py-4">
@@ -117,17 +116,17 @@ export function WindDownCard() {
               <div className="text-sm text-muted-foreground mb-4">
                 {currentStepData.description}
               </div>
-              {currentStepData.duration > 0 && (
+              {currentStepData.duration > 0 ? (
                 <div className="text-4xl font-semibold tabular-nums">
                   {formatTime(timeRemaining)}
                 </div>
-              )}
+              ) : null}
             </div>
 
             <div className="flex gap-2 justify-center">
               {!isActive ? (
                 <Button onClick={startRoutine} className="flex-1">
-                  <Play className="h-4 w-4 mr-2" />
+                  <Play data-icon="inline-start" />
                   Iniciar
                 </Button>
               ) : (
@@ -136,27 +135,27 @@ export function WindDownCard() {
                   variant="outline"
                   className="flex-1"
                 >
-                  <Pause className="h-4 w-4 mr-2" />
+                  <Pause data-icon="inline-start" />
                   Pausar
                 </Button>
               )}
               <Button onClick={resetRoutine} variant="outline">
-                <RotateCcw className="h-4 w-4" />
+                <RotateCcw />
               </Button>
             </div>
 
-            {/* Indicador de progreso */}
-            <div className="space-y-1">
+            <div className="flex flex-col gap-1">
               {WIND_DOWN_STEPS.map((step, index) => (
                 <div
                   key={step.id}
-                  className={`h-1 rounded ${
+                  className={cn(
+                    "h-1 rounded",
                     index < currentStep
                       ? "bg-primary"
                       : index === currentStep
                         ? "bg-primary/50"
-                        : "bg-muted"
-                  }`}
+                        : "bg-muted",
+                  )}
                 />
               ))}
             </div>

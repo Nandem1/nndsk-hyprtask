@@ -64,21 +64,21 @@ type Setter = StoreSetter<ThemeStore>;
 type Getter = StoreGetter<ThemeStore>;
 
 export class ThemeActionImpl {
-  private readonly _get: Getter;
-  private readonly _set: Setter;
+  readonly #get: Getter;
+  readonly #set: Setter;
 
   constructor(set: Setter, get: Getter, _api?: unknown) {
     void _api;
-    this._set = set;
-    this._get = get;
+    this.#set = set;
+    this.#get = get;
   }
 
   // --------------------------------------------------------------------------
   // Internal Helpers
   // --------------------------------------------------------------------------
 
-  private _updateThemeState = (palette: ThemePalette): void => {
-    this._set({
+  #updateThemeState = (palette: ThemePalette): void => {
+    this.#set({
       palette,
       themeClasses: computeThemeClasses(palette),
       isDarkPalette: computeIsDarkPalette(palette),
@@ -94,7 +94,7 @@ export class ThemeActionImpl {
    * Nota: La persistencia se maneja via middleware persist
    */
   changePalette = (palette: ThemePalette): void => {
-    this._updateThemeState(palette);
+    this.#updateThemeState(palette);
   };
 }
 

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/shared/lib/utils";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   X,
   Play,
@@ -31,14 +32,13 @@ interface FocusModeProps {
 
 type TimerState = "idle" | "running" | "paused" | "break";
 
-// Componente auxiliar para mostrar el nombre del proyecto
 function ProjectName({ projectId }: { projectId: string }) {
   const { name } = useProjectInfo(projectId);
   return <p className="text-muted-foreground mt-2">{name}</p>;
 }
 
-const FOCUS_DURATION = 25 * 60; // 25 minutos en segundos
-const BREAK_DURATION = 5 * 60; // 5 minutos en segundos
+const FOCUS_DURATION = 25 * 60;
+const BREAK_DURATION = 5 * 60;
 
 export function FocusMode({
   task,
@@ -48,13 +48,13 @@ export function FocusMode({
   onToggleTask,
 }: FocusModeProps) {
   const { themeClasses } = useThemeState();
+  const shouldReduceMotion = useReducedMotion();
   const [timerState, setTimerState] = useState<TimerState>("idle");
   const [timeLeft, setTimeLeft] = useState(FOCUS_DURATION);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [completedSessions, setCompletedSessions] = useState(0);
 
-  // Formatear tiempo
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -64,7 +64,6 @@ export function FocusMode({
   };
 
   const playSuccessSound = () => {
-    // Crear un sonido simple con Web Audio API
     const audioContext = new (
       window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext })
@@ -76,9 +75,9 @@ export function FocusMode({
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
 
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(
@@ -99,7 +98,6 @@ export function FocusMode({
     setTimeLeft(BREAK_DURATION);
   }, [soundEnabled]);
 
-  // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -108,7 +106,6 @@ export function FocusMode({
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (timeLeft === 0) {
-      // Timer completado
       if (timerState === "running") {
         handleSessionComplete();
       } else if (timerState === "break") {
@@ -142,7 +139,6 @@ export function FocusMode({
     }
   };
 
-  // Calcular progreso
   const totalTime = timerState === "break" ? BREAK_DURATION : FOCUS_DURATION;
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
 
@@ -152,22 +148,23 @@ export function FocusMode({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-background/95 flex flex-col"
+          exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+          className="fixed inset-0 bg-background/95 flex flex-col"
         >
-          {/* Header minimalista */}
           <div className="flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <div
-                className={`w-3 h-3 rounded-full ${
+                className={cn(
+                  "size-3 rounded-full",
                   timerState === "running"
-                    ? "bg-green-500 animate-pulse"
+                    ? "bg-primary animate-pulse"
                     : timerState === "break"
-                      ? "bg-blue-500"
-                      : "bg-muted"
-                }`}
+                      ? "bg-accent"
+                      : "bg-muted",
+                )}
               />
               <span className="text-sm text-muted-foreground">
                 {timerState === "running"
@@ -184,47 +181,47 @@ export function FocusMode({
                 size="icon"
                 onClick={() => setSoundEnabled(!soundEnabled)}
               >
-                {soundEnabled ? (
-                  <Volume2 className="w-4 h-4" />
-                ) : (
-                  <VolumeX className="w-4 h-4" />
-                )}
+                {soundEnabled ? <Volume2 /> : <VolumeX />}
               </Button>
               <Button variant="ghost" size="icon" onClick={toggleFullscreen}>
-                {isFullscreen ? (
-                  <Minimize2 className="w-4 h-4" />
-                ) : (
-                  <Maximize2 className="w-4 h-4" />
-                )}
+                {isFullscreen ? <Minimize2 /> : <Maximize2 />}
               </Button>
               <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="w-5 h-5" />
+                <X />
               </Button>
             </div>
           </div>
 
-          {/* Contenido principal */}
           <div className="flex-1 flex flex-col items-center justify-center p-8">
-            {/* Estado de break */}
             {timerState === "break" ? (
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
+                initial={
+                  shouldReduceMotion
+                    ? { opacity: 1 }
+                    : { scale: 0.9, opacity: 0 }
+                }
                 animate={{ scale: 1, opacity: 1 }}
-                className="text-center space-y-6"
+                transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
+                className="flex flex-col items-center gap-6 text-center"
               >
-                <div className="w-24 h-24 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <Coffee className="w-12 h-12 text-blue-500" />
+                <div className="size-24 mx-auto rounded-full bg-accent/10 flex items-center justify-center">
+                  <Coffee className={cn("size-12", themeClasses.textPrimary)} />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-2">
                     ¡Tiempo de descanso!
                   </h2>
                   <p className="text-muted-foreground">
-                    Has completado {completedSessions} sesión
+                    Has completado {completedSessions} sesion
                     {completedSessions !== 1 ? "es" : ""} de foco
                   </p>
                 </div>
-                <div className="text-6xl font-mono font-bold text-blue-500">
+                <div
+                  className={cn(
+                    "text-6xl font-mono font-bold",
+                    themeClasses.textPrimary,
+                  )}
+                >
                   {formatTime(timeLeft)}
                 </div>
                 <div className="flex items-center gap-3">
@@ -234,32 +231,33 @@ export function FocusMode({
                 </div>
               </motion.div>
             ) : (
-              /* Estado de focus */
-              <div className="w-full max-w-2xl space-y-8">
-                {/* Tarea actual */}
+              <div className="w-full max-w-2xl flex flex-col gap-8">
                 <motion.div
-                  initial={{ y: 20, opacity: 0 }}
+                  initial={
+                    shouldReduceMotion ? { opacity: 1 } : { y: 20, opacity: 0 }
+                  }
                   animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
                   className="text-center"
                 >
                   <p className="text-sm text-muted-foreground mb-2">
                     Trabajando en
                   </p>
                   <h1
-                    className={`text-3xl md:text-4xl font-bold ${themeClasses.textPrimary}`}
+                    className={cn(
+                      "text-3xl md:text-4xl font-bold",
+                      themeClasses.textPrimary,
+                    )}
                   >
                     {task.title}
                   </h1>
-                  {task.projectId && <ProjectName projectId={task.projectId} />}
+                  {task.projectId ? (
+                    <ProjectName projectId={task.projectId} />
+                  ) : null}
                 </motion.div>
 
-                {/* Timer circular */}
-                <div className="relative w-72 h-72 mx-auto">
-                  {/* Círculo de fondo */}
-                  <svg
-                    className="w-full h-full -rotate-90"
-                    viewBox="0 0 100 100"
-                  >
+                <div className="relative size-72 mx-auto">
+                  <svg className="size-full -rotate-90" viewBox="0 0 100 100">
                     <circle
                       cx="50"
                       cy="50"
@@ -281,15 +279,15 @@ export function FocusMode({
                       strokeDashoffset={`${
                         2 * Math.PI * 45 * (1 - progress / 100)
                       }`}
-                      className={`${
+                      className={cn(
                         timerState === "running"
                           ? themeClasses.textPrimary
-                          : "text-muted-foreground"
-                      } transition-all duration-1000`}
+                          : "text-muted-foreground",
+                        "transition-all duration-1000",
+                      )}
                     />
                   </svg>
 
-                  {/* Tiempo en el centro */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-6xl font-mono font-bold">
                       {formatTime(timeLeft)}
@@ -304,11 +302,10 @@ export function FocusMode({
                   </div>
                 </div>
 
-                {/* Controles */}
                 <div className="flex items-center justify-center gap-4">
                   {timerState === "idle" || timerState === "paused" ? (
                     <Button size="lg" onClick={startTimer} className="px-8">
-                      <Play className="w-5 h-5 mr-2" />
+                      <Play data-icon="inline-start" />
                       {timerState === "paused" ? "Continuar" : "Empezar"}
                     </Button>
                   ) : (
@@ -318,36 +315,37 @@ export function FocusMode({
                       onClick={pauseTimer}
                       className="px-8"
                     >
-                      <Pause className="w-5 h-5 mr-2" />
+                      <Pause data-icon="inline-start" />
                       Pausar
                     </Button>
                   )}
 
-                  {(timerState === "running" || timerState === "paused") && (
+                  {timerState === "running" || timerState === "paused" ? (
                     <Button variant="ghost" size="icon" onClick={resetTimer}>
-                      <RotateCcw className="w-5 h-5" />
+                      <RotateCcw />
                     </Button>
-                  )}
+                  ) : null}
                 </div>
 
-                {/* Acciones rápidas */}
                 <div className="flex items-center justify-center gap-3 pt-4">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={onToggleTask}
-                    className="text-green-600 border-green-600/30 hover:bg-green-600/10"
+                    className={cn(
+                      "border-primary/30 hover:bg-primary/10",
+                      themeClasses.textPrimary,
+                    )}
                   >
-                    <Check className="w-4 h-4 mr-2" />
+                    <Check data-icon="inline-start" />
                     Completar tarea
                   </Button>
                   <Button variant="outline" size="sm" onClick={onComplete}>
-                    <Timer className="w-4 h-4 mr-2" />
-                    Terminar sesión
+                    <Timer data-icon="inline-start" />
+                    Terminar sesion
                   </Button>
                 </div>
 
-                {/* Stats de sesión */}
                 <div className="flex items-center justify-center gap-8 pt-4 text-center">
                   <div>
                     <div className="text-2xl font-bold">
@@ -370,19 +368,23 @@ export function FocusMode({
             )}
           </div>
 
-          {/* Distraction blocker message */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={
+              shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }
+            }
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{
+              duration: shouldReduceMotion ? 0 : 0.3,
+              delay: shouldReduceMotion ? 0 : 0.5,
+            }}
             className="text-center pb-8 text-muted-foreground text-sm"
           >
             <div className="flex items-center justify-center gap-2">
-              <Zap className="w-4 h-4" />
+              <Zap className="size-4" />
               <span>
                 {timerState === "running"
                   ? "Modo foco activado. Una tarea a la vez."
-                  : "Elige una tarea y enfócate en ella."}
+                  : "Elige una tarea y enfocate en ella."}
               </span>
             </div>
           </motion.div>

@@ -17,7 +17,6 @@ export function HeaderClient() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between px-4">
-        {/* Logo */}
         <Link
           href="/tasks"
           className="flex items-center gap-2 font-semibold text-lg tracking-tight"
@@ -25,11 +24,10 @@ export function HeaderClient() {
           <span className="text-foreground">hyprtask</span>
         </Link>
 
-        {/* Center - Current Task */}
         <div className="flex-1 flex justify-center px-8">
           {currentTask ? (
             <div className="flex items-center gap-3 text-sm">
-              <CheckSquare className="h-4 w-4 text-muted-foreground" />
+              <CheckSquare className="size-4 text-muted-foreground" />
               <span className="text-muted-foreground">En progreso:</span>
               <span className="font-medium text-foreground truncate max-w-[300px]">
                 {currentTask.title}
@@ -42,12 +40,10 @@ export function HeaderClient() {
           )}
         </div>
 
-        {/* Right - Status & Controls */}
         <div className="flex items-center gap-1">
-          {/* Sleep Status */}
-          {sleepData && (
+          {sleepData ? (
             <div className="flex items-center gap-2 px-3 py-1.5 text-sm border-r border-border">
-              <Bed className="h-4 w-4 text-muted-foreground" />
+              <Bed className="size-4 text-muted-foreground" />
               <span className="text-muted-foreground">Dormir:</span>
               <span className="font-medium">
                 {sleepData.recommendedBedtime}
@@ -57,26 +53,23 @@ export function HeaderClient() {
                 {formatMinutesToReadable(sleepData.timeUntilBedtime)}
               </span>
             </div>
-          )}
+          ) : null}
 
-          {/* Work Status */}
-          {workData && (
+          {workData ? (
             <div className="flex items-center gap-2 px-3 py-1.5 text-sm border-r border-border">
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <Briefcase className="size-4 text-muted-foreground" />
               <span className="text-muted-foreground">Trabajo:</span>
               <span className="font-medium">{workData.endTime}</span>
             </div>
-          )}
+          ) : null}
 
-          {/* Config */}
-          <Button variant="ghost" size="icon" asChild className="h-9 w-9">
+          <Button variant="ghost" size="icon" asChild className="size-9">
             <Link href="/sleep/config">
-              <Settings className="h-4 w-4" />
-              <span className="sr-only">Configuración</span>
+              <Settings />
+              <span className="sr-only">Configuracion</span>
             </Link>
           </Button>
 
-          {/* Theme Toggle */}
           <ThemeToggle />
         </div>
       </div>

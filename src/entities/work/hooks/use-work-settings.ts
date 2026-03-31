@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getWorkSettings, saveWorkSettings } from '../lib/storage';
-import { calculateWorkData } from '../lib/calculations';
-import { workKeys } from '../model/query-keys';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getWorkSettings, saveWorkSettings } from "../lib/storage";
+import { calculateWorkData } from "../lib/calculations";
+import { workKeys } from "../model/query-keys";
 
 export { workKeys };
 
@@ -12,7 +12,7 @@ export function useWorkSettings() {
   return useQuery({
     queryKey: workKeys.settings(),
     queryFn: getWorkSettings,
-    refetchInterval: 60000, // Refetch cada minuto
+    staleTime: Infinity,
   });
 }
 
@@ -39,6 +39,6 @@ export function useWorkCalculations() {
       return calculateWorkData(settings);
     },
     enabled: !!settings,
-    refetchInterval: 60000, // Refetch cada minuto
+    staleTime: Infinity,
   });
 }

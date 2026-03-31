@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/shared/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +12,17 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Separator } from "@/shared/ui/separator";
 import {
   useActiveProjects,
   useSaveProject,
   useDeleteProject,
 } from "../hooks/use-projects";
-import type { Project, ProjectColor, ProjectIcon } from "../model/project-types";
+import type {
+  Project,
+  ProjectColor,
+  ProjectIcon,
+} from "../model/project-types";
 import { PROJECT_COLOR_CLASSES } from "../model/project-types";
 import * as Icons from "lucide-react";
 import { Plus, Trash2, GripVertical } from "lucide-react";
@@ -69,7 +75,10 @@ const AVAILABLE_ICONS: ProjectIcon[] = [
   "Target",
 ];
 
-export function ProjectConfigModal({ isOpen, onClose }: ProjectConfigModalProps) {
+export function ProjectConfigModal({
+  isOpen,
+  onClose,
+}: ProjectConfigModalProps) {
   const { data: projects = [] } = useActiveProjects();
   const saveProjectMutation = useSaveProject();
   const deleteProjectMutation = useDeleteProject();
@@ -122,7 +131,9 @@ export function ProjectConfigModal({ isOpen, onClose }: ProjectConfigModalProps)
   };
 
   const getIconComponent = (iconName: ProjectIcon) => {
-    const IconComponent = Icons[iconName as keyof typeof Icons] as React.ComponentType<{ className?: string }>;
+    const IconComponent = Icons[
+      iconName as keyof typeof Icons
+    ] as React.ComponentType<{ className?: string }>;
     return IconComponent || Icons.FolderKanban;
   };
 
@@ -136,8 +147,7 @@ export function ProjectConfigModal({ isOpen, onClose }: ProjectConfigModalProps)
           </DialogDescription>
         </DialogHeader>
 
-        {/* Lista de proyectos */}
-        <div className="space-y-2 my-4">
+        <div className="flex flex-col gap-2 my-4">
           {projects.map((project) => {
             const colorClasses = PROJECT_COLOR_CLASSES[project.color];
             const IconComponent = getIconComponent(project.icon);
@@ -146,9 +156,9 @@ export function ProjectConfigModal({ isOpen, onClose }: ProjectConfigModalProps)
                 key={project.id}
                 className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
               >
-                <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                <div className={`p-2 rounded-md ${colorClasses.bg}`}>
-                  <IconComponent className={`h-4 w-4 ${colorClasses.text}`} />
+                <GripVertical className="size-4 text-muted-foreground cursor-grab" />
+                <div className={cn("p-2 rounded-md", colorClasses.bg)}>
+                  <IconComponent className={cn("size-4", colorClasses.text)} />
                 </div>
                 <span className="flex-1 font-medium">{project.name}</span>
                 <Button
@@ -164,81 +174,89 @@ export function ProjectConfigModal({ isOpen, onClose }: ProjectConfigModalProps)
                   onClick={() => handleDelete(project)}
                   className="text-destructive hover:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 />
                 </Button>
               </div>
             );
           })}
         </div>
 
-        {/* Formulario crear/editar */}
         {isCreating ? (
-          <div className="space-y-4 border-t pt-4">
-            <h4 className="font-medium">
-              {editingProject ? "Editar Proyecto" : "Nuevo Proyecto"}
-            </h4>
+          <>
+            <Separator />
+            <div className="flex flex-col gap-4 pt-4">
+              <h4 className="font-medium">
+                {editingProject ? "Editar Proyecto" : "Nuevo Proyecto"}
+              </h4>
 
-            <div>
-              <Label htmlFor="project-name">Nombre</Label>
-              <Input
-                id="project-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Nombre del proyecto"
-              />
-            </div>
-
-            <div>
-              <Label>Color</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {AVAILABLE_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setColor(c)}
-                    className={`w-8 h-8 rounded-full ${PROJECT_COLOR_CLASSES[c].bg} border-2 ${
-                      color === c ? "border-foreground" : "border-transparent"
-                    }`}
-                    title={c}
-                  />
-                ))}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="project-name">Nombre</Label>
+                <Input
+                  id="project-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nombre del proyecto"
+                />
               </div>
-            </div>
 
-            <div>
-              <Label>Icono</Label>
-              <div className="flex flex-wrap gap-2 mt-2 max-h-32 overflow-y-auto">
-                {AVAILABLE_ICONS.map((i) => {
-                  const IconComponent = getIconComponent(i);
-                  return (
+              <div className="flex flex-col gap-2">
+                <Label>Color</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {AVAILABLE_COLORS.map((c) => (
                     <button
-                      key={i}
-                      onClick={() => setIcon(i)}
-                      className={`p-2 rounded-md border ${
-                        icon === i
-                          ? "border-foreground bg-accent"
-                          : "border-border hover:bg-accent/50"
-                      }`}
-                      title={i}
-                    >
-                      <IconComponent className="h-4 w-4" />
-                    </button>
-                  );
-                })}
+                      key={c}
+                      onClick={() => setColor(c)}
+                      className={cn(
+                        "size-8 rounded-full",
+                        PROJECT_COLOR_CLASSES[c].bg,
+                        "border-2",
+                        color === c
+                          ? "border-foreground"
+                          : "border-transparent",
+                      )}
+                      title={c}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Icono</Label>
+                <div className="flex flex-wrap gap-2 mt-2 max-h-32 overflow-y-auto">
+                  {AVAILABLE_ICONS.map((i) => {
+                    const IconComponent = getIconComponent(i);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setIcon(i)}
+                        className={cn(
+                          "p-2 rounded-md border",
+                          icon === i
+                            ? "border-foreground bg-accent"
+                            : "border-border hover:bg-accent/50",
+                        )}
+                        title={i}
+                      >
+                        <IconComponent className="size-4" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={handleSave} className="flex-1">
+                  {editingProject ? "Guardar Cambios" : "Crear Proyecto"}
+                </Button>
+                <Button variant="outline" onClick={resetForm}>
+                  Cancelar
+                </Button>
               </div>
             </div>
-
-            <div className="flex gap-2">
-              <Button onClick={handleSave} className="flex-1">
-                {editingProject ? "Guardar Cambios" : "Crear Proyecto"}
-              </Button>
-              <Button variant="outline" onClick={resetForm}>
-                Cancelar
-              </Button>
-            </div>
-          </div>
+          </>
         ) : (
           <Button onClick={() => setIsCreating(true)} className="w-full">
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus data-icon="inline-start" />
             Agregar Proyecto
           </Button>
         )}

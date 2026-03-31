@@ -15,6 +15,33 @@ export { Separator } from "./separator";
 export { Skeleton } from "./skeleton";
 export { EmptyState } from "./empty-state";
 export { Progress } from "./progress";
+export { Textarea } from "./textarea";
+export { Checkbox } from "./checkbox";
+export { Switch } from "./switch";
+export { Alert, AlertTitle, AlertDescription } from "./alert";
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
+export { ToggleGroup, ToggleGroupItem } from "./toggle-group";
+export {
+  Sheet,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+} from "./sheet";
 
 // Client Components - Animation & Interactivity
 export {

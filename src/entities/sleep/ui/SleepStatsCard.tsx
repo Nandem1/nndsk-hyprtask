@@ -8,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
+import { Separator } from "@/shared/ui/separator";
+import { EmptyState } from "@/shared/ui/empty-state";
 import { BarChart3, TrendingUp } from "lucide-react";
 import { getSleepLogs } from "../lib/storage";
 import type { SleepLog } from "../model/types";
@@ -20,11 +22,9 @@ export function SleepStatsCard() {
   useEffect(() => {
     const loadLogs = async () => {
       const sleepLogs = await getSleepLogs();
-      // Ultimos 7 dias
       const last7Days = sleepLogs.slice(0, 7);
       setLogs(last7Days);
 
-      // Calcular promedios
       const logsWithHours = last7Days.filter(
         (log) => log.actualBedtime && log.actualWakeup,
       );
@@ -69,19 +69,17 @@ export function SleepStatsCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
+          <BarChart3 className="size-5" />
           Estadisticas Semanales
         </CardTitle>
         <CardDescription>Resumen de tus ultimos 7 dias</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col gap-4">
         {logs.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No hay registros aun</p>
-            <p className="text-sm mt-2">
-              Registra tu sueno para ver estadisticas
-            </p>
-          </div>
+          <EmptyState
+            title="No hay registros aun"
+            description="Registra tu sueno para ver estadisticas"
+          />
         ) : (
           <>
             <div className="grid grid-cols-2 gap-4">
@@ -103,12 +101,14 @@ export function SleepStatsCard() {
               </div>
             </div>
 
-            <div className="pt-4 border-t">
+            <Separator />
+
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                <TrendingUp className="h-4 w-4" />
+                <TrendingUp className="size-4" />
                 Registros recientes
               </div>
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2">
                 {logs.slice(0, 3).map((log) => (
                   <div
                     key={log.id}

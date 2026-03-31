@@ -19,7 +19,7 @@ export function ConfigPanel() {
         <p className="text-muted-foreground">Personaliza tu experiencia</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         <SleepConfigForm />
         <WorkConfigForm />
         <ThemePaletteSelector />

@@ -1,13 +1,12 @@
-"use client";
-
-import { ConfigPanel, Header } from "@/widgets";
+import { Header } from "@/widgets";
+import { ConfigPanelWrapper } from "./ConfigPanelWrapper";
 
 export default function ConfigPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <ConfigPanel />
+        <ConfigPanelWrapper />
       </main>
     </div>
   );

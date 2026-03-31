@@ -53,25 +53,25 @@ type Setter = StoreSetter<FiltersStore>;
 type Getter = StoreGetter<FiltersStore>;
 
 export class TaskFiltersActionImpl {
-  private readonly _get: Getter;
-  private readonly _set: Setter;
+  readonly #get: Getter;
+  readonly #set: Setter;
 
   constructor(set: Setter, get: Getter, _api?: unknown) {
     void _api;
-    this._set = set;
-    this._get = get;
+    this.#set = set;
+    this.#get = get;
   }
 
   // --------------------------------------------------------------------------
   // Internal Helpers
   // --------------------------------------------------------------------------
 
-  private _updateFiltersState = (
+  #updateFiltersState = (
     selectedProjectId: string | "all",
     selectedCategoryId: string | "all",
     searchQuery: string,
   ): void => {
-    this._set({
+    this.#set({
       selectedProjectId,
       selectedCategoryId,
       searchQuery,
@@ -93,8 +93,8 @@ export class TaskFiltersActionImpl {
   // --------------------------------------------------------------------------
 
   setSelectedProject = (projectId: string | "all"): void => {
-    const state = this._get();
-    this._updateFiltersState(
+    const state = this.#get();
+    this.#updateFiltersState(
       projectId,
       state.selectedCategoryId,
       state.searchQuery,
@@ -106,8 +106,8 @@ export class TaskFiltersActionImpl {
   // --------------------------------------------------------------------------
 
   setSelectedCategory = (categoryId: string | "all"): void => {
-    const state = this._get();
-    this._updateFiltersState(
+    const state = this.#get();
+    this.#updateFiltersState(
       state.selectedProjectId,
       categoryId,
       state.searchQuery,
@@ -119,8 +119,8 @@ export class TaskFiltersActionImpl {
   // --------------------------------------------------------------------------
 
   setSearchQuery = (query: string): void => {
-    const state = this._get();
-    this._updateFiltersState(
+    const state = this.#get();
+    this.#updateFiltersState(
       state.selectedProjectId,
       state.selectedCategoryId,
       query,
@@ -128,8 +128,8 @@ export class TaskFiltersActionImpl {
   };
 
   clearSearchQuery = (): void => {
-    const state = this._get();
-    this._updateFiltersState(
+    const state = this.#get();
+    this.#updateFiltersState(
       state.selectedProjectId,
       state.selectedCategoryId,
       "",
@@ -141,7 +141,7 @@ export class TaskFiltersActionImpl {
   // --------------------------------------------------------------------------
 
   clearFilters = (): void => {
-    this._updateFiltersState("all", "all", "");
+    this.#updateFiltersState("all", "all", "");
   };
 }
 

@@ -16,7 +16,7 @@ export function useSleepSettings() {
   return useQuery({
     queryKey: sleepKeys.settings(),
     queryFn: getSleepSettings,
-    refetchInterval: 60000, // Refetch cada minuto
+    staleTime: Infinity,
   });
 }
 
@@ -43,7 +43,7 @@ export function useSleepCalculations() {
       return calculateSleepData(settings);
     },
     enabled: !!settings,
-    refetchInterval: 60000, // Refetch cada minuto
+    staleTime: Infinity,
   });
 }
 
@@ -52,6 +52,6 @@ export function useSleepLogs() {
   return useQuery({
     queryKey: sleepKeys.logs(),
     queryFn: getSleepLogs,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: Infinity,
   });
 }

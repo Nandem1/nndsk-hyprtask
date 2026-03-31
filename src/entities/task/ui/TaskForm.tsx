@@ -1,9 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/shared/lib/utils";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { X, ArrowRight, GitBranch } from "lucide-react";
 import {
   useCreateTask,
@@ -81,23 +93,9 @@ export function TaskForm({
   };
 
   const priorityOptions = [
-    {
-      value: "low" as TaskPriority,
-      label: "Baja",
-      color:
-        "bg-green-500/10 border-green-500/30 text-green-600 dark:text-green-400",
-    },
-    {
-      value: "medium" as TaskPriority,
-      label: "Media",
-      color:
-        "bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400",
-    },
-    {
-      value: "high" as TaskPriority,
-      label: "Alta",
-      color: "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400",
-    },
+    { value: "low" as TaskPriority, label: "Baja" },
+    { value: "medium" as TaskPriority, label: "Media" },
+    { value: "high" as TaskPriority, label: "Alta" },
   ];
 
   return (
@@ -111,12 +109,16 @@ export function TaskForm({
             Agrega una nueva tarea a tu lista
           </p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="relative">
-            <label className="text-xs font-medium text-muted-foreground mb-2 block">
+            <Label
+              htmlFor="task-title"
+              className="text-xs font-medium text-muted-foreground mb-2 block"
+            >
               Titulo de la tarea
-            </label>
+            </Label>
             <Input
+              id="task-title"
               type="text"
               placeholder="Que necesitas hacer?"
               value={title}
@@ -125,99 +127,115 @@ export function TaskForm({
               autoFocus
               maxLength={100}
             />
-            {title.length > 0 && (
+            {title.length > 0 ? (
               <div className="absolute right-2 top-[34px] text-xs text-muted-foreground">
                 {title.length}/100
               </div>
-            )}
+            ) : null}
           </div>
 
-          {/* Proyecto y Categoria */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs font-medium text-muted-foreground">
                 Proyecto
-              </label>
-              <select
-                value={projectId || ""}
-                onChange={(e) => setProjectId(e.target.value || undefined)}
-                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              </Label>
+              <Select
+                value={projectId || "__none__"}
+                onValueChange={(value) =>
+                  setProjectId(value === "__none__" ? undefined : value)
+                }
               >
-                <option value="">Sin proyecto</option>
-                {projects.map((proj) => (
-                  <option key={proj.id} value={proj.id}>
-                    {proj.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin proyecto" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="__none__">Sin proyecto</SelectItem>
+                    {projects.map((proj) => (
+                      <SelectItem key={proj.id} value={proj.id}>
+                        {proj.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs font-medium text-muted-foreground">
                 Categoria
-              </label>
-              <select
-                value={categoryId || ""}
-                onChange={(e) => setCategoryId(e.target.value || undefined)}
-                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              </Label>
+              <Select
+                value={categoryId || "__none__"}
+                onValueChange={(value) =>
+                  setCategoryId(value === "__none__" ? undefined : value)
+                }
               >
-                <option value="">Sin categoría</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="__none__">Sin categoria</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Prioridad */}
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-2 block">
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-medium text-muted-foreground">
               Prioridad
-            </label>
-            <div className="flex gap-2">
+            </Label>
+            <ToggleGroup
+              type="single"
+              value={priority}
+              onValueChange={(value) => {
+                if (value) setPriority(value as TaskPriority);
+              }}
+              className="flex gap-2"
+            >
               {priorityOptions.map((option) => (
-                <button
+                <ToggleGroupItem
                   key={option.value}
-                  type="button"
-                  onClick={() => setPriority(option.value)}
-                  className={`flex-1 px-3 py-2 rounded-md border text-sm font-medium transition-colors ${
-                    priority === option.value
-                      ? option.color
-                      : "border-border hover:border-border/80 bg-muted/50"
-                  }`}
+                  value={option.value}
+                  className={cn(
+                    "flex-1",
+                    option.value === "high" &&
+                      "data-[state=on]:bg-destructive data-[state=on]:text-destructive-foreground data-[state=on]:border-destructive",
+                  )}
                 >
                   {option.label}
-                </button>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
 
-          {/* Vincular a tarea actual */}
-          {currentTask && (
+          {currentTask ? (
             <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted">
-              <input
-                type="checkbox"
+              <Switch
                 id="linkToCurrent"
                 checked={linkToCurrent}
-                onChange={(e) => setLinkToCurrent(e.target.checked)}
-                className="w-4 h-4 rounded border-border"
+                onCheckedChange={setLinkToCurrent}
               />
               <label
                 htmlFor="linkToCurrent"
                 className="flex items-center gap-2 text-sm cursor-pointer"
               >
-                <GitBranch className="w-4 h-4 text-muted-foreground" />
-                <span>Continuación de:</span>
+                <GitBranch className="size-4 text-muted-foreground" />
+                <span>Continuacion de:</span>
                 <span className="font-medium truncate max-w-[200px]">
                   {currentTask.title}
                 </span>
-                <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                <ArrowRight className="size-3 text-muted-foreground" />
               </label>
             </div>
-          )}
+          ) : null}
 
-          {/* Botones */}
           <div className="flex gap-3 pt-2">
             <Button
               type="submit"
@@ -231,7 +249,8 @@ export function TaskForm({
               {createTaskMutation.isPending ? "Guardando..." : "Crear Tarea"}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
-              <X className="h-4 w-4" />
+              <X data-icon="inline-start" />
+              Cancelar
             </Button>
           </div>
         </form>

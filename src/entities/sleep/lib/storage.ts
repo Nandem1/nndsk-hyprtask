@@ -12,6 +12,8 @@ const STORAGE_KEYS = {
 // ============================================
 
 export async function getSleepSettings(): Promise<SleepSettings | null> {
+  if (typeof window === "undefined") return null;
+
   const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
   if (!stored) return null;
 
@@ -21,10 +23,12 @@ export async function getSleepSettings(): Promise<SleepSettings | null> {
 export async function saveSleepSettings(
   settings: SleepSettings,
 ): Promise<void> {
+  if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
 }
 
 export async function deleteSleepSettings(): Promise<void> {
+  if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEYS.SETTINGS);
 }
 
@@ -33,6 +37,8 @@ export async function deleteSleepSettings(): Promise<void> {
 // ============================================
 
 export async function getSleepLogs(): Promise<SleepLog[]> {
+  if (typeof window === "undefined") return [];
+
   const stored = localStorage.getItem(STORAGE_KEYS.LOGS);
   if (!stored) return [];
 
@@ -47,6 +53,7 @@ export async function getSleepLogByDate(
 }
 
 export async function saveSleepLog(log: SleepLog): Promise<void> {
+  if (typeof window === "undefined") return;
   const logs = await getSleepLogs();
   const existingIndex = logs.findIndex((l) => l.id === log.id);
 
@@ -60,6 +67,7 @@ export async function saveSleepLog(log: SleepLog): Promise<void> {
 }
 
 export async function deleteSleepLog(id: string): Promise<void> {
+  if (typeof window === "undefined") return;
   const logs = await getSleepLogs();
   const filtered = logs.filter((log) => log.id !== id);
   localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(filtered));

@@ -24,13 +24,13 @@ type Setter = StoreSetter<ViewModeStore>;
 type Getter = StoreGetter<ViewModeStore>;
 
 export class ViewModeActionImpl {
-  private readonly _get: Getter;
-  private readonly _set: Setter;
+  readonly #get: Getter;
+  readonly #set: Setter;
 
   constructor(set: Setter, get: Getter, _api?: unknown) {
     void _api;
-    this._set = set;
-    this._get = get;
+    this.#set = set;
+    this.#get = get;
   }
 
   // --------------------------------------------------------------------------
@@ -41,13 +41,13 @@ export class ViewModeActionImpl {
    * Cambia el modo de vista con animación de transición
    */
   setViewMode = (mode: TaskViewMode): void => {
-    if (this._get().viewMode === mode) return;
+    if (this.#get().viewMode === mode) return;
 
-    this._set({ viewMode: mode, isTransitioning: true });
+    this.#set({ viewMode: mode, isTransitioning: true });
 
     // Finalizar transición después del delay
     setTimeout(() => {
-      this._set({ isTransitioning: false });
+      this.#set({ isTransitioning: false });
     }, 150);
   };
 
@@ -55,8 +55,8 @@ export class ViewModeActionImpl {
    * Cambio inmediato sin animación
    */
   setViewModeImmediate = (mode: TaskViewMode): void => {
-    if (this._get().viewMode === mode) return;
-    this._set({ viewMode: mode, isTransitioning: false });
+    if (this.#get().viewMode === mode) return;
+    this.#set({ viewMode: mode, isTransitioning: false });
   };
 }
 

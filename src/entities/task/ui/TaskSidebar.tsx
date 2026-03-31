@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/shared/lib/utils";
 import { X, Settings, FolderKanban, Tag } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import { useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
@@ -27,13 +28,11 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
-  // Contar tareas por proyecto
   const projectCounts = projects.map((project) => ({
     ...project,
     count: tasks.filter((t) => t.projectId === project.id).length,
   }));
 
-  // Contar tareas por categoría
   const categoryCounts = categories.map((category) => ({
     ...category,
     count: tasks.filter((t) => t.categoryId === category.id).length,
@@ -61,24 +60,23 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
 
   return (
     <aside className="w-72 border-r border-border bg-card h-full overflow-y-auto">
-      <div className="p-4 space-y-6">
-        {onClose && (
-          <div className="flex justify-end mb-4 md:hidden">
+      <div className="p-4 flex flex-col gap-6">
+        {onClose ? (
+          <div className="flex justify-end md:hidden">
             <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
+              <X />
             </Button>
           </div>
-        )}
+        ) : null}
 
-        {/* Header con contador y limpiar filtros */}
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm text-muted-foreground">Tareas Activas</div>
-            <div className={`text-3xl font-bold ${themeClasses.textPrimary}`}>
+            <div className={cn("text-3xl font-bold", themeClasses.textPrimary)}>
               {tasks.length}
             </div>
           </div>
-          {hasActiveFilters && (
+          {hasActiveFilters ? (
             <Button
               variant="ghost"
               size="sm"
@@ -89,26 +87,25 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
             >
               Limpiar filtros
             </Button>
-          )}
+          ) : null}
         </div>
 
-        {/* Proyectos */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              <FolderKanban className="h-4 w-4" />
+              <FolderKanban className="size-4" />
               Proyectos
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6"
+              className="size-6"
               onClick={() => setIsProjectModalOpen(true)}
             >
-              <Settings className="h-3.5 w-3.5" />
+              <Settings />
             </Button>
           </div>
-          <div className="space-y-1">
+          <div className="flex flex-col gap-1">
             {projectCounts.map((project) => {
               const IconComponent = getIconComponent(project.icon);
               const isSelected = selectedProjectId === project.id;
@@ -117,60 +114,66 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
                 <button
                   key={project.id}
                   onClick={() => handleProjectChange(project.id)}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                  className={cn(
+                    "w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm transition-colors",
                     isSelected
-                      ? `bg-accent border ${themeClasses.border}`
-                      : "border border-transparent hover:bg-accent/50"
-                  }`}
+                      ? cn("bg-accent border", themeClasses.border)
+                      : "border border-transparent hover:bg-accent/50",
+                  )}
                 >
                   <div className="flex items-center gap-3">
                     <IconComponent
-                      className={`h-4 w-4 ${isSelected ? themeClasses.textPrimary : "text-muted-foreground"}`}
+                      className={cn(
+                        "size-4",
+                        isSelected
+                          ? themeClasses.textPrimary
+                          : "text-muted-foreground",
+                      )}
                     />
                     <span
-                      className={
-                        isSelected
-                          ? `${themeClasses.textPrimary} font-medium`
-                          : "text-foreground"
-                      }
+                      className={cn(
+                        isSelected &&
+                          cn(themeClasses.textPrimary, "font-medium"),
+                        !isSelected && "text-foreground",
+                      )}
                     >
                       {project.name}
                     </span>
                   </div>
-                  {project.count > 0 && (
+                  {project.count > 0 ? (
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      className={cn(
+                        "px-2 py-0.5 rounded-full text-xs font-medium",
                         isSelected
-                          ? `${themeClasses.textPrimary} bg-primary/10`
-                          : "text-muted-foreground bg-muted"
-                      }`}
+                          ? cn(themeClasses.textPrimary, "bg-primary/10")
+                          : "text-muted-foreground bg-muted",
+                      )}
                     >
                       {project.count}
                     </span>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Categorías */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              <Tag className="h-4 w-4" />
-              Categorías
+              <Tag className="size-4" />
+              Categorias
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6"
+              className="size-6"
               onClick={() => setIsCategoryModalOpen(true)}
             >
-              <Settings className="h-3.5 w-3.5" />
+              <Settings />
             </Button>
           </div>
-          <div className="space-y-1">
+          <div className="flex flex-col gap-1">
             {categoryCounts.map((category) => {
               const IconComponent = getIconComponent(category.icon);
               const isSelected = selectedCategoryId === category.id;
@@ -179,37 +182,44 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
                 <button
                   key={category.id}
                   onClick={() => handleCategoryChange(category.id)}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                  className={cn(
+                    "w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm transition-colors",
                     isSelected
-                      ? `bg-accent border ${themeClasses.border}`
-                      : "border border-transparent hover:bg-accent/50"
-                  }`}
+                      ? cn("bg-accent border", themeClasses.border)
+                      : "border border-transparent hover:bg-accent/50",
+                  )}
                 >
                   <div className="flex items-center gap-3">
                     <IconComponent
-                      className={`h-4 w-4 ${isSelected ? themeClasses.textPrimary : "text-muted-foreground"}`}
+                      className={cn(
+                        "size-4",
+                        isSelected
+                          ? themeClasses.textPrimary
+                          : "text-muted-foreground",
+                      )}
                     />
                     <span
-                      className={
-                        isSelected
-                          ? `${themeClasses.textPrimary} font-medium`
-                          : "text-foreground"
-                      }
+                      className={cn(
+                        isSelected &&
+                          cn(themeClasses.textPrimary, "font-medium"),
+                        !isSelected && "text-foreground",
+                      )}
                     >
                       {category.name}
                     </span>
                   </div>
-                  {category.count > 0 && (
+                  {category.count > 0 ? (
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      className={cn(
+                        "px-2 py-0.5 rounded-full text-xs font-medium",
                         isSelected
-                          ? `${themeClasses.textPrimary} bg-primary/10`
-                          : "text-muted-foreground bg-muted"
-                      }`}
+                          ? cn(themeClasses.textPrimary, "bg-primary/10")
+                          : "text-muted-foreground bg-muted",
+                      )}
                     >
                       {category.count}
                     </span>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
@@ -217,7 +227,6 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
         </div>
       </div>
 
-      {/* Modales de configuración */}
       <ProjectConfigModal
         isOpen={isProjectModalOpen}
         onClose={() => setIsProjectModalOpen(false)}

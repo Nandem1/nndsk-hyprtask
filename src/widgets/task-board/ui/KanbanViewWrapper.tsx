@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { Task } from "@/entities/task";
 import type { useThemeState } from "@/store/hooks";
 import { useTaskFiltersState } from "@/store/hooks";
@@ -41,6 +41,7 @@ export function KanbanViewWrapper({
   onShowForm,
   themeClasses,
 }: TaskListViewProps) {
+  const shouldReduceMotion = useReducedMotion();
   const { selectedProjectId, selectedCategoryId } = useTaskFiltersState();
 
   const commonProps = {
@@ -76,10 +77,10 @@ export function KanbanViewWrapper({
     <AnimatePresence mode="wait">
       <motion.div
         key="kanban"
-        initial={{ opacity: 0, y: 10 }}
+        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.2 }}
+        exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
       >
         <KanbanView {...viewProps} />
       </motion.div>

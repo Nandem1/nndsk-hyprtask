@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
@@ -18,26 +18,28 @@ export function EmptyState({
   action,
   className,
 }: EmptyStateProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
       className={cn(
         "flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border/20 bg-background/50",
-        className
+        className,
       )}
     >
-      {Icon && (
+      {Icon ? (
         <div className="mb-4 p-3 rounded-full bg-muted">
-          <Icon className="h-6 w-6 text-muted-foreground" />
+          <Icon className="size-6 text-muted-foreground" />
         </div>
-      )}
+      ) : null}
       <h3 className="text-base font-medium text-foreground mb-1">{title}</h3>
-      {description && (
+      {description ? (
         <p className="text-sm text-muted-foreground max-w-xs">{description}</p>
-      )}
-      {action && <div className="mt-4">{action}</div>}
+      ) : null}
+      {action ? <div className="mt-4">{action}</div> : null}
     </motion.div>
   );
 }

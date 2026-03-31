@@ -1,7 +1,5 @@
-import { Suspense } from "react";
 import { Header } from "@/widgets";
-import { SleepDashboard } from "@/widgets";
-import { SleepPageSkeleton } from "./SleepPageSkeleton";
+import { SleepDashboardWrapper } from "./SleepDashboardWrapper";
 
 // Server Component - Main Page
 export default function SleepPage() {
@@ -9,9 +7,7 @@ export default function SleepPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <Suspense fallback={<SleepPageSkeleton />}>
-          <SleepDashboard />
-        </Suspense>
+        <SleepDashboardWrapper />
       </main>
     </div>
   );

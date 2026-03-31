@@ -27,6 +27,7 @@ export async function getActiveTasks(): Promise<Task[]> {
 }
 
 export async function saveTask(task: Task): Promise<void> {
+  if (typeof window === "undefined") return;
   const tasks = await getTasks();
   const existingIndex = tasks.findIndex((t) => t.id === task.id);
 
@@ -40,12 +41,14 @@ export async function saveTask(task: Task): Promise<void> {
 }
 
 export async function deleteTask(id: string): Promise<void> {
+  if (typeof window === "undefined") return;
   const tasks = await getTasks();
   const filtered = tasks.filter((task) => task.id !== id);
   localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(filtered));
 }
 
 export async function toggleTask(id: string): Promise<void> {
+  if (typeof window === "undefined") return;
   const tasks = await getTasks();
   const task = tasks.find((t) => t.id === id);
 
@@ -62,6 +65,7 @@ export async function toggleTask(id: string): Promise<void> {
 }
 
 export async function setCurrentTask(id: string): Promise<void> {
+  if (typeof window === "undefined") return;
   const tasks = await getTasks();
 
   // Quitar current de todas las tareas
@@ -112,6 +116,7 @@ export async function getTaskSettings(): Promise<TaskSettings> {
 }
 
 export async function saveTaskSettings(settings: TaskSettings): Promise<void> {
+  if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
 }
 
@@ -120,6 +125,7 @@ export async function saveTaskSettings(settings: TaskSettings): Promise<void> {
 // ============================================
 
 export async function autoArchiveCompletedTasks(): Promise<number> {
+  if (typeof window === "undefined") return 0;
   const tasks = await getTasks();
   const settings = await getTaskSettings();
   const now = new Date();
@@ -152,6 +158,7 @@ export async function updateTaskNotes(
   id: string,
   notes: string,
 ): Promise<void> {
+  if (typeof window === "undefined") return;
   const tasks = await getTasks();
   const task = tasks.find((t) => t.id === id);
 
@@ -169,6 +176,7 @@ export async function setTaskParent(
   taskId: string,
   parentTaskId: string | undefined,
 ): Promise<void> {
+  if (typeof window === "undefined") return;
   const tasks = await getTasks();
   const task = tasks.find((t) => t.id === taskId);
 
@@ -199,6 +207,7 @@ export async function setTaskChild(
   taskId: string,
   childTaskId: string | undefined,
 ): Promise<void> {
+  if (typeof window === "undefined") return;
   const tasks = await getTasks();
   const task = tasks.find((t) => t.id === taskId);
 
@@ -242,6 +251,7 @@ export async function getTaskChild(taskId: string): Promise<Task | null> {
 // ============================================
 
 export async function reorderTasks(orderedIds: string[]): Promise<void> {
+  if (typeof window === "undefined") return;
   const tasks = await getTasks();
 
   orderedIds.forEach((id, index) => {

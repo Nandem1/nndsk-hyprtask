@@ -32,8 +32,7 @@ export function useActiveTasks() {
   return useQuery({
     queryKey: taskKeys.active(),
     queryFn: getActiveTasks,
-    refetchInterval: 5000,
-    staleTime: 1000 * 30, // 30 segundos
+    staleTime: Infinity,
   });
 }
 
@@ -42,8 +41,7 @@ export function useCurrentTask() {
   return useQuery({
     queryKey: taskKeys.current(),
     queryFn: getCurrentTask,
-    refetchInterval: 2000,
-    staleTime: 1000 * 10, // 10 segundos
+    staleTime: Infinity,
   });
 }
 
@@ -53,7 +51,7 @@ export function useTaskById(id: string) {
     queryKey: taskKeys.detail(id),
     queryFn: () => getTaskById(id),
     enabled: !!id,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: Infinity,
   });
 }
 
@@ -62,7 +60,7 @@ export function useTaskSettings() {
   return useQuery({
     queryKey: taskKeys.settings(),
     queryFn: getTaskSettings,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: Infinity,
   });
 }
 
@@ -296,6 +294,7 @@ export function useTaskParent(taskId: string) {
     queryKey: [...taskKeys.detail(taskId), "parent"],
     queryFn: () => getTaskParent(taskId),
     enabled: !!taskId,
+    staleTime: Infinity,
   });
 }
 
@@ -305,6 +304,7 @@ export function useTaskChild(taskId: string) {
     queryKey: [...taskKeys.detail(taskId), "child"],
     queryFn: () => getTaskChild(taskId),
     enabled: !!taskId,
+    staleTime: Infinity,
   });
 }
 

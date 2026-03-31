@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/shared/lib/utils";
 import {
   Card,
   CardContent,
@@ -7,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
+import { Separator } from "@/shared/ui/separator";
 import { Clock, Briefcase } from "lucide-react";
 import {
   useWorkSettings,
@@ -25,7 +27,7 @@ export function WorkTimerCard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5" />
+            <Briefcase className="size-5" />
             Horario Laboral
           </CardTitle>
           <CardDescription>
@@ -37,34 +39,37 @@ export function WorkTimerCard() {
   }
 
   return (
-    <Card className={`border-2 ${themeClasses.border}`}>
+    <Card className={cn("border-2", themeClasses.border)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
+          <Clock className="size-5" />
           Hora de salida
         </CardTitle>
         <CardDescription>
           Entrada: {settings.startTime} | Salida: {settings.endTime}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Hora de salida */}
+      <CardContent className="flex flex-col gap-4">
         <div className="text-center">
           <div
-            className={`text-5xl font-bold tracking-tight ${themeClasses.textPrimary}`}
+            className={cn(
+              "text-5xl font-bold tracking-tight",
+              themeClasses.textPrimary,
+            )}
           >
             {workData?.endTime || "--:--"}
           </div>
           <div className="text-sm text-muted-foreground mt-2">
             Sales a las{" "}
-            <span className={`font-semibold ${themeClasses.textPrimary}`}>
+            <span className={cn("font-semibold", themeClasses.textPrimary)}>
               {workData?.endTime || "--:--"}
             </span>
           </div>
         </div>
 
-        {/* Tiempo restante */}
-        <div className="text-center pt-2 border-t">
+        <Separator />
+
+        <div className="text-center">
           <div className="text-lg font-semibold">
             {workData ? formatMinutesToReadable(workData.timeUntilEnd) : "--"}{" "}
             restantes
@@ -74,8 +79,9 @@ export function WorkTimerCard() {
           </div>
         </div>
 
-        {/* Informacion de trabajo */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+        <Separator />
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-2xl font-semibold">
               {workData ? workData.workHours.toFixed(1) : "0.0"}h

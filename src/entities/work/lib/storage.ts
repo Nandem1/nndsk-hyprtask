@@ -11,6 +11,8 @@ const STORAGE_KEYS = {
 // ============================================
 
 export async function getWorkSettings(): Promise<WorkSettings | null> {
+  if (typeof window === "undefined") return null;
+
   const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
   if (!stored) return null;
 
@@ -18,9 +20,11 @@ export async function getWorkSettings(): Promise<WorkSettings | null> {
 }
 
 export async function saveWorkSettings(settings: WorkSettings): Promise<void> {
+  if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
 }
 
 export async function deleteWorkSettings(): Promise<void> {
+  if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEYS.SETTINGS);
 }

@@ -48,13 +48,13 @@ export function WorkConfigForm() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Briefcase className="h-5 w-5" />
+          <Briefcase className="size-5" />
           Configuracion Laboral
         </CardTitle>
         <CardDescription>Define tus horarios de trabajo</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="startTime">Hora de entrada</Label>
           <Input
             id="startTime"
@@ -67,7 +67,7 @@ export function WorkConfigForm() {
           </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="endTime">Hora de salida</Label>
           <Input
             id="endTime"
@@ -85,7 +85,7 @@ export function WorkConfigForm() {
           disabled={saveSettingsMutation.isPending}
           className="w-full"
         >
-          <Save className="h-4 w-4 mr-2" />
+          <Save data-icon="inline-start" />
           {saveSettingsMutation.isPending
             ? "Guardando..."
             : "Guardar configuracion"}

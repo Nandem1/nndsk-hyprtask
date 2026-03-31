@@ -1,12 +1,6 @@
-import { Suspense } from "react";
 import { HeaderClient } from "./HeaderClient";
-import { HeaderSkeleton } from "./HeaderSkeleton";
 
-// Server Component wrapper with Suspense
+// Server Component wrapper
 export function Header() {
-  return (
-    <Suspense fallback={<HeaderSkeleton />}>
-      <HeaderClient />
-    </Suspense>
-  );
+  return <HeaderClient />;
 }

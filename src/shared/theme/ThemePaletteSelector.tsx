@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/shared/lib/utils";
 import {
   Card,
   CardContent,
@@ -30,14 +31,14 @@ export function ThemePaletteSelector() {
     <Card className={themeClasses.border}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Palette className={`h-5 w-5 ${themeClasses.textPrimary}`} />
+          <Palette className={cn("size-5", themeClasses.textPrimary)} />
           <span>Tema de color</span>
         </CardTitle>
         <CardDescription>
           Selecciona la paleta de colores de la aplicacion
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex flex-col gap-3">
         <div className="grid grid-cols-1 gap-3">
           {(Object.keys(THEMES) as ThemePalette[]).map((themeKey) => {
             const theme = THEMES[themeKey];
@@ -46,11 +47,12 @@ export function ThemePaletteSelector() {
             return (
               <label
                 key={themeKey}
-                className={`relative flex items-center gap-3 rounded-md border p-4 cursor-pointer transition-colors ${
+                className={cn(
+                  "relative flex items-center gap-3 rounded-md border p-4 cursor-pointer transition-colors",
                   isSelected
-                    ? `${getThemeBorder(themeKey)}`
-                    : `border-border hover:border-border/80 bg-card`
-                }`}
+                    ? getThemeBorder(themeKey)
+                    : "border-border hover:border-border/80 bg-card",
+                )}
               >
                 <input
                   type="radio"
@@ -62,22 +64,32 @@ export function ThemePaletteSelector() {
                 />
                 <div className="flex-1 flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-md border ${themeClasses.border} bg-gradient-to-r ${theme.colors.gradient} shrink-0`}
+                    className={cn(
+                      "size-10 rounded-md border shrink-0",
+                      themeClasses.border,
+                      "bg-gradient-to-r",
+                      theme.colors.gradient,
+                    )}
                   />
                   <div className="flex-1">
                     <div
-                      className={`font-medium ${isSelected ? themeClasses.textPrimary : "text-foreground"}`}
+                      className={cn(
+                        "font-medium",
+                        isSelected
+                          ? themeClasses.textPrimary
+                          : "text-foreground",
+                      )}
                     >
                       {theme.emoji} {theme.name}
                     </div>
-                    <div className={`text-xs text-muted-foreground`}>
+                    <div className="text-xs text-muted-foreground">
                       {theme.colors.primary} → {theme.colors.secondary} →{" "}
                       {theme.colors.accent}
                     </div>
                   </div>
-                  {isSelected && (
-                    <Check className={`w-5 h-5 ${themeClasses.textPrimary}`} />
-                  )}
+                  {isSelected ? (
+                    <Check className={cn("size-5", themeClasses.textPrimary)} />
+                  ) : null}
                 </div>
               </label>
             );

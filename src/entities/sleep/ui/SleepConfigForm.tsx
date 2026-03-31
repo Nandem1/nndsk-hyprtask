@@ -11,6 +11,7 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 import { Settings, Save } from "lucide-react";
 import {
   useSleepSettings,
@@ -51,15 +52,15 @@ export function SleepConfigForm() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
+          <Settings className="size-5" />
           Configuracion de Sueno
         </CardTitle>
         <CardDescription>
           Define tus horarios ideales de descanso
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="wakeup">Hora de alarma</Label>
           <Input
             id="wakeup"
@@ -72,7 +73,7 @@ export function SleepConfigForm() {
           </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="sleepHours">Horas de sueno deseadas</Label>
           <Input
             id="sleepHours"
@@ -87,13 +88,11 @@ export function SleepConfigForm() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
+        <div className="flex items-center gap-3">
+          <Switch
             id="reminders"
             checked={sleepReminders}
-            onChange={(e) => setSleepReminders(e.target.checked)}
-            className="h-4 w-4 rounded border-border"
+            onCheckedChange={setSleepReminders}
           />
           <Label htmlFor="reminders" className="cursor-pointer">
             Activar recordatorios inteligentes
@@ -105,7 +104,7 @@ export function SleepConfigForm() {
           disabled={saveSettingsMutation.isPending}
           className="w-full"
         >
-          <Save className="h-4 w-4 mr-2" />
+          <Save data-icon="inline-start" />
           {saveSettingsMutation.isPending
             ? "Guardando..."
             : "Guardar configuracion"}

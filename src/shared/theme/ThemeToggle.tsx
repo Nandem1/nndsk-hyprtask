@@ -3,13 +3,14 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Button } from "@/shared/ui/button";
 import { tapGestures } from "@/shared/lib/animations";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     setMounted(true);
@@ -17,8 +18,8 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="h-9 w-9">
-        <Sun className="h-4 w-4" />
+      <Button variant="ghost" size="icon" className="size-9">
+        <Sun className="size-4" />
       </Button>
     );
   }
@@ -29,28 +30,40 @@ export function ThemeToggle() {
         variant="ghost"
         size="icon"
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        className="h-9 w-9 relative"
+        className="size-9 relative"
       >
         <AnimatePresence mode="wait" initial={false}>
           {theme === "dark" ? (
             <motion.div
               key="moon"
-              initial={{ rotate: -90, opacity: 0 }}
+              initial={
+                shouldReduceMotion
+                  ? { opacity: 0 }
+                  : { rotate: -90, opacity: 0 }
+              }
               animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={
+                shouldReduceMotion ? { opacity: 0 } : { rotate: 90, opacity: 0 }
+              }
+              transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
             >
-              <Moon className="h-4 w-4" />
+              <Moon className="size-4" />
             </motion.div>
           ) : (
             <motion.div
               key="sun"
-              initial={{ rotate: 90, opacity: 0 }}
+              initial={
+                shouldReduceMotion ? { opacity: 0 } : { rotate: 90, opacity: 0 }
+              }
               animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={
+                shouldReduceMotion
+                  ? { opacity: 0 }
+                  : { rotate: -90, opacity: 0 }
+              }
+              transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
             >
-              <Sun className="h-4 w-4" />
+              <Sun className="size-4" />
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { cn } from "@/shared/lib/utils";
 import { Check, Circle, Lock, Clock, ChevronRight, Zap } from "lucide-react";
 import type { Task } from "@/entities/task";
 import {
@@ -9,6 +10,8 @@ import {
 } from "@/entities/task/hooks/use-project-colors";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
+import { EmptyState } from "@/shared/ui/empty-state";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
 
 interface PipelineViewProps {
   tasks: Task[];
@@ -28,7 +31,6 @@ interface PipelineViewProps {
   formProps: Record<string, unknown>;
 }
 
-// Componente separado para los badges de proyecto/categoría
 function TaskMetadataBadges({
   projectId,
   categoryId,
@@ -41,20 +43,27 @@ function TaskMetadataBadges({
 
   return (
     <>
-      {projectId && projectInfo.name && (
+      {projectId && projectInfo.name ? (
         <span
-          className={`px-2 py-0.5 rounded text-xs ${projectInfo.colorClasses?.badge || "bg-muted text-muted-foreground"}`}
+          className={cn(
+            "px-2 py-0.5 rounded text-xs",
+            projectInfo.colorClasses?.badge || "bg-muted text-muted-foreground",
+          )}
         >
           {projectInfo.name}
         </span>
-      )}
-      {categoryId && categoryInfo.name && (
+      ) : null}
+      {categoryId && categoryInfo.name ? (
         <span
-          className={`px-2 py-0.5 rounded text-xs ${categoryInfo.colorClasses?.badge || "bg-muted text-muted-foreground"}`}
+          className={cn(
+            "px-2 py-0.5 rounded text-xs",
+            categoryInfo.colorClasses?.badge ||
+              "bg-muted text-muted-foreground",
+          )}
         >
           {categoryInfo.name}
         </span>
-      )}
+      ) : null}
     </>
   );
 }
@@ -82,98 +91,94 @@ function PipelineStep({
 }) {
   const isCompleted = status === "completed";
   const isCurrent = status === "current";
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
+      initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1 }}
+      transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
       className="flex items-start gap-4"
     >
-      {/* Indicador de paso */}
       <div className="flex flex-col items-center">
         <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={shouldReduceMotion ? undefined : { scale: 1.1 }}
+          whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
           onClick={() => onToggle(task.id)}
-          className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
+          className={cn(
+            "size-10 rounded-full flex items-center justify-center border-2 transition-colors",
             isCompleted
               ? "bg-primary border-primary text-primary-foreground"
               : isCurrent
-                ? `border-primary ${classes.textPrimary} bg-primary/10`
-                : "border-border bg-card"
-          }`}
+                ? cn("border-primary bg-primary/10", classes.textPrimary)
+                : "border-border bg-card",
+          )}
         >
           {isCompleted ? (
-            <Check className="w-5 h-5" />
+            <Check className="size-5" />
           ) : (
             <span className="text-sm font-semibold">{index + 1}</span>
           )}
         </motion.button>
 
-        {/* Línea conectora */}
-        {!isLast && (
+        {!isLast ? (
           <div
-            className={`w-0.5 h-16 mt-2 ${
-              isCompleted ? "bg-primary/50" : "bg-border"
-            }`}
+            className={cn(
+              "w-0.5 h-16 mt-2",
+              isCompleted ? "bg-primary/50" : "bg-border",
+            )}
           />
-        )}
+        ) : null}
       </div>
 
-      {/* Card de la tarea */}
       <div className="flex-1 pb-8">
         <Card
-          className={`cursor-pointer transition-shadow hover:shadow-sm ${
+          className={cn(
+            "cursor-pointer transition-shadow hover:shadow-sm",
             isCurrent
-              ? `${classes.border} ring-1 ring-primary/20`
-              : "border-border"
-          }`}
+              ? cn(classes.border, "ring-1 ring-primary/20")
+              : "border-border",
+          )}
           onClick={() => onSelect(task)}
         >
           <CardContent className="p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <h3
-                  className={`font-medium ${
-                    isCompleted
-                      ? "line-through text-muted-foreground"
-                      : isCurrent
-                        ? `${classes.textPrimary} text-lg`
-                        : ""
-                  }`}
+                  className={cn(
+                    "font-medium",
+                    isCompleted && "line-through text-muted-foreground",
+                    isCurrent && cn(classes.textPrimary, "text-lg"),
+                  )}
                 >
                   {task.title}
                 </h3>
 
-                {/* Metadata */}
                 <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
                   <TaskMetadataBadges
                     projectId={task.projectId}
                     categoryId={task.categoryId}
                   />
-                  {task.dueDate && (
+                  {task.dueDate ? (
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                      <Clock className="size-3" />
                       {new Date(task.dueDate).toLocaleDateString("es-ES", {
                         month: "short",
                         day: "numeric",
                       })}
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
-                {/* Preview de notas si tiene */}
-                {(task as Task & { notes?: string }).notes && (
+                {(task as Task & { notes?: string }).notes ? (
                   <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
                     {(task as Task & { notes?: string }).notes}
                   </p>
-                )}
+                ) : null}
               </div>
 
-              {/* Acciones */}
               <div className="flex items-center gap-2">
-                {!isCurrent && !isCompleted && (
+                {!isCurrent && !isCompleted ? (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -183,10 +188,10 @@ function PipelineStep({
                     }}
                     className="text-muted-foreground hover:text-primary"
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight />
                   </Button>
-                )}
-                {isCurrent && (
+                ) : null}
+                {isCurrent ? (
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"
@@ -195,14 +200,14 @@ function PipelineStep({
                         onEnterFocus?.(task);
                       }}
                     >
-                      <Zap className="w-3.5 h-3.5 mr-1.5" />
+                      <Zap data-icon="inline-start" />
                       Foco
                     </Button>
                     <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                       ACTUAL
                     </span>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           </CardContent>
@@ -227,29 +232,25 @@ export function PipelineView({
   const currentTask = tasks.find((t) => t.isCurrent && !t.isCompleted);
   const pendingTasks = tasks.filter((t) => !t.isCompleted && !t.isCurrent);
 
-  // Ordenar: completadas primero, luego actual, luego pendientes
   const orderedTasks = [...completedTasks, currentTask, ...pendingTasks].filter(
     Boolean,
   ) as Task[];
 
   if (tasks.length === 0 && !showForm) {
     return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-          <Circle className="w-8 h-8 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-medium mb-2">Sin notas activas</h3>
-        <p className="text-muted-foreground mb-4">
-          Crea tu primera nota para comenzar el pipeline
-        </p>
-        {canAddTask && <Button onClick={onShowForm}>Crear nota</Button>}
-      </div>
+      <EmptyState
+        title="Sin notas activas"
+        description="Crea tu primera nota para comenzar el pipeline"
+        icon={Circle}
+        action={
+          canAddTask ? <Button onClick={onShowForm}>Crear nota</Button> : null
+        }
+      />
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Header del pipeline */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold">Pipeline de desarrollo</h2>
@@ -258,15 +259,14 @@ export function PipelineView({
             pendientes
           </p>
         </div>
-        {canAddTask && !showForm && (
+        {canAddTask && !showForm ? (
           <Button variant="outline" size="sm" onClick={onShowForm}>
             + Nueva nota
           </Button>
-        )}
+        ) : null}
       </div>
 
-      {/* Pasos del pipeline */}
-      <div className="space-y-0">
+      <div className="flex flex-col">
         {orderedTasks.map((task, index) => {
           const status = task.isCompleted
             ? "completed"
@@ -291,15 +291,14 @@ export function PipelineView({
         })}
       </div>
 
-      {/* Bloqueado por límite */}
-      {pendingTasks.length > 0 && !canAddTask && (
-        <div className="mt-6 p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 flex items-center gap-3">
-          <Lock className="w-5 h-5 text-yellow-500" />
-          <p className="text-sm text-yellow-600 dark:text-yellow-400">
-            Límite de notas alcanzado. Completa algunas para agregar más.
-          </p>
-        </div>
-      )}
+      {pendingTasks.length > 0 && !canAddTask ? (
+        <Alert variant="destructive" className="mt-6">
+          <Lock className="size-4" />
+          <AlertDescription>
+            Limite de notas alcanzado. Completa algunas para agregar mas.
+          </AlertDescription>
+        </Alert>
+      ) : null}
     </div>
   );
 }

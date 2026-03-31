@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/shared/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +12,17 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Separator } from "@/shared/ui/separator";
 import {
   useActiveCategories,
   useSaveCategory,
   useDeleteCategory,
 } from "../hooks/use-categories";
-import type { Category, CategoryColor, CategoryIcon } from "../model/project-types";
+import type {
+  Category,
+  CategoryColor,
+  CategoryIcon,
+} from "../model/project-types";
 import { CATEGORY_COLOR_CLASSES } from "../model/project-types";
 import * as Icons from "lucide-react";
 import { Plus, Trash2, GripVertical } from "lucide-react";
@@ -66,7 +72,10 @@ const AVAILABLE_ICONS: CategoryIcon[] = [
   "Activity",
 ];
 
-export function CategoryConfigModal({ isOpen, onClose }: CategoryConfigModalProps) {
+export function CategoryConfigModal({
+  isOpen,
+  onClose,
+}: CategoryConfigModalProps) {
   const { data: categories = [] } = useActiveCategories();
   const saveCategoryMutation = useSaveCategory();
   const deleteCategoryMutation = useDeleteCategory();
@@ -119,7 +128,9 @@ export function CategoryConfigModal({ isOpen, onClose }: CategoryConfigModalProp
   };
 
   const getIconComponent = (iconName: CategoryIcon) => {
-    const IconComponent = Icons[iconName as keyof typeof Icons] as React.ComponentType<{ className?: string }>;
+    const IconComponent = Icons[
+      iconName as keyof typeof Icons
+    ] as React.ComponentType<{ className?: string }>;
     return IconComponent || Icons.FolderKanban;
   };
 
@@ -133,8 +144,7 @@ export function CategoryConfigModal({ isOpen, onClose }: CategoryConfigModalProp
           </DialogDescription>
         </DialogHeader>
 
-        {/* Lista de categorías */}
-        <div className="space-y-2 my-4">
+        <div className="flex flex-col gap-2 my-4">
           {categories.map((category) => {
             const colorClasses = CATEGORY_COLOR_CLASSES[category.color];
             const IconComponent = getIconComponent(category.icon);
@@ -143,9 +153,9 @@ export function CategoryConfigModal({ isOpen, onClose }: CategoryConfigModalProp
                 key={category.id}
                 className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
               >
-                <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                <div className={`p-2 rounded-md ${colorClasses.bg}`}>
-                  <IconComponent className={`h-4 w-4 ${colorClasses.text}`} />
+                <GripVertical className="size-4 text-muted-foreground cursor-grab" />
+                <div className={cn("p-2 rounded-md", colorClasses.bg)}>
+                  <IconComponent className={cn("size-4", colorClasses.text)} />
                 </div>
                 <span className="flex-1 font-medium">{category.name}</span>
                 <Button
@@ -161,81 +171,89 @@ export function CategoryConfigModal({ isOpen, onClose }: CategoryConfigModalProp
                   onClick={() => handleDelete(category)}
                   className="text-destructive hover:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 />
                 </Button>
               </div>
             );
           })}
         </div>
 
-        {/* Formulario crear/editar */}
         {isCreating ? (
-          <div className="space-y-4 border-t pt-4">
-            <h4 className="font-medium">
-              {editingCategory ? "Editar Categoría" : "Nueva Categoría"}
-            </h4>
+          <>
+            <Separator />
+            <div className="flex flex-col gap-4 pt-4">
+              <h4 className="font-medium">
+                {editingCategory ? "Editar Categoría" : "Nueva Categoría"}
+              </h4>
 
-            <div>
-              <Label htmlFor="category-name">Nombre</Label>
-              <Input
-                id="category-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Nombre de la categoría"
-              />
-            </div>
-
-            <div>
-              <Label>Color</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {AVAILABLE_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setColor(c)}
-                    className={`w-8 h-8 rounded-full ${CATEGORY_COLOR_CLASSES[c].bg} border-2 ${
-                      color === c ? "border-foreground" : "border-transparent"
-                    }`}
-                    title={c}
-                  />
-                ))}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="category-name">Nombre</Label>
+                <Input
+                  id="category-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nombre de la categoría"
+                />
               </div>
-            </div>
 
-            <div>
-              <Label>Icono</Label>
-              <div className="flex flex-wrap gap-2 mt-2 max-h-32 overflow-y-auto">
-                {AVAILABLE_ICONS.map((i) => {
-                  const IconComponent = getIconComponent(i);
-                  return (
+              <div className="flex flex-col gap-2">
+                <Label>Color</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {AVAILABLE_COLORS.map((c) => (
                     <button
-                      key={i}
-                      onClick={() => setIcon(i)}
-                      className={`p-2 rounded-md border ${
-                        icon === i
-                          ? "border-foreground bg-accent"
-                          : "border-border hover:bg-accent/50"
-                      }`}
-                      title={i}
-                    >
-                      <IconComponent className="h-4 w-4" />
-                    </button>
-                  );
-                })}
+                      key={c}
+                      onClick={() => setColor(c)}
+                      className={cn(
+                        "size-8 rounded-full",
+                        CATEGORY_COLOR_CLASSES[c].bg,
+                        "border-2",
+                        color === c
+                          ? "border-foreground"
+                          : "border-transparent",
+                      )}
+                      title={c}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Icono</Label>
+                <div className="flex flex-wrap gap-2 mt-2 max-h-32 overflow-y-auto">
+                  {AVAILABLE_ICONS.map((i) => {
+                    const IconComponent = getIconComponent(i);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setIcon(i)}
+                        className={cn(
+                          "p-2 rounded-md border",
+                          icon === i
+                            ? "border-foreground bg-accent"
+                            : "border-border hover:bg-accent/50",
+                        )}
+                        title={i}
+                      >
+                        <IconComponent className="size-4" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={handleSave} className="flex-1">
+                  {editingCategory ? "Guardar Cambios" : "Crear Categoría"}
+                </Button>
+                <Button variant="outline" onClick={resetForm}>
+                  Cancelar
+                </Button>
               </div>
             </div>
-
-            <div className="flex gap-2">
-              <Button onClick={handleSave} className="flex-1">
-                {editingCategory ? "Guardar Cambios" : "Crear Categoría"}
-              </Button>
-              <Button variant="outline" onClick={resetForm}>
-                Cancelar
-              </Button>
-            </div>
-          </div>
+          </>
         ) : (
           <Button onClick={() => setIsCreating(true)} className="w-full">
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus data-icon="inline-start" />
             Agregar Categoría
           </Button>
         )}
