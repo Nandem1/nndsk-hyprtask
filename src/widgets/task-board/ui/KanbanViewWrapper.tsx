@@ -6,7 +6,7 @@ import type { useThemeState } from "@/store/hooks";
 import { useTaskFiltersState } from "@/store/hooks";
 import { KanbanView } from "./views/KanbanView";
 
-interface TaskListViewProps {
+interface KanbanViewWrapperProps {
   viewMode: string;
   tasks: Task[];
   allTasks: Task[];
@@ -22,6 +22,8 @@ interface TaskListViewProps {
   onTaskAdded: () => void;
   onCancelForm: () => void;
   onShowForm: () => void;
+  onSelectTask: (task: Task) => void;
+  onEnterFocus: (task: Task) => void;
   themeClasses: ReturnType<typeof useThemeState>["themeClasses"];
 }
 
@@ -39,8 +41,10 @@ export function KanbanViewWrapper({
   onTaskAdded,
   onCancelForm,
   onShowForm,
+  onSelectTask,
+  onEnterFocus,
   themeClasses,
-}: TaskListViewProps) {
+}: KanbanViewWrapperProps) {
   const shouldReduceMotion = useReducedMotion();
   const { selectedProjectId, selectedCategoryId } = useTaskFiltersState();
 
@@ -71,6 +75,8 @@ export function KanbanViewWrapper({
     formProps,
     totalCount,
     filteredCount,
+    onSelectTask,
+    onEnterFocus,
   } as const;
 
   return (

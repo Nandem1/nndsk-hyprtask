@@ -24,7 +24,6 @@ import { KanbanViewWrapper } from "./KanbanViewWrapper";
 import { PipelineView } from "./views/PipelineView";
 import { TaskDetailModal } from "./TaskDetailModal";
 import { FocusMode } from "./FocusMode";
-import { TaskForm } from "@/entities/task";
 
 const VIEW_MODES = [
   { id: "pipeline" as const, label: "Pipeline", icon: GitBranch },
@@ -186,16 +185,10 @@ export function TaskBoard() {
           onTaskAdded={handleTaskAdded}
           onCancelForm={() => setShowForm(false)}
           onShowForm={() => setShowForm(true)}
+          onSelectTask={handleSelectTask}
+          onEnterFocus={handleEnterFocus}
           themeClasses={themeClasses}
         />
-      )}
-
-      {showForm && canAddTask && (
-        <div className="fixed inset-x-4 bottom-4 md:relative md:inset-auto md:bottom-auto">
-          <div className="bg-background border border-border rounded-xl shadow-2xl p-4 md:shadow-none">
-            <TaskForm {...formProps} />
-          </div>
-        </div>
       )}
 
       {!showForm && canAddTask && viewMode === "kanban" && (

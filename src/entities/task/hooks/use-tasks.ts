@@ -77,14 +77,38 @@ export function useCreateTask() {
     onMutate: async (newTask: Task) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.all });
       const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
+      const previousCurrent = queryClient.getQueryData<Task | null>(
+        taskKeys.current(),
+      );
       queryClient.setQueryData<Task[]>(taskKeys.active(), (old) =>
         old ? [...old, newTask] : [newTask],
       );
-      return { previousTasks };
+      // Optimistic update para current task si es que es la nueva tarea
+      if (newTask.isCurrent) {
+        queryClient.setQueryData(taskKeys.current(), newTask);
+      }
+      return { previousTasks, previousCurrent };
     },
     onError: (_err, _task, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(taskKeys.active(), context.previousTasks);
+      }
+      if (context?.previousCurrent) {
+        queryClient.setQueryData(taskKeys.current(), context.previousCurrent);
+      }
+    },
+    onSuccess: (_data, variables) => {
+      // Si la tarea tiene padre, invalidar la relación del padre
+      if (variables.parentTaskId) {
+        queryClient.invalidateQueries({
+          queryKey: [...taskKeys.detail(variables.parentTaskId), "child"],
+        });
+      }
+      // Si la tarea tiene hijo, invalidar la relación del hijo
+      if (variables.childTaskId) {
+        queryClient.invalidateQueries({
+          queryKey: [...taskKeys.detail(variables.childTaskId), "parent"],
+        });
       }
     },
     onSettled: () => {
@@ -294,7 +318,7 @@ export function useTaskParent(taskId: string) {
     queryKey: [...taskKeys.detail(taskId), "parent"],
     queryFn: () => getTaskParent(taskId),
     enabled: !!taskId,
-    staleTime: Infinity,
+    staleTime: 1000 * 30, // 30 segundos
   });
 }
 
@@ -304,7 +328,7 @@ export function useTaskChild(taskId: string) {
     queryKey: [...taskKeys.detail(taskId), "child"],
     queryFn: () => getTaskChild(taskId),
     enabled: !!taskId,
-    staleTime: Infinity,
+    staleTime: 1000 * 30, // 30 segundos
   });
 }
 
@@ -320,8 +344,18 @@ export function useSetTaskParent() {
       taskId: string;
       parentTaskId?: string;
     }) => setTaskParent(taskId, parentTaskId),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      // Invalidar todas las tareas
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
+      // Invalidar relaciones específicas
+      queryClient.invalidateQueries({
+        queryKey: [...taskKeys.detail(variables.taskId), "parent"],
+      });
+      if (variables.parentTaskId) {
+        queryClient.invalidateQueries({
+          queryKey: [...taskKeys.detail(variables.parentTaskId), "child"],
+        });
+      }
     },
   });
 }
@@ -338,8 +372,18 @@ export function useSetTaskChild() {
       taskId: string;
       childTaskId?: string;
     }) => setTaskChild(taskId, childTaskId),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      // Invalidar todas las tareas
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
+      // Invalidar relaciones específicas
+      queryClient.invalidateQueries({
+        queryKey: [...taskKeys.detail(variables.taskId), "child"],
+      });
+      if (variables.childTaskId) {
+        queryClient.invalidateQueries({
+          queryKey: [...taskKeys.detail(variables.childTaskId), "parent"],
+        });
+      }
     },
   });
 }

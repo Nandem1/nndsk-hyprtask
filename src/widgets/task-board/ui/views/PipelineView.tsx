@@ -2,14 +2,25 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
-import { Check, Circle, Lock, Clock, ChevronRight, Zap } from "lucide-react";
+import {
+  Check,
+  Circle,
+  Lock,
+  Clock,
+  ChevronRight,
+  Zap,
+  Plus,
+  Focus,
+} from "lucide-react";
 import type { Task } from "@/entities/task";
+import { TaskForm } from "@/entities/task";
 import {
   useProjectInfo,
   useCategoryInfo,
 } from "@/entities/task/hooks/use-project-colors";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
+import { Badge } from "@/shared/ui/badge";
 import { EmptyState } from "@/shared/ui/empty-state";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 
@@ -46,8 +57,9 @@ function TaskMetadataBadges({
       {projectId && projectInfo.name ? (
         <span
           className={cn(
-            "px-2 py-0.5 rounded text-xs",
-            projectInfo.colorClasses?.badge || "bg-muted text-muted-foreground",
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border",
+            projectInfo.colorClasses?.badge ||
+              "bg-muted text-muted-foreground border-border",
           )}
         >
           {projectInfo.name}
@@ -56,9 +68,9 @@ function TaskMetadataBadges({
       {categoryId && categoryInfo.name ? (
         <span
           className={cn(
-            "px-2 py-0.5 rounded text-xs",
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border",
             categoryInfo.colorClasses?.badge ||
-              "bg-muted text-muted-foreground",
+              "bg-muted text-muted-foreground border-border",
           )}
         >
           {categoryInfo.name}
@@ -100,18 +112,19 @@ function PipelineStep({
       transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
       className="flex items-start gap-4"
     >
+      {/* Step indicator */}
       <div className="flex flex-col items-center">
         <motion.button
           whileHover={shouldReduceMotion ? undefined : { scale: 1.1 }}
           whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
           onClick={() => onToggle(task.id)}
           className={cn(
-            "size-10 rounded-full flex items-center justify-center border-2 transition-colors",
+            "size-10 rounded-full flex items-center justify-center border-2 transition-colors shrink-0",
             isCompleted
               ? "bg-primary border-primary text-primary-foreground"
               : isCurrent
                 ? cn("border-primary bg-primary/10", classes.textPrimary)
-                : "border-border bg-card",
+                : "border-border bg-card hover:border-primary/50",
           )}
         >
           {isCompleted ? (
@@ -131,19 +144,30 @@ function PipelineStep({
         ) : null}
       </div>
 
+      {/* Card */}
       <div className="flex-1 pb-8">
         <Card
           className={cn(
-            "cursor-pointer transition-shadow hover:shadow-sm",
+            "relative cursor-pointer transition-all hover:shadow-md overflow-hidden",
             isCurrent
-              ? cn(classes.border, "ring-1 ring-primary/20")
-              : "border-border",
+              ? cn(classes.border, "ring-1 ring-primary/20 bg-accent/30")
+              : "border-border hover:border-primary/30",
           )}
           onClick={() => onSelect(task)}
         >
+          {/* Left accent line for current */}
+          {isCurrent && (
+            <div
+              className={cn(
+                "absolute left-0 top-0 bottom-0 w-1",
+                classes.gradientBg.replace("/10", ""),
+              )}
+            />
+          )}
+
           <CardContent className="p-4">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <h3
                   className={cn(
                     "font-medium",
@@ -154,13 +178,13 @@ function PipelineStep({
                   {task.title}
                 </h3>
 
-                <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <TaskMetadataBadges
                     projectId={task.projectId}
                     categoryId={task.categoryId}
                   />
                   {task.dueDate ? (
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="size-3" />
                       {new Date(task.dueDate).toLocaleDateString("es-ES", {
                         month: "short",
@@ -171,13 +195,14 @@ function PipelineStep({
                 </div>
 
                 {(task as Task & { notes?: string }).notes ? (
-                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                  <p className="mt-3 text-sm text-muted-foreground line-clamp-2 bg-muted/30 p-2 rounded">
                     {(task as Task & { notes?: string }).notes}
                   </p>
                 ) : null}
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Actions */}
+              <div className="flex items-center gap-2 shrink-0">
                 {!isCurrent && !isCompleted ? (
                   <Button
                     variant="ghost"
@@ -186,9 +211,11 @@ function PipelineStep({
                       e.stopPropagation();
                       onSetCurrent(task.id);
                     }}
-                    className="text-muted-foreground hover:text-primary"
+                    className="text-muted-foreground hover:text-primary h-9"
+                    title="Marcar como actual"
                   >
-                    <ChevronRight />
+                    <ChevronRight className="size-4 mr-1" />
+                    <span className="hidden sm:inline">Actual</span>
                   </Button>
                 ) : null}
                 {isCurrent ? (
@@ -199,13 +226,25 @@ function PipelineStep({
                         e.stopPropagation();
                         onEnterFocus?.(task);
                       }}
+                      className={cn(
+                        "gap-1.5 h-9",
+                        classes.gradientBg,
+                        classes.textPrimary,
+                      )}
                     >
-                      <Zap data-icon="inline-start" />
-                      Foco
+                      <Zap className="size-3.5" />
+                      <span className="hidden sm:inline">Foco</span>
                     </Button>
-                    <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                      ACTUAL
-                    </span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "gap-1 border-primary/30 h-9 px-2.5 py-0 flex items-center",
+                        classes.textPrimary,
+                      )}
+                    >
+                      <Focus className="size-3" />
+                      <span className="hidden sm:inline">ACTUAL</span>
+                    </Badge>
                   </div>
                 ) : null}
               </div>
@@ -243,7 +282,12 @@ export function PipelineView({
         description="Crea tu primera nota para comenzar el pipeline"
         icon={Circle}
         action={
-          canAddTask ? <Button onClick={onShowForm}>Crear nota</Button> : null
+          canAddTask ? (
+            <Button onClick={onShowForm} className="gap-2">
+              <Plus className="size-4" />
+              Crear nota
+            </Button>
+          ) : null
         }
       />
     );
@@ -251,8 +295,9 @@ export function PipelineView({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold">Pipeline de desarrollo</h2>
           <p className="text-sm text-muted-foreground">
             {completedTasks.length} completadas · {pendingTasks.length}{" "}
@@ -260,13 +305,20 @@ export function PipelineView({
           </p>
         </div>
         {canAddTask && !showForm ? (
-          <Button variant="outline" size="sm" onClick={onShowForm}>
-            + Nueva nota
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onShowForm}
+            className="gap-1.5 shrink-0 h-9"
+          >
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Nueva nota</span>
           </Button>
         ) : null}
       </div>
 
-      <div className="flex flex-col">
+      {/* Steps */}
+      <div className="flex flex-col gap-0">
         {orderedTasks.map((task, index) => {
           const status = task.isCompleted
             ? "completed"
@@ -291,6 +343,7 @@ export function PipelineView({
         })}
       </div>
 
+      {/* Limit alert */}
       {pendingTasks.length > 0 && !canAddTask ? (
         <Alert variant="destructive" className="mt-6">
           <Lock className="size-4" />
@@ -298,6 +351,22 @@ export function PipelineView({
             Limite de notas alcanzado. Completa algunas para agregar mas.
           </AlertDescription>
         </Alert>
+      ) : null}
+
+      {/* Form */}
+      {showForm && canAddTask ? (
+        <div className="mt-4">
+          <TaskForm
+            {...(formProps as {
+              onTaskAdded: () => void;
+              onCancel: () => void;
+              maxTasks: number;
+              currentTasks: number;
+              defaultProjectId?: string;
+              defaultCategoryId?: string;
+            })}
+          />
+        </div>
       ) : null}
     </div>
   );

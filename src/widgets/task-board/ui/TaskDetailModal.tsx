@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/shared/lib/utils";
 import {
-  X,
   Check,
   Clock,
   Calendar,
@@ -14,6 +13,8 @@ import {
   Save,
   Trash2,
   Zap,
+  Focus,
+  X,
 } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import type { Task } from "@/entities/task";
@@ -38,13 +39,17 @@ import {
 } from "@/shared/ui/dialog";
 
 function ProjectName({ projectId }: { projectId: string }) {
-  const { name } = useProjectInfo(projectId);
-  return <>{name}</>;
+  const { name, colorClasses } = useProjectInfo(projectId);
+  return (
+    <span className={cn("text-xs font-medium", colorClasses.text)}>{name}</span>
+  );
 }
 
 function CategoryName({ categoryId }: { categoryId: string }) {
-  const { name } = useCategoryInfo(categoryId);
-  return <>{name}</>;
+  const { name, colorClasses } = useCategoryInfo(categoryId);
+  return (
+    <span className={cn("text-xs font-medium", colorClasses.text)}>{name}</span>
+  );
 }
 
 interface TaskDetailModalProps {
@@ -93,114 +98,144 @@ export function TaskDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
-        <DialogHeader className="p-6 pb-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0" showCloseButton={false}>
+        <DialogHeader className="px-6 py-5 border-b border-border/50">
+          <div className="flex flex-col gap-3">
+            {/* Top row: Title and actions */}
+            <div className="flex items-start gap-4">
               <button
                 onClick={() => onToggle(task.id)}
                 className={cn(
-                  "size-8 rounded-full border-2 flex items-center justify-center transition-all",
+                  "mt-0.5 size-6 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
                   task.isCompleted
                     ? "bg-primary border-primary text-primary-foreground"
-                    : "border-muted hover:border-primary",
+                    : "border-muted hover:border-primary bg-background",
                 )}
               >
-                {task.isCompleted && <Check className="size-4" />}
+                {task.isCompleted && <Check className="size-3.5" />}
               </button>
 
-              <div>
+              <div className="flex-1 min-w-0 pt-0.5">
                 <DialogTitle
                   className={cn(
-                    "text-xl font-semibold",
+                    "text-xl font-semibold leading-tight text-left",
                     task.isCompleted && "line-through text-muted-foreground",
                   )}
                 >
                   {task.title}
                 </DialogTitle>
-                <div className="flex items-center gap-2 mt-1">
-                  {task.projectId && (
-                    <Badge variant="secondary">
-                      <ProjectName projectId={task.projectId} />
-                    </Badge>
-                  )}
-                  {task.categoryId && (
-                    <Badge variant="outline">
-                      <CategoryName categoryId={task.categoryId} />
-                    </Badge>
-                  )}
-                  {task.isCurrent && (
-                    <Badge variant="default">
-                      <Play className="size-3" />
-                      Actual
-                    </Badge>
-                  )}
-                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 shrink-0 pt-0">
+                {!task.isCurrent && !task.isCompleted && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onSetCurrent(task.id)}
+                    className="gap-1.5 h-9"
+                  >
+                    <Play className="size-3.5" />
+                    <span className="hidden sm:inline">Actual</span>
+                  </Button>
+                )}
+                {!task.isCompleted && onEnterFocus && (
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      onEnterFocus();
+                      onClose();
+                    }}
+                    className={cn(
+                      "gap-1.5 h-9",
+                      themeClasses.gradientBg,
+                      themeClasses.textPrimary,
+                    )}
+                  >
+                    <Zap className="size-3.5" />
+                    <span className="hidden sm:inline">Foco</span>
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="size-4" />
+                  <span className="sr-only">Cerrar</span>
+                </Button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              {!task.isCurrent && !task.isCompleted && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onSetCurrent(task.id)}
-                  className={themeClasses.textPrimary}
-                >
-                  <Play data-icon="inline-start" />
-                  Hacer actual
-                </Button>
+            {/* Badges row */}
+            <div className="flex items-center gap-2 flex-wrap pl-10">
+              {task.projectId && (
+                <Badge variant="secondary" className="font-normal h-7 px-2.5">
+                  <ProjectName projectId={task.projectId} />
+                </Badge>
               )}
-              {!task.isCompleted && onEnterFocus && (
-                <Button
-                  size="sm"
+              {task.categoryId && (
+                <Badge variant="outline" className="font-normal h-7 px-2.5">
+                  <CategoryName categoryId={task.categoryId} />
+                </Badge>
+              )}
+              {task.isCurrent && (
+                <Badge
                   variant="default"
-                  onClick={() => {
-                    onEnterFocus();
-                    onClose();
-                  }}
+                  className={cn(
+                    "gap-1 h-7 px-2.5",
+                    themeClasses.gradientBg,
+                    themeClasses.textPrimary,
+                    "border-0",
+                  )}
                 >
-                  <Zap data-icon="inline-start" />
-                  Modo Foco
-                </Button>
+                  <Focus className="size-3" />
+                  Actual
+                </Badge>
               )}
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X />
-              </Button>
             </div>
           </div>
+
           <DialogDescription className="sr-only">
             Detalle y edicion de la tarea {task.title}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* Main content */}
+            <div className="lg:col-span-2 flex flex-col gap-5">
+              {/* Metadata */}
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Calendar className="size-4" />
-                  Creada:{" "}
-                  {new Date(task.createdAt).toLocaleDateString("es-ES", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  <Calendar className="size-4 shrink-0" />
+                  <span>Creada:</span>
+                  <span className="text-foreground">
+                    {new Date(task.createdAt).toLocaleDateString("es-ES", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
                 {task.dueDate && (
                   <div className="flex items-center gap-2">
-                    <Clock className="size-4" />
-                    Deadline:{" "}
-                    {new Date(task.dueDate).toLocaleDateString("es-ES")}
+                    <Clock className="size-4 shrink-0" />
+                    <span>Deadline:</span>
+                    <span className="text-foreground">
+                      {new Date(task.dueDate).toLocaleDateString("es-ES")}
+                    </span>
                   </div>
                 )}
               </div>
 
               <Separator />
 
+              {/* Notes section */}
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-medium flex items-center gap-2">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <h3 className="font-medium flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
                     <Tag className="size-4" />
                     Notas y codigo
                   </h3>
@@ -209,6 +244,7 @@ export function TaskDetailModal({
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsEditing(true)}
+                      className="h-8"
                     >
                       Editar
                     </Button>
@@ -225,8 +261,12 @@ export function TaskDetailModal({
                       autoFocus
                     />
                     <div className="flex items-center gap-2">
-                      <Button size="sm" onClick={handleSaveNotes}>
-                        <Save data-icon="inline-start" />
+                      <Button
+                        size="sm"
+                        onClick={handleSaveNotes}
+                        className="gap-1.5"
+                      >
+                        <Save className="size-3.5" />
                         Guardar
                       </Button>
                       <Button
@@ -245,10 +285,11 @@ export function TaskDetailModal({
                   <div
                     onClick={() => setIsEditing(true)}
                     className={cn(
-                      "min-h-[200px] p-4 rounded-lg border border-border/50 cursor-text whitespace-pre-wrap font-mono text-sm",
+                      "min-h-[200px] p-4 rounded-lg border transition-colors cursor-text whitespace-pre-wrap font-mono text-sm",
                       notes
-                        ? "bg-muted/30"
-                        : "bg-muted/10 text-muted-foreground italic",
+                        ? "bg-muted/30 border-border/50"
+                        : "bg-muted/10 border-border/30 text-muted-foreground italic",
+                      "hover:border-border hover:bg-muted/20",
                     )}
                   >
                     {notes ||
@@ -258,14 +299,16 @@ export function TaskDetailModal({
               </div>
             </div>
 
+            {/* Sidebar - Context */}
             <div className="flex flex-col gap-4">
-              <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                Contexto
-              </h3>
+              <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
+                <ArrowRight className="size-4" />
+                <h3 className="font-medium">Contexto</h3>
+              </div>
 
               {parentTask && (
                 <Card
-                  className="cursor-pointer hover:border-primary/50 transition-colors"
+                  className="cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all border-l-4 border-l-primary/50"
                   onClick={() => onNavigateToTask?.(parentTask)}
                 >
                   <CardContent className="p-4">
@@ -282,7 +325,7 @@ export function TaskDetailModal({
 
               {childTask && (
                 <Card
-                  className="cursor-pointer hover:border-primary/50 transition-colors"
+                  className="cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all border-l-4 border-l-primary/50"
                   onClick={() => onNavigateToTask?.(childTask)}
                 >
                   <CardContent className="p-4">
@@ -298,17 +341,19 @@ export function TaskDetailModal({
               )}
 
               {!parentTask && !childTask && (
-                <p className="text-sm text-muted-foreground italic">
-                  Esta nota no tiene relaciones. Usa el pipeline para establecer
-                  el orden.
-                </p>
+                <div className="bg-muted/20 p-4 rounded-lg border border-dashed border-border">
+                  <p className="text-sm text-muted-foreground italic leading-relaxed">
+                    Esta nota no tiene relaciones. Usa el pipeline para
+                    establecer el orden.
+                  </p>
+                </div>
               )}
 
               <Separator />
 
               <Button
                 variant="outline"
-                className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 gap-2"
                 onClick={() => {
                   if (confirm("¿Eliminar esta nota?")) {
                     onDelete(task.id);
@@ -316,7 +361,7 @@ export function TaskDetailModal({
                   }
                 }}
               >
-                <Trash2 data-icon="inline-start" />
+                <Trash2 className="size-4" />
                 Eliminar nota
               </Button>
             </div>

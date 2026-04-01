@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Switch } from "@/shared/ui/switch";
 import {
   Select,
   SelectContent,
@@ -16,11 +15,12 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
-import { X, ArrowRight, GitBranch } from "lucide-react";
+import { X, GitBranch, Save } from "lucide-react";
 import {
   useCreateTask,
   useSetTaskChild,
   useCurrentTask,
+  useActiveTasks,
 } from "../hooks/use-tasks";
 import { useActiveProjects } from "../hooks/use-projects";
 import { useActiveCategories } from "../hooks/use-categories";
@@ -51,13 +51,18 @@ export function TaskForm({
   const [categoryId, setCategoryId] = useState<string | undefined>(
     defaultCategoryId,
   );
-  const [linkToCurrent, setLinkToCurrent] = useState(true);
 
   const createTaskMutation = useCreateTask();
   const setTaskChildMutation = useSetTaskChild();
   const { data: currentTask } = useCurrentTask();
+  const { data: activeTasks = [] } = useActiveTasks();
   const { data: projects = [] } = useActiveProjects();
   const { data: categories = [] } = useActiveCategories();
+
+  const incompleteTasks = activeTasks.filter((t) => !t.isCompleted);
+  const [parentTaskId, setParentTaskId] = useState<string | undefined>(
+    currentTask?.id,
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,21 +80,26 @@ export function TaskForm({
       projectId,
       categoryId,
       notes: "",
-      parentTaskId: linkToCurrent && currentTask ? currentTask.id : undefined,
+      parentTaskId,
     };
 
-    createTaskMutation.mutate(newTask, {
-      onSuccess: () => {
-        if (linkToCurrent && currentTask) {
-          setTaskChildMutation.mutate({
-            taskId: currentTask.id,
-            childTaskId: newTask.id,
-          });
-        }
-        setTitle("");
-        onTaskAdded();
-      },
-    });
+    try {
+      // Primero creamos la tarea
+      await createTaskMutation.mutateAsync(newTask);
+
+      // Si está vinculada a otra tarea, establecemos la relación
+      if (parentTaskId) {
+        await setTaskChildMutation.mutateAsync({
+          taskId: parentTaskId,
+          childTaskId: newTask.id,
+        });
+      }
+
+      setTitle("");
+      onTaskAdded();
+    } catch (error) {
+      console.error("Error al crear la tarea:", error);
+    }
   };
 
   const priorityOptions = [
@@ -215,26 +225,35 @@ export function TaskForm({
             </ToggleGroup>
           </div>
 
-          {currentTask ? (
-            <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted">
-              <Switch
-                id="linkToCurrent"
-                checked={linkToCurrent}
-                onCheckedChange={setLinkToCurrent}
-              />
-              <label
-                htmlFor="linkToCurrent"
-                className="flex items-center gap-2 text-sm cursor-pointer"
+          {incompleteTasks.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <GitBranch className="size-3.5" />
+                Continuación de
+              </Label>
+              <Select
+                value={parentTaskId || "__none__"}
+                onValueChange={(value) =>
+                  setParentTaskId(value === "__none__" ? undefined : value)
+                }
               >
-                <GitBranch className="size-4 text-muted-foreground" />
-                <span>Continuacion de:</span>
-                <span className="font-medium truncate max-w-[200px]">
-                  {currentTask.title}
-                </span>
-                <ArrowRight className="size-3 text-muted-foreground" />
-              </label>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin relación" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="__none__">Sin relación</SelectItem>
+                    {incompleteTasks.map((task) => (
+                      <SelectItem key={task.id} value={task.id}>
+                        {task.title}
+                        {task.isCurrent ? " (actual)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
-          ) : null}
+          )}
 
           <div className="flex gap-3 pt-2">
             <Button
@@ -244,12 +263,18 @@ export function TaskForm({
                 createTaskMutation.isPending ||
                 currentTasks >= maxTasks
               }
-              className="flex-1"
+              className="flex-1 gap-2"
             >
+              <Save className="size-4" />
               {createTaskMutation.isPending ? "Guardando..." : "Crear Tarea"}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              <X data-icon="inline-start" />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="gap-2"
+            >
+              <X className="size-4" />
               Cancelar
             </Button>
           </div>

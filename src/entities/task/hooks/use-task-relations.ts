@@ -21,8 +21,15 @@ export function useConnectTasks() {
       await setTaskChild(fromTaskId, toTaskId);
       return { fromTaskId, toTaskId };
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
+      // Invalidar relaciones específicas
+      queryClient.invalidateQueries({
+        queryKey: [...taskKeys.detail(variables.fromTaskId), "child"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...taskKeys.detail(variables.toTaskId), "parent"],
+      });
     },
   });
 }
@@ -42,8 +49,15 @@ export function useDisconnectTasks() {
       await setTaskChild(parentTaskId, undefined);
       return { parentTaskId, childTaskId };
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
+      // Invalidar relaciones específicas
+      queryClient.invalidateQueries({
+        queryKey: [...taskKeys.detail(variables.parentTaskId), "child"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...taskKeys.detail(variables.childTaskId), "parent"],
+      });
     },
   });
 }
@@ -79,8 +93,17 @@ export function useAutoConnectPipeline() {
 
       return sortedTasks;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
+      // Invalidar todas las relaciones de las tareas afectadas
+      variables.forEach((task) => {
+        queryClient.invalidateQueries({
+          queryKey: [...taskKeys.detail(task.id), "parent"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [...taskKeys.detail(task.id), "child"],
+        });
+      });
     },
   });
 }

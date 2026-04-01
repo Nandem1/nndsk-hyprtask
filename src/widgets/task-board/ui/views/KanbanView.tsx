@@ -23,6 +23,8 @@ interface KanbanViewProps {
   formProps: any;
   totalCount: number;
   filteredCount: number;
+  onSelectTask: (task: Task) => void;
+  onEnterFocus: (task: Task) => void;
 }
 
 export function KanbanView({
@@ -36,6 +38,8 @@ export function KanbanView({
   onShowForm,
   formProps,
   totalCount,
+  onSelectTask,
+  onEnterFocus,
 }: KanbanViewProps) {
   const shouldReduceMotion = useReducedMotion();
   const todoTasks = tasks.filter((t) => !t.isCompleted && !t.isCurrent);
@@ -80,6 +84,8 @@ export function KanbanView({
               onToggle={onToggle}
               onDelete={onDelete}
               onSetCurrent={onSetCurrent}
+              onSelect={onSelectTask}
+              onEnterFocus={onEnterFocus}
               classes={classes}
             />
           ))}
@@ -127,13 +133,6 @@ export function KanbanView({
         >
           <TaskForm {...formProps} />
         </motion.div>
-      ) : null}
-
-      {!showForm && canAddTask ? (
-        <Button onClick={onShowForm} variant="outline" className="w-full">
-          <Plus data-icon="inline-start" />
-          Nueva nota
-        </Button>
       ) : null}
 
       {tasks.length === 0 && !showForm ? (
