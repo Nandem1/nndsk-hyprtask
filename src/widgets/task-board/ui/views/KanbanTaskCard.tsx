@@ -109,12 +109,13 @@ export function KanbanTaskCard({
       <div
         onClick={() => onSelect(task)}
         className={cn(
-          "relative rounded-xl border p-4 transition-all cursor-pointer overflow-hidden",
-          "backdrop-blur-md bg-white/5 dark:bg-black/10",
+          "relative rounded-xl border p-4 cursor-pointer overflow-hidden",
+          // Optimizado: reducido backdrop blur y eliminado transition-all conflictivo
+          "backdrop-blur-sm bg-white/5 dark:bg-black/10",
           "border-white/10 dark:border-white/5",
           task.isCurrent
             ? cn(classes.border, "bg-accent/50 ring-1 ring-primary/20")
-            : "hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5",
+            : "hover:border-primary/30 hover:shadow-lg",
           isDragging && "shadow-2xl scale-105 rotate-1 z-50"
         )}
       >

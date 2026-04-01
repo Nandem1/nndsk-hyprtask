@@ -28,11 +28,14 @@ export function ParticlesBackground({
   const animationRef = useRef<number | null>(null);
   const particlesRef = useRef<Particle[]>([]);
   const { themeClasses } = useThemeState();
+  const isVisibleRef = useRef(true);
+  const lastFrameTimeRef = useRef(0);
 
+  // Reducido: ahora medium = 15, high = 25 (antes 50 y 100)
   const particleCount = {
-    low: 25,
-    medium: 50,
-    high: 100,
+    low: 8,
+    medium: 15,
+    high: 25,
   }[density];
 
   const speedMultiplier = {
@@ -52,7 +55,7 @@ export function ParticlesBackground({
           y: Math.random() * height,
           size: Math.random() * 3 + 1,
           speedX: (Math.random() - 0.5) * speedMultiplier,
-          speedY: (Math.random() - 0.5) * speedMultiplier - 0.2, // Slight upward drift
+          speedY: (Math.random() - 0.5) * speedMultiplier - 0.2,
           opacity: Math.random() * 0.5 + 0.2,
           color: baseColor,
         });
@@ -70,8 +73,25 @@ export function ParticlesBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // IntersectionObserver para pausar cuando no es visible
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isVisibleRef.current = entry.isIntersecting;
+        });
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
+
+    // Visibility API para pausar cuando el tab no está activo
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = document.visibilityState === "visible";
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     const resizeCanvas = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2); // Limitar DPR a 2
       const rect = canvas.getBoundingClientRect();
 
       canvas.width = rect.width * dpr;
@@ -86,7 +106,35 @@ export function ParticlesBackground({
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    const animate = () => {
+    // Pre-calcular gradientes para reutilizar
+    const gradientCache = new Map<string, CanvasGradient>();
+
+    const getGradient = (color: string, opacity: number, size: number, x: number, y: number) => {
+      const key = `${color}-${opacity}-${size}`;
+      let gradient = gradientCache.get(key);
+      if (!gradient) {
+        gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+        gradient.addColorStop(0, `${color}${Math.floor(opacity * 255).toString(16).padStart(2, "0")}`);
+        gradient.addColorStop(1, "transparent");
+        gradientCache.set(key, gradient);
+      }
+      return gradient;
+    };
+
+    const animate = (timestamp: number) => {
+      // Throttling: limitar a 30fps (33ms entre frames)
+      if (timestamp - lastFrameTimeRef.current < 33) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      lastFrameTimeRef.current = timestamp;
+
+      // Pausar si no es visible
+      if (!isVisibleRef.current) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
       const rect = canvas.getBoundingClientRect();
       ctx.clearRect(0, 0, rect.width, rect.height);
 
@@ -101,18 +149,8 @@ export function ParticlesBackground({
         if (particle.y < 0) particle.y = rect.height;
         if (particle.y > rect.height) particle.y = 0;
 
-        // Draw particle with glow
-        const gradient = ctx.createRadialGradient(
-          particle.x,
-          particle.y,
-          0,
-          particle.x,
-          particle.y,
-          particle.size * 2
-        );
-
-        gradient.addColorStop(0, `${particle.color}${Math.floor(particle.opacity * 255).toString(16).padStart(2, "0")}`);
-        gradient.addColorStop(1, "transparent");
+        // Draw particle with glow - usar gradiente cacheado
+        const gradient = getGradient(particle.color, particle.opacity, particle.size, particle.x, particle.y);
 
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2);
@@ -126,32 +164,18 @@ export function ParticlesBackground({
         ctx.fill();
       });
 
-      // Draw connections between nearby particles
-      particlesRef.current.forEach((p1, i) => {
-        particlesRef.current.slice(i + 1).forEach((p2) => {
-          const dx = p1.x - p2.x;
-          const dy = p1.y - p2.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 100) {
-            const opacity = (1 - distance / 100) * 0.2;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `${p1.color}${Math.floor(opacity * 255).toString(16).padStart(2, "0")}`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        });
-      });
+      // ELIMINADO: Algoritmo O(n²) de conexiones entre partículas
+      // Esto reducía significativamente el rendimiento
 
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    animate(0);
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      observer.disconnect();
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }

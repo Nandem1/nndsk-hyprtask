@@ -102,7 +102,6 @@ export {
 } from "./hooks/use-task-relations";
 
 // UI Components
-export { TaskForm } from "./ui/TaskForm";
 export { TaskSidebar } from "./ui/TaskSidebar";
 export { ProjectConfigModal } from "./ui/ProjectConfigModal";
 export { CategoryConfigModal } from "./ui/CategoryConfigModal";

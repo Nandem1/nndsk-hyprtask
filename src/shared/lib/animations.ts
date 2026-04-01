@@ -15,25 +15,69 @@ export const easings = {
 // Transition Presets
 // ============================================================================
 
+// ============================================================================
+// Performance-First Transition System
+// Categorized by use case for consistent, GPU-accelerated animations
+// ============================================================================
+
 export const transitions = {
-  standard: { duration: 0.5, ease: easings.standard } satisfies Transition,
-  fast: { duration: 0.3, ease: easings.standard } satisfies Transition,
+  /**
+   * Micro-interactions (hover, focus, small UI feedback)
+   * Fast, snappy response
+   */
+  micro: {
+    duration: 0.15,
+    ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+  } satisfies Transition,
+
+  /**
+   * Enter/Exit animations for components
+   * Smooth but not bouncy
+   */
+  enterExit: {
+    duration: 0.2,
+    ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+  } satisfies Transition,
+
+  /**
+   * Layout animations (reordering, expanding)
+   * Use sparingly - more expensive
+   */
+  layout: {
+    duration: 0.3,
+    ease: [0.4, 0, 0.2, 1] as [number, number, number, number],
+  } satisfies Transition,
+
+  /**
+   * Spring physics for natural feel
+   * Use only when physics matter (drag, gestures)
+   */
   spring: {
     type: "spring" as const,
     damping: 25,
     stiffness: 200,
   } satisfies Transition,
+
+  /**
+   * Bouncy spring for celebrations/feedback
+   * Higher impact, use sparingly
+   */
   springBouncy: {
     type: "spring" as const,
     damping: 15,
     stiffness: 300,
   } satisfies Transition,
+
+  /**
+   * Stiff spring for precise movements
+   * Quick settle with minimal bounce
+   */
   springStiff: {
     type: "spring" as const,
     damping: 30,
     stiffness: 400,
   } satisfies Transition,
-};
+} as const;
 
 // ============================================================================
 // Animation Variants

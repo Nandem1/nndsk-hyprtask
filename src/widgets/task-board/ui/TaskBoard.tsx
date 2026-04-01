@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
+import { transitions } from "@/shared/lib/animations";
 import { AlertCircle, Plus, LayoutList, GitBranch } from "lucide-react";
 import {
   useThemeState,
@@ -107,9 +109,15 @@ export function TaskBoard() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-baseline gap-2">
-          <span className={cn("text-3xl font-bold", themeClasses.textPrimary)}>
+          <motion.span 
+            className={cn("text-3xl font-bold", themeClasses.textPrimary)}
+            key={filteredCount}
+            initial={{ scale: 1.2, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={transitions.spring}
+          >
             {filteredCount}
-          </span>
+          </motion.span>
           {filteredCount !== totalCount && (
             <span className="text-sm text-muted-foreground">
               / {totalCount}
@@ -133,7 +141,7 @@ export function TaskBoard() {
               <ToggleGroupItem
                 key={mode.id}
                 value={mode.id}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground transition-all duration-200"
               >
                 <mode.icon className="size-4" />
                 <span className="hidden sm:inline">{mode.label}</span>
@@ -151,46 +159,68 @@ export function TaskBoard() {
             </Badge>
           )}
           {canAddTask && remainingSlots <= 2 && (
-            <div className="px-3 py-1.5 rounded-lg border border-border bg-muted text-muted-foreground">
+            <motion.div 
+              className="px-3 py-1.5 rounded-lg border border-border bg-muted text-muted-foreground"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={transitions.spring}
+            >
               <span className="text-xs font-medium">
                 {remainingSlots} restantes
               </span>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
 
-      {viewMode === "pipeline" ? (
-        <PipelineView
-          {...commonProps}
-          onSelectTask={handleSelectTask}
-          onEnterFocus={handleEnterFocus}
-          onCreateTask={handleOpenCreateModal}
-          canAddTask={canAddTask}
-        />
-      ) : (
-        <KanbanViewWrapper
-          viewMode={viewMode}
-          tasks={tasks}
-          allTasks={allTasks}
-          filteredCount={filteredCount}
-          totalCount={totalCount}
-          canAddTask={canAddTask}
-          remainingSlots={remainingSlots}
-          maxTasks={maxTasks}
-          onToggle={handleToggle}
-          onDelete={handleDelete}
-          onSetCurrent={handleSetCurrent}
-          onCreateTask={handleOpenCreateModal}
-          onSelectTask={handleSelectTask}
-          onEnterFocus={handleEnterFocus}
-          themeClasses={themeClasses}
-        />
-      )}
+      {/* ARQUITECTURA: mode="sync" en lugar de mode="wait" para evitar gap visual */}
+      {/* initial={false} previene animación en el montaje inicial */}
+      <AnimatePresence mode="sync" initial={false}>
+        <motion.div
+          key={viewMode}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          {viewMode === "pipeline" ? (
+            <PipelineView
+              {...commonProps}
+              onSelectTask={handleSelectTask}
+              onEnterFocus={handleEnterFocus}
+              onCreateTask={handleOpenCreateModal}
+              canAddTask={canAddTask}
+            />
+          ) : (
+            <KanbanViewWrapper
+              viewMode={viewMode}
+              tasks={tasks}
+              allTasks={allTasks}
+              filteredCount={filteredCount}
+              totalCount={totalCount}
+              canAddTask={canAddTask}
+              remainingSlots={remainingSlots}
+              maxTasks={maxTasks}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+              onSetCurrent={handleSetCurrent}
+              onCreateTask={handleOpenCreateModal}
+              onSelectTask={handleSelectTask}
+              onEnterFocus={handleEnterFocus}
+              themeClasses={themeClasses}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {/* FAB for mobile - Kanban only */}
       {viewMode === "kanban" && canAddTask && (
-        <div className="fixed bottom-6 right-6 md:hidden">
+        <motion.div 
+          className="fixed bottom-6 right-6 md:hidden"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.5, ...transitions.springBouncy }}
+        >
           <Button
             size="default"
             onClick={handleOpenCreateModal}
@@ -198,7 +228,7 @@ export function TaskBoard() {
           >
             <Plus className="size-5" />
           </Button>
-        </div>
+        </motion.div>
       )}
 
       <TaskDetailModal

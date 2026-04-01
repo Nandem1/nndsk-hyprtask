@@ -33,7 +33,7 @@ export function AnimatedContainer({
 
   const transition = shouldReduceMotion
     ? { duration: 0 }
-    : { ...transitions.standard, duration, delay };
+    : { ...transitions.enterExit, duration, delay };
 
   return (
     <motion.div
@@ -73,7 +73,7 @@ export function AnimatedMount({
 
   const transition = shouldReduceMotion
     ? { duration: 0 }
-    : { ...transitions.standard, duration, delay };
+    : { ...transitions.enterExit, duration, delay };
 
   return (
     <motion.div

@@ -1,8 +1,24 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog";
-import { TaskForm } from "@/entities/task";
 import { Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/ui/dialog";
+import {
+  useTaskCreate,
+  TaskCreateFields,
+  TaskCreateFooter,
+} from "@/features/task-create";
+import {
+  useActiveProjects,
+  useActiveCategories,
+  useActiveTasks,
+} from "@/entities/task";
 
 interface TaskCreateModalProps {
   isOpen: boolean;
@@ -23,34 +39,58 @@ export function TaskCreateModal({
   defaultProjectId,
   defaultCategoryId,
 }: TaskCreateModalProps) {
-  const formProps = {
-    onTaskAdded: () => {
-      onTaskCreated();
-      onClose();
-    },
-    onCancel: onClose,
-    maxTasks,
-    currentTasks,
-    defaultProjectId,
-    defaultCategoryId,
-  };
+  const { control, watch, isSubmitting, isValid, errors, onSubmit, titleValue, canCreate } =
+    useTaskCreate({
+      maxTasks,
+      currentTasks,
+      onSuccess: () => {
+        onTaskCreated();
+        onClose();
+      },
+      defaultProjectId,
+      defaultCategoryId,
+    });
+
+  const { data: projects = [] } = useActiveProjects();
+  const { data: categories = [] } = useActiveCategories();
+  const { data: activeTasks = [] } = useActiveTasks();
+
+  const incompleteTasks = activeTasks.filter((t) => !t.isCompleted);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent size="lg" className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Plus data-icon="inline-start" className="size-5" />
-            Crear nueva nota
-          </DialogTitle>
-          <DialogDescription>
-            Agrega una nueva nota a tu lista de tareas
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="mt-4">
-          <TaskForm {...formProps} />
-        </div>
+        <form onSubmit={onSubmit}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="size-5" />
+              Crear nueva nota
+            </DialogTitle>
+            <DialogDescription>
+              Agrega una nueva nota a tu lista de tareas
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            <TaskCreateFields
+              control={control}
+              watch={watch}
+              errors={errors}
+              projects={projects}
+              categories={categories}
+              incompleteTasks={incompleteTasks}
+              titleValue={titleValue}
+            />
+          </div>
+
+          <DialogFooter>
+            <TaskCreateFooter
+              isSubmitting={isSubmitting}
+              canCreate={canCreate}
+              onCancel={onClose}
+            />
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
