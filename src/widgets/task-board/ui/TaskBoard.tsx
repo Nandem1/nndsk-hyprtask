@@ -23,6 +23,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { KanbanViewWrapper } from "./KanbanViewWrapper";
 import { PipelineView } from "./views/PipelineView";
 import { TaskDetailModal } from "./TaskDetailModal";
+import { TaskCreateModal } from "./TaskCreateModal";
 import { FocusMode } from "./FocusMode";
 
 const VIEW_MODES = [
@@ -38,10 +39,11 @@ export function TaskBoard() {
   const { data: allTasks = [] } = useActiveTasks();
   const { data: settings } = useTaskSettings();
   const maxTasks = settings?.maxActiveTasks ?? 5;
-  const [showForm, setShowForm] = useState<boolean>(false);
 
+  // Modal states
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const [focusTask, setFocusTask] = useState<Task | null>(null);
   const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
@@ -61,11 +63,10 @@ export function TaskBoard() {
   const handleToggle = (id: string) => toggleTaskMutation.mutate(id);
   const handleDelete = (id: string) => deleteTaskMutation.mutate(id);
   const handleSetCurrent = (id: string) => setCurrentTaskMutation.mutate(id);
-  const handleTaskAdded = () => setShowForm(false);
 
   const handleSelectTask = (task: Task) => {
     setSelectedTask(task);
-    setIsModalOpen(true);
+    setIsDetailModalOpen(true);
   };
 
   const handleEnterFocus = (task: Task) => {
@@ -75,6 +76,18 @@ export function TaskBoard() {
 
   const handleNavigateToTask = (task: Task) => {
     setSelectedTask(task);
+  };
+
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
+  };
+
+  const handleTaskCreated = () => {
+    setIsCreateModalOpen(false);
   };
 
   const canAddTask = allTasks.length < maxTasks;
@@ -88,17 +101,6 @@ export function TaskBoard() {
     onDelete: handleDelete,
     onSetCurrent: handleSetCurrent,
     classes: themeClasses,
-  };
-
-  const formProps = {
-    onTaskAdded: handleTaskAdded,
-    onCancel: () => setShowForm(false),
-    maxTasks,
-    currentTasks: allTasks.length,
-    defaultProjectId:
-      selectedProjectId !== "all" ? selectedProjectId : undefined,
-    defaultCategoryId:
-      selectedCategoryId !== "all" ? selectedCategoryId : undefined,
   };
 
   return (
@@ -161,12 +163,10 @@ export function TaskBoard() {
       {viewMode === "pipeline" ? (
         <PipelineView
           {...commonProps}
-          showForm={showForm}
-          canAddTask={canAddTask}
-          onShowForm={() => setShowForm(true)}
-          formProps={formProps}
           onSelectTask={handleSelectTask}
           onEnterFocus={handleEnterFocus}
+          onCreateTask={handleOpenCreateModal}
+          canAddTask={canAddTask}
         />
       ) : (
         <KanbanViewWrapper
@@ -177,37 +177,34 @@ export function TaskBoard() {
           totalCount={totalCount}
           canAddTask={canAddTask}
           remainingSlots={remainingSlots}
-          showForm={showForm}
           maxTasks={maxTasks}
           onToggle={handleToggle}
           onDelete={handleDelete}
           onSetCurrent={handleSetCurrent}
-          onTaskAdded={handleTaskAdded}
-          onCancelForm={() => setShowForm(false)}
-          onShowForm={() => setShowForm(true)}
+          onCreateTask={handleOpenCreateModal}
           onSelectTask={handleSelectTask}
           onEnterFocus={handleEnterFocus}
           themeClasses={themeClasses}
         />
       )}
 
-      {!showForm && canAddTask && viewMode === "kanban" && (
-        <div className="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto">
+      {/* FAB for mobile - Kanban only */}
+      {viewMode === "kanban" && canAddTask && (
+        <div className="fixed bottom-6 right-6 md:hidden">
           <Button
-            size="lg"
-            onClick={() => setShowForm(true)}
-            className="shadow-lg hover:shadow-xl transition-shadow rounded-full md:rounded-lg size-14 md:size-auto"
+            size="default"
+            onClick={handleOpenCreateModal}
+            className="shadow-lg hover:shadow-xl transition-shadow rounded-full size-12"
           >
-            <Plus className="size-6 md:size-4" />
-            <span className="hidden md:inline">Nueva nota</span>
+            <Plus className="size-5" />
           </Button>
         </div>
       )}
 
       <TaskDetailModal
         task={selectedTask}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
         onToggle={handleToggle}
         onSetCurrent={handleSetCurrent}
         onDelete={handleDelete}
@@ -218,6 +215,20 @@ export function TaskBoard() {
           }
         }}
         onNavigateToTask={handleNavigateToTask}
+      />
+
+      <TaskCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseCreateModal}
+        onTaskCreated={handleTaskCreated}
+        maxTasks={maxTasks}
+        currentTasks={allTasks.length}
+        defaultProjectId={
+          selectedProjectId !== "all" ? selectedProjectId : undefined
+        }
+        defaultCategoryId={
+          selectedCategoryId !== "all" ? selectedCategoryId : undefined
+        }
       />
 
       <FocusMode

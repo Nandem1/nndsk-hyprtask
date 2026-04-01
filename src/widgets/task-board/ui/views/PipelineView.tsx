@@ -11,9 +11,9 @@ import {
   Zap,
   Plus,
   Focus,
+  GripVertical,
 } from "lucide-react";
 import type { Task } from "@/entities/task";
-import { TaskForm } from "@/entities/task";
 import {
   useProjectInfo,
   useCategoryInfo,
@@ -23,6 +23,8 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { EmptyState } from "@/shared/ui/empty-state";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { useTaskDrag } from "@/shared/lib/dnd-context";
+import { CSS } from "@dnd-kit/utilities";
 
 interface PipelineViewProps {
   tasks: Task[];
@@ -30,16 +32,19 @@ interface PipelineViewProps {
   onSetCurrent: (id: string) => void;
   onSelectTask: (task: Task) => void;
   onEnterFocus?: (task: Task) => void;
+  onReorder?: (tasks: Task[]) => void;
+  onCreateTask: () => void;
+  canAddTask: boolean;
   classes: {
     textPrimary: string;
     border: string;
     gradientBg: string;
     gradient: string;
+    glassBg?: string;
+    glassBorder?: string;
+    depthShadow?: string;
+    depthShadowHover?: string;
   };
-  showForm: boolean;
-  canAddTask: boolean;
-  onShowForm: () => void;
-  formProps: Record<string, unknown>;
 }
 
 function TaskMetadataBadges({
@@ -90,6 +95,7 @@ function PipelineStep({
   onSelect,
   onEnterFocus,
   classes,
+  enableDrag = false,
 }: {
   task: Task;
   index: number;
@@ -100,17 +106,40 @@ function PipelineStep({
   onSelect: (task: Task) => void;
   onEnterFocus?: (task: Task) => void;
   classes: PipelineViewProps["classes"];
+  enableDrag?: boolean;
 }) {
   const isCompleted = status === "completed";
   const isCurrent = status === "current";
   const shouldReduceMotion = useReducedMotion();
 
+  // Drag and drop setup
+  const { attributes, listeners, setNodeRef, transform, isDragging } = enableDrag
+    ? useTaskDrag(task.id)
+    : {
+        attributes: {},
+        listeners: undefined,
+        setNodeRef: () => {},
+        transform: null,
+        isDragging: false,
+      };
+
+  const style = transform
+    ? {
+        transform: CSS.Transform.toString(transform),
+      }
+    : undefined;
+
   return (
     <motion.div
+      ref={setNodeRef}
+      style={style}
       initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
+      animate={{ opacity: isDragging ? 0.5 : 1, x: 0 }}
       transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
-      className="flex items-start gap-4"
+      className={cn(
+        "flex items-start gap-4",
+        isDragging && "opacity-50"
+      )}
     >
       {/* Step indicator */}
       <div className="flex flex-col items-center">
@@ -149,23 +178,44 @@ function PipelineStep({
         <Card
           className={cn(
             "relative cursor-pointer transition-all hover:shadow-md overflow-hidden",
+            "backdrop-blur-md bg-white/5 dark:bg-black/10",
+            "border border-white/10 dark:border-white/5",
             isCurrent
               ? cn(classes.border, "ring-1 ring-primary/20 bg-accent/30")
-              : "border-border hover:border-primary/30",
+              : "hover:border-primary/30",
+            "hover:shadow-lg hover:-translate-y-0.5",
+            isDragging && "shadow-2xl scale-105 rotate-1"
           )}
           onClick={() => onSelect(task)}
         >
+          {/* Drag handle */}
+          {enableDrag && (
+            <div
+              {...attributes}
+              {...listeners}
+              className={cn(
+                "absolute left-2 top-1/2 -translate-y-1/2 z-10",
+                "p-1.5 rounded-md cursor-grab active:cursor-grabbing",
+                "text-muted-foreground hover:text-foreground",
+                "hover:bg-white/10 dark:hover:bg-white/5",
+                "transition-colors"
+              )}
+            >
+              <GripVertical className="size-4" />
+            </div>
+          )}
+
           {/* Left accent line for current */}
           {isCurrent && (
             <div
               className={cn(
                 "absolute left-0 top-0 bottom-0 w-1",
-                classes.gradientBg.replace("/10", ""),
+                classes.gradientBg?.replace("/10", "") || "bg-primary",
               )}
             />
           )}
 
-          <CardContent className="p-4">
+          <CardContent className={cn("p-4", enableDrag && "pl-10")}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <h3
@@ -262,10 +312,10 @@ export function PipelineView({
   onSetCurrent,
   onSelectTask,
   onEnterFocus,
-  classes,
-  showForm,
+  onReorder,
+  onCreateTask,
   canAddTask,
-  onShowForm,
+  classes,
 }: PipelineViewProps) {
   const completedTasks = tasks.filter((t) => t.isCompleted);
   const currentTask = tasks.find((t) => t.isCurrent && !t.isCompleted);
@@ -275,7 +325,7 @@ export function PipelineView({
     Boolean,
   ) as Task[];
 
-  if (tasks.length === 0 && !showForm) {
+  if (tasks.length === 0) {
     return (
       <EmptyState
         title="Sin notas activas"
@@ -283,8 +333,8 @@ export function PipelineView({
         icon={Circle}
         action={
           canAddTask ? (
-            <Button onClick={onShowForm} className="gap-2">
-              <Plus className="size-4" />
+            <Button onClick={onCreateTask} className="gap-2">
+              <Plus data-icon="inline-start" className="size-4" />
               Crear nota
             </Button>
           ) : null
@@ -304,14 +354,14 @@ export function PipelineView({
             pendientes
           </p>
         </div>
-        {canAddTask && !showForm ? (
+        {canAddTask ? (
           <Button
             variant="outline"
             size="sm"
-            onClick={onShowForm}
+            onClick={onCreateTask}
             className="gap-1.5 shrink-0 h-9"
           >
-            <Plus className="size-4" />
+            <Plus data-icon="inline-start" className="size-4" />
             <span className="hidden sm:inline">Nueva nota</span>
           </Button>
         ) : null}
@@ -338,6 +388,7 @@ export function PipelineView({
               onSelect={onSelectTask}
               onEnterFocus={onEnterFocus}
               classes={classes}
+              enableDrag={!!onReorder}
             />
           );
         })}
@@ -351,22 +402,6 @@ export function PipelineView({
             Limite de notas alcanzado. Completa algunas para agregar mas.
           </AlertDescription>
         </Alert>
-      ) : null}
-
-      {/* Form */}
-      {showForm && canAddTask ? (
-        <div className="mt-4">
-          <TaskForm
-            {...(formProps as {
-              onTaskAdded: () => void;
-              onCancel: () => void;
-              maxTasks: number;
-              currentTasks: number;
-              defaultProjectId?: string;
-              defaultCategoryId?: string;
-            })}
-          />
-        </div>
       ) : null}
     </div>
   );

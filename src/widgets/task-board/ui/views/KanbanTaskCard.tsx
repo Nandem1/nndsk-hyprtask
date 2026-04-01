@@ -2,13 +2,15 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
-import { Check, Trash2, Target, Zap } from "lucide-react";
+import { Check, Trash2, Target, Zap, GripVertical } from "lucide-react";
 import type { Task } from "@/entities/task";
-import type { useTheme } from "@/store/hooks";
+import type { useThemeState } from "@/store/hooks";
 import {
   useProjectInfo,
   useCategoryInfo,
 } from "@/entities/task/hooks/use-project-colors";
+import { useTaskDrag } from "@/shared/lib/dnd-context";
+import { CSS } from "@dnd-kit/utilities";
 
 interface KanbanTaskCardProps {
   task: Task;
@@ -18,7 +20,8 @@ interface KanbanTaskCardProps {
   onSetCurrent: (id: string) => void;
   onSelect: (task: Task) => void;
   onEnterFocus: (task: Task) => void;
-  classes: ReturnType<typeof useTheme>["themeClasses"];
+  classes: ReturnType<typeof useThemeState>["themeClasses"];
+  enableDrag?: boolean;
 }
 
 function TaskMetadataBadges({
@@ -68,14 +71,34 @@ export function KanbanTaskCard({
   onSelect,
   onEnterFocus,
   classes,
+  enableDrag = false,
 }: KanbanTaskCardProps) {
   const shouldReduceMotion = useReducedMotion();
 
+  // Drag and drop setup
+  const { attributes, listeners, setNodeRef, transform, isDragging } = enableDrag
+    ? useTaskDrag(task.id)
+    : {
+        attributes: {},
+        listeners: undefined,
+        setNodeRef: () => {},
+        transform: null,
+        isDragging: false,
+      };
+
+  const style = transform
+    ? {
+        transform: CSS.Transform.toString(transform),
+      }
+    : undefined;
+
   return (
     <motion.div
+      ref={setNodeRef}
+      style={style}
       key={task.id}
       initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: isDragging ? 0.5 : 1, y: 0 }}
       exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, x: -50 }}
       transition={{
         duration: shouldReduceMotion ? 0 : 0.2,
@@ -87,22 +110,42 @@ export function KanbanTaskCard({
         onClick={() => onSelect(task)}
         className={cn(
           "relative rounded-xl border p-4 transition-all cursor-pointer overflow-hidden",
+          "backdrop-blur-md bg-white/5 dark:bg-black/10",
+          "border-white/10 dark:border-white/5",
           task.isCurrent
             ? cn(classes.border, "bg-accent/50 ring-1 ring-primary/20")
-            : "border-border bg-card hover:border-primary/30 hover:shadow-md",
+            : "hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5",
+          isDragging && "shadow-2xl scale-105 rotate-1 z-50"
         )}
       >
+        {/* Drag handle */}
+        {enableDrag && (
+          <div
+            {...attributes}
+            {...listeners}
+            className={cn(
+              "absolute left-2 top-1/2 -translate-y-1/2 z-10",
+              "p-1.5 rounded-md cursor-grab active:cursor-grabbing",
+              "text-muted-foreground hover:text-foreground",
+              "hover:bg-white/10 dark:hover:bg-white/5",
+              "transition-colors opacity-0 group-hover:opacity-100"
+            )}
+          >
+            <GripVertical className="size-4" />
+          </div>
+        )}
+
         {/* Indicator line for current task */}
         {task.isCurrent && (
           <div
             className={cn(
               "absolute left-0 top-0 bottom-0 w-1",
-              classes.gradientBg.replace("/10", ""),
+              classes.gradientBg?.replace("/10", "") || "bg-primary",
             )}
           />
         )}
 
-        <div className="flex items-start gap-3">
+        <div className={cn("flex items-start gap-3", enableDrag && "pl-8")}>
           <button
             onClick={(e) => {
               e.stopPropagation();

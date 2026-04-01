@@ -1,4 +1,4 @@
-// TIPOS PARA SISTEMA DE TEMAS - COMFY/INDIE/NERD
+// TIPOS PARA SISTEMA DE TEMAS EXTENDIDO
 export type ThemePalette = 'genshin' | 'zenless' | 'wuthering' | 'osu' | 'mario';
 
 export interface ThemeConfig {
@@ -13,7 +13,36 @@ export interface ThemeConfig {
     border: string;
     shadow: string;
     glow: string;
+    particle: string;
   };
+}
+
+export interface ExtendedThemeClasses {
+  // Clases base existentes
+  gradient: string;
+  gradientBg: string;
+  gradientBgSubtle: string;
+  border: string;
+  borderHover: string;
+  shadow: string;
+  shadowHover: string;
+  textPrimary: string;
+  textSecondary: string;
+  textAccent: string;
+  iconGradient: string;
+  glow: string;
+  glowStrong: string;
+  
+  // Nuevas clases extendidas
+  glassBg: string;
+  glassBorder: string;
+  glassBorderStrong: string;
+  depthShadow: string;
+  depthShadowHover: string;
+  animatedGradient: string;
+  particleColor: string;
+  shimmer: string;
+  glowPulse: string;
 }
 
 export const THEMES: Record<ThemePalette, ThemeConfig> = {
@@ -29,6 +58,7 @@ export const THEMES: Record<ThemePalette, ThemeConfig> = {
       border: 'blue-400/30',
       shadow: 'blue-400/20',
       glow: 'blue-300/40',
+      particle: '#60A5FA',
     },
   },
   'zenless': {
@@ -43,6 +73,7 @@ export const THEMES: Record<ThemePalette, ThemeConfig> = {
       border: 'purple-400/30',
       shadow: 'purple-400/20',
       glow: 'purple-300/40',
+      particle: '#C084FC',
     },
   },
   'wuthering': {
@@ -57,6 +88,7 @@ export const THEMES: Record<ThemePalette, ThemeConfig> = {
       border: 'teal-400/30',
       shadow: 'teal-400/20',
       glow: 'teal-300/40',
+      particle: '#2DD4BF',
     },
   },
   'osu': {
@@ -71,6 +103,7 @@ export const THEMES: Record<ThemePalette, ThemeConfig> = {
       border: 'pink-400/30',
       shadow: 'pink-400/20',
       glow: 'pink-300/40',
+      particle: '#F472B6',
     },
   },
   'mario': {
@@ -85,6 +118,7 @@ export const THEMES: Record<ThemePalette, ThemeConfig> = {
       border: 'red-400/30',
       shadow: 'red-400/20',
       glow: 'red-300/40',
+      particle: '#F87171',
     },
   },
 };

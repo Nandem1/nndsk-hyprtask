@@ -1,7 +1,6 @@
 import { StoreSetter, StoreGetter, PublicActions } from "../types";
-import type { ThemePalette } from "@/shared/types/theme";
-import { getThemeClassesString } from "@/shared/config/theme/utils";
-import type { ThemeClasses } from "@/shared/config/theme/utils";
+import type { ThemePalette, ExtendedThemeClasses } from "@/shared/types/theme";
+import { getExtendedThemeClasses } from "@/shared/config/theme/utils";
 
 // ============================================================================
 // Constants
@@ -9,8 +8,9 @@ import type { ThemeClasses } from "@/shared/config/theme/utils";
 
 export const DEFAULT_PALETTE: ThemePalette = "genshin";
 
-// Default theme classes for SSR safety
-export const DEFAULT_THEME_CLASSES: ThemeClasses = {
+// Default theme classes for SSR safety - Extended with new properties
+export const DEFAULT_THEME_CLASSES: ExtendedThemeClasses = {
+  // Base classes
   gradient: "from-blue-500 to-cyan-500",
   gradientBg: "bg-blue-500/10",
   gradientBgSubtle: "bg-blue-500/5",
@@ -24,6 +24,16 @@ export const DEFAULT_THEME_CLASSES: ThemeClasses = {
   iconGradient: "text-blue-400",
   glow: "shadow-blue-500/10",
   glowStrong: "shadow-blue-500/20",
+  // Extended classes
+  glassBg: "bg-blue-500/5 backdrop-blur-xl",
+  glassBorder: "border-blue-400/20",
+  glassBorderStrong: "border-blue-400/40",
+  depthShadow: "shadow-blue-500/10 shadow-2xl",
+  depthShadowHover: "shadow-blue-500/20 shadow-2xl",
+  animatedGradient: "bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-teal-500/20",
+  particleColor: "#60A5FA",
+  shimmer: "bg-gradient-to-r from-transparent via-blue-400/20 to-transparent",
+  glowPulse: "shadow-blue-500/30 animate-pulse-glow",
 };
 
 // ============================================================================
@@ -33,13 +43,13 @@ export const DEFAULT_THEME_CLASSES: ThemeClasses = {
 export interface ThemeState {
   palette: ThemePalette;
   // Store computed values in state for SSR compatibility
-  themeClasses: ThemeClasses;
+  themeClasses: ExtendedThemeClasses;
   isDarkPalette: boolean;
 }
 
-export function computeThemeClasses(palette: ThemePalette): ThemeClasses {
+export function computeThemeClasses(palette: ThemePalette): ExtendedThemeClasses {
   try {
-    return getThemeClassesString(palette);
+    return getExtendedThemeClasses(palette);
   } catch {
     return DEFAULT_THEME_CLASSES;
   }

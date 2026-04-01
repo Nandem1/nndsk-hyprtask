@@ -1,25 +1,76 @@
-import type { ThemePalette } from "@/shared/types/theme";
+import type { ThemePalette, ExtendedThemeClasses } from "@/shared/types/theme";
 
-// Tipo de retorno para las clases del tema
-export type ThemeClasses = {
-  gradient: string;
-  gradientBg: string;
-  gradientBgSubtle: string;
-  border: string;
-  borderHover: string;
-  shadow: string;
-  shadowHover: string;
-  textPrimary: string;
-  textSecondary: string;
-  textAccent: string;
-  iconGradient: string;
-  glow: string;
-  glowStrong: string;
-};
+// Helper para construir clases dinámicas extendidas
+export function getExtendedThemeClasses(palette: ThemePalette): ExtendedThemeClasses {
+  const baseClasses = getThemeClassesString(palette);
+  
+  const extendedMap: Record<ThemePalette, Omit<ExtendedThemeClasses, keyof typeof baseClasses>> = {
+    genshin: {
+      glassBg: "bg-blue-500/5 backdrop-blur-xl",
+      glassBorder: "border-blue-400/20",
+      glassBorderStrong: "border-blue-400/40",
+      depthShadow: "shadow-blue-500/10 shadow-2xl",
+      depthShadowHover: "shadow-blue-500/20 shadow-2xl",
+      animatedGradient: "bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-teal-500/20",
+      particleColor: "#60A5FA",
+      shimmer: "bg-gradient-to-r from-transparent via-blue-400/20 to-transparent",
+      glowPulse: "shadow-blue-500/30 animate-pulse-glow",
+    },
+    zenless: {
+      glassBg: "bg-purple-500/5 backdrop-blur-xl",
+      glassBorder: "border-purple-400/20",
+      glassBorderStrong: "border-purple-400/40",
+      depthShadow: "shadow-purple-500/10 shadow-2xl",
+      depthShadowHover: "shadow-purple-500/20 shadow-2xl",
+      animatedGradient: "bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-fuchsia-500/20",
+      particleColor: "#C084FC",
+      shimmer: "bg-gradient-to-r from-transparent via-purple-400/20 to-transparent",
+      glowPulse: "shadow-purple-500/30 animate-pulse-glow",
+    },
+    wuthering: {
+      glassBg: "bg-teal-500/5 backdrop-blur-xl",
+      glassBorder: "border-teal-400/20",
+      glassBorderStrong: "border-teal-400/40",
+      depthShadow: "shadow-teal-500/10 shadow-2xl",
+      depthShadowHover: "shadow-teal-500/20 shadow-2xl",
+      animatedGradient: "bg-gradient-to-r from-teal-500/20 via-cyan-500/20 to-sky-500/20",
+      particleColor: "#2DD4BF",
+      shimmer: "bg-gradient-to-r from-transparent via-teal-400/20 to-transparent",
+      glowPulse: "shadow-teal-500/30 animate-pulse-glow",
+    },
+    osu: {
+      glassBg: "bg-pink-500/5 backdrop-blur-xl",
+      glassBorder: "border-pink-400/20",
+      glassBorderStrong: "border-pink-400/40",
+      depthShadow: "shadow-pink-500/10 shadow-2xl",
+      depthShadowHover: "shadow-pink-500/20 shadow-2xl",
+      animatedGradient: "bg-gradient-to-r from-pink-500/20 via-rose-500/20 to-fuchsia-500/20",
+      particleColor: "#F472B6",
+      shimmer: "bg-gradient-to-r from-transparent via-pink-400/20 to-transparent",
+      glowPulse: "shadow-pink-500/30 animate-pulse-glow",
+    },
+    mario: {
+      glassBg: "bg-red-500/5 backdrop-blur-xl",
+      glassBorder: "border-red-400/20",
+      glassBorderStrong: "border-red-400/40",
+      depthShadow: "shadow-red-500/10 shadow-2xl",
+      depthShadowHover: "shadow-red-500/20 shadow-2xl",
+      animatedGradient: "bg-gradient-to-r from-red-500/20 via-orange-500/20 to-yellow-500/20",
+      particleColor: "#F87171",
+      shimmer: "bg-gradient-to-r from-transparent via-red-400/20 to-transparent",
+      glowPulse: "shadow-red-500/30 animate-pulse-glow",
+    },
+  };
 
-// Helper para construir clases dinámicas (Tailwind necesita las clases completas)
-export function getThemeClassesString(palette: ThemePalette): ThemeClasses {
-  const classMap: Record<ThemePalette, ThemeClasses> = {
+  return {
+    ...baseClasses,
+    ...extendedMap[palette],
+  };
+}
+
+// Función original mantenida para compatibilidad
+export function getThemeClassesString(palette: ThemePalette) {
+  const classMap = {
     genshin: {
       gradient: "from-blue-500 to-cyan-500",
       gradientBg: "bg-blue-500/10",
@@ -99,3 +150,6 @@ export function getThemeClassesString(palette: ThemePalette): ThemeClasses {
 
   return classMap[palette];
 }
+
+// Tipo de retorno para las clases del tema (legacy)
+export type ThemeClasses = ReturnType<typeof getThemeClassesString>;

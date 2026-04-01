@@ -5,9 +5,8 @@ import { cn } from "@/shared/lib/utils";
 import { Plus, Circle, Check } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { EmptyState } from "@/shared/ui/empty-state";
-import { TaskForm } from "@/entities/task";
 import type { Task } from "@/entities/task";
-import type { useTheme } from "@/store/hooks";
+import type { useThemeState } from "@/store/hooks";
 import { KanbanTaskCard } from "./KanbanTaskCard";
 
 interface KanbanViewProps {
@@ -15,16 +14,13 @@ interface KanbanViewProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetCurrent: (id: string) => void;
-  classes: ReturnType<typeof useTheme>["themeClasses"];
-  showForm: boolean;
-  canAddTask: boolean;
-  onShowForm: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formProps: any;
+  classes: ReturnType<typeof useThemeState>["themeClasses"];
   totalCount: number;
   filteredCount: number;
   onSelectTask: (task: Task) => void;
   onEnterFocus: (task: Task) => void;
+  onCreateTask: () => void;
+  canAddTask: boolean;
 }
 
 export function KanbanView({
@@ -33,13 +29,12 @@ export function KanbanView({
   onDelete,
   onSetCurrent,
   classes,
-  showForm,
-  canAddTask,
-  onShowForm,
-  formProps,
   totalCount,
+  filteredCount,
   onSelectTask,
   onEnterFocus,
+  onCreateTask,
+  canAddTask,
 }: KanbanViewProps) {
   const shouldReduceMotion = useReducedMotion();
   const todoTasks = tasks.filter((t) => !t.isCompleted && !t.isCurrent);
@@ -125,17 +120,7 @@ export function KanbanView({
         )}
       </div>
 
-      {showForm && canAddTask ? (
-        <motion.div
-          initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
-        >
-          <TaskForm {...formProps} />
-        </motion.div>
-      ) : null}
-
-      {tasks.length === 0 && !showForm ? (
+      {tasks.length === 0 && (
         <EmptyState
           title={
             totalCount === 0
@@ -147,8 +132,16 @@ export function KanbanView({
               ? "Crea tu primera nota para comenzar"
               : "Prueba cambiando los filtros"
           }
+          action={
+            canAddTask && totalCount === 0 ? (
+              <Button onClick={onCreateTask} className="gap-2">
+                <Plus data-icon="inline-start" className="size-4" />
+                Crear nota
+              </Button>
+            ) : null
+          }
         />
-      ) : null}
+      )}
     </div>
   );
 }

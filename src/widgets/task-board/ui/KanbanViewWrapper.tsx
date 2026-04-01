@@ -3,7 +3,6 @@
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { Task } from "@/entities/task";
 import type { useThemeState } from "@/store/hooks";
-import { useTaskFiltersState } from "@/store/hooks";
 import { KanbanView } from "./views/KanbanView";
 
 interface KanbanViewWrapperProps {
@@ -14,70 +13,44 @@ interface KanbanViewWrapperProps {
   totalCount: number;
   canAddTask: boolean;
   remainingSlots: number;
-  showForm: boolean;
   maxTasks: number;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSetCurrent: (id: string) => void;
-  onTaskAdded: () => void;
-  onCancelForm: () => void;
-  onShowForm: () => void;
   onSelectTask: (task: Task) => void;
   onEnterFocus: (task: Task) => void;
+  onCreateTask: () => void;
   themeClasses: ReturnType<typeof useThemeState>["themeClasses"];
 }
 
 export function KanbanViewWrapper({
   tasks,
-  allTasks,
   filteredCount,
   totalCount,
   canAddTask,
-  showForm,
-  maxTasks,
   onToggle,
   onDelete,
   onSetCurrent,
-  onTaskAdded,
-  onCancelForm,
-  onShowForm,
   onSelectTask,
   onEnterFocus,
+  onCreateTask,
   themeClasses,
 }: KanbanViewWrapperProps) {
   const shouldReduceMotion = useReducedMotion();
-  const { selectedProjectId, selectedCategoryId } = useTaskFiltersState();
 
-  const commonProps = {
+  const viewProps = {
     tasks,
     onToggle,
     onDelete,
     onSetCurrent,
     classes: themeClasses,
-  };
-
-  const formProps = {
-    onTaskAdded,
-    onCancel: onCancelForm,
-    maxTasks,
-    currentTasks: allTasks.length,
-    defaultProjectId:
-      selectedProjectId !== "all" ? selectedProjectId : undefined,
-    defaultCategoryId:
-      selectedCategoryId !== "all" ? selectedCategoryId : undefined,
-  };
-
-  const viewProps = {
-    ...commonProps,
-    showForm,
-    canAddTask,
-    onShowForm,
-    formProps,
     totalCount,
     filteredCount,
     onSelectTask,
     onEnterFocus,
-  } as const;
+    onCreateTask,
+    canAddTask,
+  };
 
   return (
     <AnimatePresence mode="wait">
