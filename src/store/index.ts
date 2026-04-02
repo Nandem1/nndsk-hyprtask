@@ -136,8 +136,3 @@ export const useStore = create<AppStore>()(
   ),
 );
 
-// ============================================================================
-// Store Initializer (lightweight, just marks hydration complete)
-// ============================================================================
-
-export { StoreInitializer } from "./StoreInitializer";

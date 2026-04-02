@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { transitions } from "@/shared/lib/animations";
@@ -11,14 +10,8 @@ import {
   useViewModeActions,
   useTaskFiltersState,
 } from "@/store/hooks";
-import {
-  useActiveTasks,
-  useToggleTask,
-  useDeleteTask,
-  useSetCurrentTask,
-  useTaskSettings,
-} from "@/entities/task";
-import type { Task } from "@/entities/task";
+import { useActiveTasks, useTaskSettings } from "@/entities/task";
+import { useTaskBoardState } from "../hooks/useTaskBoardState";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
@@ -42,13 +35,24 @@ export function TaskBoard() {
   const { data: settings } = useTaskSettings();
   const maxTasks = settings?.maxActiveTasks ?? 5;
 
-  // Modal states
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  const [focusTask, setFocusTask] = useState<Task | null>(null);
-  const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
+  const {
+    selectedTask,
+    isDetailModalOpen,
+    setIsDetailModalOpen,
+    isCreateModalOpen,
+    focusTask,
+    isFocusModeOpen,
+    setIsFocusModeOpen,
+    handleToggle,
+    handleDelete,
+    handleSetCurrent,
+    handleSelectTask,
+    handleEnterFocus,
+    handleNavigateToTask,
+    handleOpenCreateModal,
+    handleCloseCreateModal,
+    handleTaskCreated,
+  } = useTaskBoardState();
 
   const tasks = allTasks.filter((task) => {
     if (selectedProjectId !== "all" && task.projectId !== selectedProjectId)
@@ -57,40 +61,6 @@ export function TaskBoard() {
       return false;
     return true;
   });
-
-  const toggleTaskMutation = useToggleTask();
-  const deleteTaskMutation = useDeleteTask();
-  const setCurrentTaskMutation = useSetCurrentTask();
-
-  const handleToggle = (id: string) => toggleTaskMutation.mutate(id);
-  const handleDelete = (id: string) => deleteTaskMutation.mutate(id);
-  const handleSetCurrent = (id: string) => setCurrentTaskMutation.mutate(id);
-
-  const handleSelectTask = (task: Task) => {
-    setSelectedTask(task);
-    setIsDetailModalOpen(true);
-  };
-
-  const handleEnterFocus = (task: Task) => {
-    setFocusTask(task);
-    setIsFocusModeOpen(true);
-  };
-
-  const handleNavigateToTask = (task: Task) => {
-    setSelectedTask(task);
-  };
-
-  const handleOpenCreateModal = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const handleCloseCreateModal = () => {
-    setIsCreateModalOpen(false);
-  };
-
-  const handleTaskCreated = () => {
-    setIsCreateModalOpen(false);
-  };
 
   const canAddTask = allTasks.length < maxTasks;
   const remainingSlots = maxTasks - allTasks.length;
@@ -244,8 +214,7 @@ export function TaskBoard() {
             onDelete={handleDelete}
             onEnterFocus={() => {
               if (selectedTask) {
-                setFocusTask(selectedTask);
-                setIsFocusModeOpen(true);
+                handleEnterFocus(selectedTask);
               }
             }}
             onNavigateToTask={handleNavigateToTask}

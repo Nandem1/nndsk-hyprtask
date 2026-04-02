@@ -8,33 +8,8 @@ import { getExtendedThemeClasses } from "@/shared/config/theme/utils";
 
 export const DEFAULT_PALETTE: ThemePalette = "genshin";
 
-// Default theme classes for SSR safety - Extended with new properties
-export const DEFAULT_THEME_CLASSES: ExtendedThemeClasses = {
-  // Base classes
-  gradient: "from-blue-500 to-cyan-500",
-  gradientBg: "bg-blue-500/10",
-  gradientBgSubtle: "bg-blue-500/5",
-  border: "border-blue-500/30",
-  borderHover: "border-blue-500/50",
-  shadow: "shadow-blue-500/5",
-  shadowHover: "shadow-blue-500/10",
-  textPrimary: "text-blue-400",
-  textSecondary: "text-cyan-400",
-  textAccent: "text-teal-400",
-  iconGradient: "text-blue-400",
-  glow: "shadow-blue-500/10",
-  glowStrong: "shadow-blue-500/20",
-  // Extended classes
-  glassBg: "bg-blue-500/5 backdrop-blur-xl",
-  glassBorder: "border-blue-400/20",
-  glassBorderStrong: "border-blue-400/40",
-  depthShadow: "shadow-blue-500/10 shadow-2xl",
-  depthShadowHover: "shadow-blue-500/20 shadow-2xl",
-  animatedGradient: "bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-teal-500/20",
-  particleColor: "#60A5FA",
-  shimmer: "bg-gradient-to-r from-transparent via-blue-400/20 to-transparent",
-  glowPulse: "shadow-blue-500/30 animate-pulse-glow",
-};
+// Single source of truth: derive defaults from the canonical theme function
+export const DEFAULT_THEME_CLASSES: ExtendedThemeClasses = getExtendedThemeClasses(DEFAULT_PALETTE);
 
 // ============================================================================
 // State

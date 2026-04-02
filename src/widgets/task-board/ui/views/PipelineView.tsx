@@ -28,7 +28,7 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { EmptyState } from "@/shared/ui/empty-state";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
-import { useTaskDrag } from "@/shared/lib/dnd-context";
+import { useTaskDrag } from "../../lib/dnd-context";
 import { CSS } from "@dnd-kit/utilities";
 
 interface PipelineViewProps {

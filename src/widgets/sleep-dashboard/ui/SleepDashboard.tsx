@@ -22,11 +22,11 @@ export function SleepDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col gap-6">
-          <SleepTimerCard />
+          <SleepTimerCard themeClasses={themeClasses} />
           <SleepStatsCard />
         </div>
         <div className="flex flex-col gap-6">
-          <WorkTimerCard />
+          <WorkTimerCard themeClasses={themeClasses} />
           <WindDownCard />
         </div>
       </div>

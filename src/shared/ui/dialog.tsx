@@ -7,10 +7,44 @@ import { X } from "lucide-react"
 
 import { cn } from "@/shared/lib/utils"
 
+// Contexto para compartir el estado open desde Dialog hasta DialogContent
+// Necesario para que AnimatePresence sepa cuándo ejecutar exit animations
+const DialogContext = React.createContext<{ open: boolean }>({ open: false })
+
 function Dialog({
+  open,
+  defaultOpen,
+  onOpenChange,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />
+  // Trackear open internamente para manejar tanto modo controlado como no controlado
+  const [internalOpen, setInternalOpen] = React.useState(
+    open ?? defaultOpen ?? false
+  )
+
+  React.useEffect(() => {
+    if (open !== undefined) setInternalOpen(open)
+  }, [open])
+
+  const handleOpenChange = React.useCallback(
+    (value: boolean) => {
+      setInternalOpen(value)
+      onOpenChange?.(value)
+    },
+    [onOpenChange]
+  )
+
+  return (
+    <DialogContext.Provider value={{ open: internalOpen }}>
+      <DialogPrimitive.Root
+        data-slot="dialog"
+        open={open}
+        defaultOpen={defaultOpen}
+        onOpenChange={handleOpenChange}
+        {...props}
+      />
+    </DialogContext.Provider>
+  )
 }
 
 function DialogTrigger({
@@ -45,7 +79,7 @@ function DialogOverlay({
   const shouldReduceMotion = useReducedMotion()
 
   return (
-    <DialogPrimitive.Overlay asChild>
+    <DialogPrimitive.Overlay asChild forceMount>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -62,8 +96,8 @@ function DialogOverlay({
   )
 }
 
-// ARQUITECTURA: Duration fijo en lugar de spring para sincronización perfecta
-// Eliminado spring physics que causaba desincronización con overlay
+// ARQUITECTURA: forceMount en el portal + AnimatePresence con open del contexto
+// Esto permite que exit animations se ejecuten antes de que Radix desmonte el portal
 function DialogContent({
   className,
   children,
@@ -74,6 +108,7 @@ function DialogContent({
   showCloseButton?: boolean;
   size?: "default" | "sm" | "lg" | "xl" | "full";
 }) {
+  const { open } = React.useContext(DialogContext)
   const shouldReduceMotion = useReducedMotion()
 
   const sizeClasses = {
@@ -85,61 +120,71 @@ function DialogContent({
   }
 
   return (
-    <DialogPortal data-slot="dialog-portal">
-      <DialogOverlay />
-      <DialogPrimitive.Content asChild>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={shouldReduceMotion ? { duration: 0 } : DIALOG_TRANSITION}
-          data-slot="dialog-content"
-          className={cn(
-            // Base styles
-            "fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6",
-            // Clean background sin excessive transparency
-            "bg-background",
-            // Subtle border
-            "border border-border",
-            // Shadow for depth
-            "shadow-xl",
-            // Size
-            sizeClasses[size],
-            // Responsive
-            "max-w-[calc(100%-2rem)]",
-            // Rounded corners
-            "rounded-xl",
-            className
-          )}
-          style={{ willChange: "transform, opacity" }}
-          {...(props as React.ComponentProps<typeof motion.div>)}
-        >
-          {/* Content wrapper */}
-          <div className="relative">
-            {children}
-          </div>
-          
-          {/* Close button */}
-          {showCloseButton && (
-            <DialogPrimitive.Close 
-              className={cn(
-                "absolute top-4 right-4",
-                "size-8 flex items-center justify-center",
-                "rounded-lg",
-                "hover:bg-muted",
-                "text-muted-foreground hover:text-foreground",
-                "transition-colors duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                "disabled:pointer-events-none"
-              )}
-            >
-              <X className="size-4" />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-          )}
-        </motion.div>
-      </DialogPrimitive.Content>
-    </DialogPortal>
+    <DialogPrimitive.Portal data-slot="dialog-portal" forceMount>
+      <AnimatePresence>
+        {open && (
+          <>
+            <DialogPrimitive.Overlay asChild forceMount>
+              <motion.div
+                key="dialog-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={shouldReduceMotion ? { duration: 0 } : DIALOG_TRANSITION}
+                className="fixed inset-0 z-50 bg-black/50"
+                style={{ willChange: "opacity" }}
+              />
+            </DialogPrimitive.Overlay>
+            <DialogPrimitive.Content asChild forceMount>
+              <motion.div
+                key="dialog-content"
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={shouldReduceMotion ? { duration: 0 } : DIALOG_TRANSITION}
+                data-slot="dialog-content"
+                className={cn(
+                  "fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6",
+                  "bg-background",
+                  "border border-border",
+                  "shadow-xl",
+                  sizeClasses[size],
+                  "max-w-[calc(100%-2rem)]",
+                  "rounded-xl",
+                  className
+                )}
+                style={{ willChange: "transform, opacity" }}
+                {...(props as React.ComponentProps<typeof motion.div>)}
+              >
+                {/* Content wrapper */}
+                <div className="relative">
+                  {children}
+                </div>
+
+                {/* Close button */}
+                {showCloseButton && (
+                  <DialogPrimitive.Close
+                    className={cn(
+                      "absolute top-4 right-4",
+                      "size-8 flex items-center justify-center",
+                      "rounded-lg",
+                      "hover:bg-muted",
+                      "text-muted-foreground hover:text-foreground",
+                      "transition-colors duration-200",
+                      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                      "disabled:pointer-events-none"
+                    )}
+                  >
+                    <X className="size-4" />
+                    <span className="sr-only">Close</span>
+                  </DialogPrimitive.Close>
+                )}
+              </motion.div>
+            </DialogPrimitive.Content>
+          </>
+        )}
+      </AnimatePresence>
+    </DialogPrimitive.Portal>
   )
 }
 

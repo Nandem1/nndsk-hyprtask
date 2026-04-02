@@ -1,7 +1,5 @@
 import { useStore } from "./index";
 import { useShallow } from "zustand/react/shallow";
-import type { ThemePalette } from "@/shared/types/theme";
-import type { TaskViewMode } from "@/entities/task";
 
 // ============================================================================
 // Theme Hooks
@@ -52,25 +50,6 @@ export function useTheme() {
   );
 }
 
-/**
- * Hook ligero para solo leer la paleta actual
- * Útil cuando solo necesitas el valor, no las acciones
- * @example
- * const palette = useThemePaletteOnly();
- */
-export function useThemePaletteOnly(): ThemePalette {
-  return useStore((state) => state.palette);
-}
-
-/**
- * Hook para verificar si la paleta es oscura
- * @example
- * const isDark = useIsDarkPalette();
- */
-export function useIsDarkPalette(): boolean {
-  return useStore((state) => state.isDarkPalette);
-}
-
 // ============================================================================
 // Task Filters Hooks
 // ============================================================================
@@ -78,7 +57,7 @@ export function useIsDarkPalette(): boolean {
 /**
  * Hook para el estado de filtros (valores que cambian)
  * @example
- * const { selectedProject, selectedCategory, hasActiveFilters } = useTaskFiltersState();
+ * const { selectedProjectId, selectedCategoryId, hasActiveFilters } = useTaskFiltersState();
  */
 export function useTaskFiltersState() {
   return useStore(
@@ -112,7 +91,7 @@ export function useTaskFiltersActions() {
 /**
  * Hook combinado para filtros
  * @example
- * const { selectedProject, setSelectedProject, clearFilters } = useTaskFilters();
+ * const { selectedProjectId, setSelectedProject, clearFilters } = useTaskFilters();
  */
 export function useTaskFilters() {
   return useStore(
@@ -129,41 +108,6 @@ export function useTaskFilters() {
       activeFiltersCount: state.activeFiltersCount,
     })),
   );
-}
-
-/**
- * Hook ligero para verificar si hay filtros activos
- * @example
- * const hasFilters = useHasActiveFilters();
- * {hasFilters && <ClearFiltersButton />}
- */
-export function useHasActiveFilters(): boolean {
-  return useStore((state) => state.hasActiveFilters);
-}
-
-/**
- * Hook para el conteo de filtros activos
- * @example
- * const count = useActiveFiltersCount();
- * {count > 0 && <Badge>{count}</Badge>}
- */
-export function useActiveFiltersCount(): number {
-  return useStore((state) => state.activeFiltersCount);
-}
-
-/**
- * Hook individual para proyecto seleccionado
- * Útil para componentes que solo necesitan este valor
- */
-export function useSelectedProjectId(): string | "all" {
-  return useStore((state) => state.selectedProjectId);
-}
-
-/**
- * Hook individual para categoría seleccionada
- */
-export function useSelectedCategoryId(): string | "all" {
-  return useStore((state) => state.selectedCategoryId);
 }
 
 /**
@@ -188,7 +132,7 @@ export function useTaskSearch() {
 /**
  * Hook para el estado de vista (valores que cambian)
  * @example
- * const { viewMode, isTransitioning, viewModeLabel } = useViewModeState();
+ * const { viewMode, isTransitioning } = useViewModeState();
  */
 export function useViewModeState() {
   return useStore(
@@ -227,42 +171,4 @@ export function useViewMode() {
       setViewModeImmediate: state.setViewModeImmediate,
     })),
   );
-}
-
-/**
- * Hook ligero para solo leer el modo de vista actual
- */
-export function useViewModeOnly(): TaskViewMode {
-  return useStore((state) => state.viewMode);
-}
-
-/**
- * Hook para verificar si está en modo kanban
- * @example
- * const isKanban = useIsKanbanView();
- */
-export function useIsKanbanView(): boolean {
-  return useStore((state) => state.viewMode === "kanban");
-}
-
-/**
- * Hook para verificar si está en modo pipeline
- */
-export function useIsPipelineView(): boolean {
-  return useStore((state) => state.viewMode === "pipeline");
-}
-
-// ============================================================================
-// Hydration Hook
-// ============================================================================
-
-/**
- * Hook para verificar si el store ha sido hidratado
- * Útil para evitar hydration mismatch en SSR
- * @example
- * const hasHydrated = useHasHydrated();
- * if (!hasHydrated) return <Skeleton />;
- */
-export function useHasHydrated(): boolean {
-  return useStore((state) => state._hasHydrated ?? true);
 }

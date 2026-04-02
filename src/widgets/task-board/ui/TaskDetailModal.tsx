@@ -90,7 +90,13 @@ function CelebrationEffect({
   return (
     <AnimatePresence>
       {show && (
-        <>
+        <motion.div
+          key="celebration"
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute inset-0 pointer-events-none"
+        >
           {positions.map((pos, i) => (
             <motion.div
               key={i}
@@ -101,21 +107,17 @@ function CelebrationEffect({
                 x: pos.x,
                 y: pos.y,
               }}
-              exit={{ opacity: 0 }}
-              transition={{ 
-                duration: 0.6, 
+              transition={{
+                duration: 0.6,
                 ease: [0.4, 0, 0.2, 1]
               }}
-              style={{
-                willChange: "transform, opacity",
-                transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
-              }}
+              style={{ willChange: "transform, opacity" }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
               <Sparkles className="size-3 text-primary" />
             </motion.div>
           ))}
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -205,57 +207,65 @@ function NotesSection({
         )}
       </div>
 
-      {isEditing ? (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="flex flex-col gap-3"
-        >
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Escribe aquí tus notas, comandos SQL, snippets de código..."
-            className="min-h-[16rem] font-mono text-sm resize-none"
-            autoFocus
-          />
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="gap-1.5 transition-all hover:scale-105"
+      <motion.div layout transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {isEditing ? (
+            <motion.div
+              key="edit"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              className="flex flex-col gap-3"
             >
-              <Save className="size-3.5" />
-              {isSaving ? "Guardando..." : "Guardar"}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCancel}
-              className="transition-colors"
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Escribe aquí tus notas, comandos SQL, snippets de código..."
+                className="min-h-[16rem] font-mono text-sm resize-none"
+                autoFocus
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="gap-1.5 transition-all hover:scale-105"
+                >
+                  <Save className="size-3.5" />
+                  {isSaving ? "Guardando..." : "Guardar"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancel}
+                  className="transition-colors"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="view"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              onClick={() => setIsEditing(true)}
+              className={cn(
+                "min-h-[200px] p-4 rounded-lg border transition-colors cursor-text whitespace-pre-wrap font-mono text-sm",
+                notes
+                  ? "bg-muted/30 border-border/50"
+                  : "bg-muted/10 border-border/30 text-muted-foreground italic",
+                "hover:border-border hover:bg-muted/20",
+              )}
             >
-              Cancelar
-            </Button>
-          </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-          onClick={() => setIsEditing(true)}
-          className={cn(
-            "min-h-[200px] p-4 rounded-lg border transition-all duration-200 cursor-text whitespace-pre-wrap font-mono text-sm",
-            notes
-              ? "bg-muted/30 border-border/50"
-              : "bg-muted/10 border-border/30 text-muted-foreground italic",
-            "hover:border-border hover:bg-muted/20",
+              {notes || "Haz click aquí para agregar notas, comandos SQL, links..."}
+            </motion.div>
           )}
-        >
-          {notes || "Haz click aquí para agregar notas, comandos SQL, links..."}
-        </motion.div>
-      )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

@@ -3,7 +3,6 @@ import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/shared/theme";
 import { QueryProvider } from "@/shared/lib/query-client";
-import { StoreInitializer } from "@/store/StoreInitializer";
 import { Toaster } from "@/shared/ui/sonner";
 
 const inter = Inter({
@@ -39,7 +38,6 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange={false}
           >
-            <StoreInitializer />
             {children}
             <Toaster position="bottom-right" />
           </ThemeProvider>

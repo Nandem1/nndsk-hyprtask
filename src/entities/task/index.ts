@@ -101,7 +101,10 @@ export {
   useReorderTasks,
 } from "./hooks/use-task-relations";
 
-// UI Components
-export { TaskSidebar } from "./ui/TaskSidebar";
+// Hooks de focus sessions
+export { useFocusSessions } from "./hooks/use-focus-sessions";
+export type { FocusSessionData } from "./hooks/use-focus-sessions";
+
+// UI Components (solo modales de configuración — TaskSidebar movido a widgets/task-sidebar)
 export { ProjectConfigModal } from "./ui/ProjectConfigModal";
 export { CategoryConfigModal } from "./ui/CategoryConfigModal";

@@ -15,10 +15,9 @@ import {
   useWorkCalculations,
 } from "../hooks/use-work-settings";
 import { formatMinutesToReadable } from "@/shared/lib/time-utils";
-import { useThemeState } from "@/store/hooks";
+import type { ExtendedThemeClasses } from "@/shared/types/theme";
 
-export function WorkTimerCard() {
-  const { themeClasses } = useThemeState();
+export function WorkTimerCard({ themeClasses }: { themeClasses: ExtendedThemeClasses }) {
   const { data: settings } = useWorkSettings();
   const { data: workData } = useWorkCalculations();
 

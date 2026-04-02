@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/shared/lib/utils";
 import { X, Settings, FolderKanban, Tag } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import { useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
-import { useActiveTasks } from "../hooks/use-tasks";
-import { useActiveProjects } from "../hooks/use-projects";
-import { useActiveCategories } from "../hooks/use-categories";
+import { useActiveTasks, useActiveProjects, useActiveCategories } from "@/entities/task";
 import { Button } from "@/shared/ui/button";
-import { ProjectConfigModal } from "./ProjectConfigModal";
-import { CategoryConfigModal } from "./CategoryConfigModal";
+import { ProjectConfigModal } from "@/entities/task/ui/ProjectConfigModal";
+import { CategoryConfigModal } from "@/entities/task/ui/CategoryConfigModal";
 import * as Icons from "lucide-react";
 
 interface TaskSidebarProps {
@@ -28,15 +26,23 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
-  const projectCounts = projects.map((project) => ({
-    ...project,
-    count: tasks.filter((t) => t.projectId === project.id).length,
-  }));
+  const projectCounts = useMemo(
+    () =>
+      projects.map((project) => ({
+        ...project,
+        count: tasks.filter((t) => t.projectId === project.id).length,
+      })),
+    [projects, tasks],
+  );
 
-  const categoryCounts = categories.map((category) => ({
-    ...category,
-    count: tasks.filter((t) => t.categoryId === category.id).length,
-  }));
+  const categoryCounts = useMemo(
+    () =>
+      categories.map((category) => ({
+        ...category,
+        count: tasks.filter((t) => t.categoryId === category.id).length,
+      })),
+    [categories, tasks],
+  );
 
   const handleProjectChange = (projectId: string | "all") => {
     setSelectedProject(projectId);

@@ -18,10 +18,9 @@ import {
 } from "../hooks/use-sleep-settings";
 import { generateSleepAlert } from "../lib/calculations";
 import { formatMinutesToReadable } from "@/shared/lib/time-utils";
-import { useThemeState } from "@/store/hooks";
+import type { ExtendedThemeClasses } from "@/shared/types/theme";
 
-export function SleepTimerCard() {
-  const { themeClasses } = useThemeState();
+export function SleepTimerCard({ themeClasses }: { themeClasses: ExtendedThemeClasses }) {
   const { data: settings } = useSleepSettings();
   const { data: sleepData } = useSleepCalculations();
 

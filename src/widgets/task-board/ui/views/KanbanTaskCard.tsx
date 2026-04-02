@@ -9,7 +9,7 @@ import {
   useProjectInfo,
   useCategoryInfo,
 } from "@/entities/task/hooks/use-project-colors";
-import { useTaskDrag } from "@/shared/lib/dnd-context";
+import { useTaskDrag } from "../../lib/dnd-context";
 import { CSS } from "@dnd-kit/utilities";
 
 interface KanbanTaskCardProps {

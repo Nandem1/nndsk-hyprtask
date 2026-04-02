@@ -12,10 +12,6 @@ export const easings = {
 };
 
 // ============================================================================
-// Transition Presets
-// ============================================================================
-
-// ============================================================================
 // Performance-First Transition System
 // Categorized by use case for consistent, GPU-accelerated animations
 // ============================================================================
@@ -131,31 +127,6 @@ export const animations: Record<string, Variants> = {
 };
 
 // ============================================================================
-// Exit Variants
-// ============================================================================
-
-export const exitAnimations: Record<string, Variants> = {
-  fadeOut: {
-    exit: { opacity: 0 },
-  },
-  fadeOutDown: {
-    exit: { opacity: 0, y: 20 },
-  },
-  fadeOutUp: {
-    exit: { opacity: 0, y: -20 },
-  },
-  scaleOut: {
-    exit: { opacity: 0, scale: 0.9 },
-  },
-  slideOutLeft: {
-    exit: { opacity: 0, x: -50 },
-  },
-  slideOutRight: {
-    exit: { opacity: 0, x: 50 },
-  },
-};
-
-// ============================================================================
 // Container Variants (for staggered children)
 // ============================================================================
 
@@ -177,34 +148,9 @@ export const containerVariants: Variants = {
   },
 };
 
-export const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 300, damping: 24 },
-  },
-  exit: {
-    opacity: 0,
-    y: -10,
-    transition: { duration: 0.2 },
-  },
-};
-
 // ============================================================================
 // List Variants
 // ============================================================================
-
-export const listContainerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05,
-    },
-  },
-};
 
 export const listItemVariants: Variants = {
   hidden: { opacity: 0, x: -20 },
@@ -212,77 +158,6 @@ export const listItemVariants: Variants = {
     opacity: 1,
     x: 0,
     transition: { type: "spring", stiffness: 400, damping: 30 },
-  },
-};
-
-// ============================================================================
-// Card Variants
-// ============================================================================
-
-export const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 300, damping: 25 },
-  },
-  hover: {
-    scale: 1.02,
-    transition: { type: "spring", stiffness: 400, damping: 20 },
-  },
-  tap: {
-    scale: 0.98,
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.95,
-    y: -10,
-    transition: { duration: 0.2 },
-  },
-};
-
-// ============================================================================
-// Modal/Dialog Variants
-// ============================================================================
-
-export const overlayVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-  exit: { opacity: 0 },
-};
-
-export const modalVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.95, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { type: "spring", damping: 25, stiffness: 300 },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.95,
-    y: 20,
-    transition: { duration: 0.2 },
-  },
-};
-
-// ============================================================================
-// Sidebar Variants
-// ============================================================================
-
-export const sidebarVariants: Variants = {
-  hidden: { x: -280, opacity: 0 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    transition: { type: "spring", damping: 25, stiffness: 200 },
-  },
-  exit: {
-    x: -280,
-    opacity: 0,
-    transition: { duration: 0.3, ease: easings.standard },
   },
 };
 

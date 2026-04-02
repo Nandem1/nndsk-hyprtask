@@ -22,7 +22,7 @@ import type { Task } from "@/entities/task";
 import { useProjectInfo } from "@/entities/task";
 import { Button } from "@/shared/ui/button";
 import { ParticlesBackground } from "@/shared/components/particles-background";
-import { useFocusSessions } from "@/shared/hooks/use-focus-sessions";
+import { useFocusSessions } from "@/entities/task";
 import { EndSessionDialog } from "./EndSessionDialog";
 
 interface FocusModeProps {
@@ -397,6 +397,7 @@ export function FocusMode({
                 density="medium"
                 speed="slow"
                 className="absolute inset-0 pointer-events-none"
+                particleColor={themeClasses.particleColor}
               />
             )}
 

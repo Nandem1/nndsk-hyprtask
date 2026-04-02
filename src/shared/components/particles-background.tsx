@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useThemeState } from "@/store/hooks";
 
 interface Particle {
   x: number;
@@ -17,17 +16,18 @@ interface ParticlesBackgroundProps {
   density?: "low" | "medium" | "high";
   speed?: "slow" | "normal" | "fast";
   className?: string;
+  particleColor?: string;
 }
 
 export function ParticlesBackground({
   density = "medium",
   speed = "normal",
   className,
+  particleColor = "#60A5FA",
 }: ParticlesBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const particlesRef = useRef<Particle[]>([]);
-  const { themeClasses } = useThemeState();
   const isVisibleRef = useRef(true);
   const lastFrameTimeRef = useRef(0);
 
@@ -47,7 +47,7 @@ export function ParticlesBackground({
   const initParticles = useCallback(
     (width: number, height: number) => {
       const particles: Particle[] = [];
-      const baseColor = themeClasses.particleColor || "#60A5FA";
+      const baseColor = particleColor;
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -63,7 +63,7 @@ export function ParticlesBackground({
 
       return particles;
     },
-    [particleCount, speedMultiplier, themeClasses.particleColor]
+    [particleCount, speedMultiplier, particleColor]
   );
 
   useEffect(() => {
