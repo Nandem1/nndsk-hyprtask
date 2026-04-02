@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { cn } from "@/shared/lib/utils";
 import { motion, AnimatePresence, useReducedMotion, Variants } from "framer-motion";
-import { transitions } from "@/shared/lib/animations";
 import {
   X,
   Play,
@@ -16,6 +15,8 @@ import {
   Coffee,
   Zap,
   Sparkles,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import type { Task } from "@/entities/task";
@@ -111,7 +112,7 @@ export function FocusMode({
 }: FocusModeProps) {
   const { themeClasses } = useThemeState();
   const shouldReduceMotion = useReducedMotion();
-  const { sessions, incrementSession, getStats } = useFocusSessions();
+  const { incrementSession, getStats } = useFocusSessions();
   const [timerState, setTimerState] = useState<"idle" | "running" | "paused" | "break">("idle");
   const [timeLeft, setTimeLeft] = useState(FOCUS_DURATION);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -124,7 +125,7 @@ export function FocusMode({
   const circleRef = useRef<SVGCircleElement>(null);
   const progressRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
-  const lastTimeRef = useRef<number>(Date.now());
+  const lastTimeRef = useRef<number>(0);
 
   const { sessionsToday, totalMinutesToday } = getStats();
 
@@ -163,16 +164,16 @@ export function FocusMode({
   };
 
   const handleSessionComplete = useCallback(() => {
-    incrementSession(25);
+    const elapsedMinutes = Math.round((FOCUS_DURATION - timeLeft) / 60);
+    incrementSession(elapsedMinutes);
     if (soundEnabled) {
       playSuccessSound();
     }
     // Mostrar celebración
     setShowCelebration(true);
-    setTimeout(() => setShowCelebration(false), 2000);
     setTimerState("break");
     setTimeLeft(BREAK_DURATION);
-  }, [soundEnabled, incrementSession]);
+  }, [soundEnabled, incrementSession, timeLeft]);
 
   // Timer effect - solo actualiza el estado del tiempo, no la animación del círculo
   useEffect(() => {
@@ -251,7 +252,17 @@ export function FocusMode({
     }
   }, [isOpen]);
 
-  const startTimer = () => setTimerState("running");
+  // Cleanup celebration after animation
+  useEffect(() => {
+    if (showCelebration) {
+      const timer = setTimeout(() => setShowCelebration(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showCelebration]);
+
+  const startTimer = () => {
+    setTimerState("running");
+  };
   const pauseTimer = () => setTimerState("paused");
   const resetTimer = () => {
     setTimerState("idle");
@@ -280,6 +291,11 @@ export function FocusMode({
   };
 
   const handleEndSessionClick = () => {
+    const elapsedMinutes = Math.round((FOCUS_DURATION - timeLeft) / 60);
+    incrementSession(elapsedMinutes);
+    if (soundEnabled) {
+      playSuccessSound();
+    }
     setShowEndDialog(true);
   };
 
@@ -356,7 +372,7 @@ export function FocusMode({
                   onClick={() => setSoundEnabled(!soundEnabled)}
                   title={soundEnabled ? "Sonido activado" : "Sonido desactivado"}
                 >
-                  {soundEnabled ? <Maximize2 className="size-4" /> : <Minimize2 className="size-4" />}
+                  {soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
                 </Button>
 
                 <Button
@@ -392,14 +408,14 @@ export function FocusMode({
             </motion.div>
 
             {/* Particles background */}
-            {showParticles && (
+            {showParticles ? (
               <ParticlesBackground
                 density="medium"
                 speed="slow"
                 className="absolute inset-0 pointer-events-none"
                 particleColor={themeClasses.particleColor}
               />
-            )}
+            ) : null}
 
             {/* ARQUITECTURA: Contenido principal con variants en lugar de AnimatePresence anidado */}
             <div className="flex-1 flex flex-col items-center justify-center p-8 relative z-10">
