@@ -231,21 +231,27 @@ export function TaskBoard() {
         </motion.div>
       )}
 
-      <TaskDetailModal
-        task={selectedTask}
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        onToggle={handleToggle}
-        onSetCurrent={handleSetCurrent}
-        onDelete={handleDelete}
-        onEnterFocus={() => {
-          if (selectedTask) {
-            setFocusTask(selectedTask);
-            setIsFocusModeOpen(true);
-          }
-        }}
-        onNavigateToTask={handleNavigateToTask}
-      />
+      {/* ARQUITECTURA: AnimatePresence coordina el ciclo de vida del modal */}
+      {/* Evita parpadeo al sincronizar entrada/salida del Dialog */}
+      <AnimatePresence mode="wait">
+        {isDetailModalOpen && selectedTask && (
+          <TaskDetailModal
+            task={selectedTask}
+            isOpen={isDetailModalOpen}
+            onClose={() => setIsDetailModalOpen(false)}
+            onToggle={handleToggle}
+            onSetCurrent={handleSetCurrent}
+            onDelete={handleDelete}
+            onEnterFocus={() => {
+              if (selectedTask) {
+                setFocusTask(selectedTask);
+                setIsFocusModeOpen(true);
+              }
+            }}
+            onNavigateToTask={handleNavigateToTask}
+          />
+        )}
+      </AnimatePresence>
 
       <TaskCreateModal
         isOpen={isCreateModalOpen}

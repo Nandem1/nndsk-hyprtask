@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { transitions } from "@/shared/lib/animations";
@@ -41,6 +41,7 @@ import {
   DialogDescription,
 } from "@/shared/ui/dialog";
 
+// ARQUITECTURA: Componentes puros para evitar re-renders innecesarios
 function ProjectName({ projectId }: { projectId: string }) {
   const { name, colorClasses } = useProjectInfo(projectId);
   return (
@@ -55,7 +56,7 @@ function CategoryName({ categoryId }: { categoryId: string }) {
   );
 }
 
-// Hook to detect reduced motion preference
+// ARQUITECTURA: Hook para detectar reduced motion de forma eficiente
 function useReducedMotion(): boolean {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -74,8 +75,234 @@ function useReducedMotion(): boolean {
   return prefersReducedMotion;
 }
 
+// ARQUITECTURA: Componente de celebración aislado con su propio AnimatePresence
+function CelebrationEffect({ 
+  show, 
+  positions 
+}: { 
+  show: boolean; 
+  positions: Array<{ x: number; y: number }>;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+  
+  if (prefersReducedMotion) return null;
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <>
+          {positions.map((pos, i) => (
+            <motion.div
+              key={i}
+              initial={{ scale: 0, opacity: 1 }}
+              animate={{
+                scale: [0, 1.5, 0],
+                opacity: [1, 1, 0],
+                x: pos.x,
+                y: pos.y,
+              }}
+              exit={{ opacity: 0 }}
+              transition={{ 
+                duration: 0.6, 
+                ease: [0.4, 0, 0.2, 1]
+              }}
+              style={{
+                willChange: "transform, opacity",
+                transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
+              }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
+              <Sparkles className="size-3 text-primary" />
+            </motion.div>
+          ))}
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ARQUITECTURA: Componente de checkbox animado simplificado
+function AnimatedCheckbox({ 
+  isCompleted, 
+  onClick 
+}: { 
+  isCompleted: boolean; 
+  onClick: () => void;
+}) {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className={cn(
+        "mt-0.5 size-6 rounded-full border-2 flex items-center justify-center transition-all shrink-0 relative",
+        isCompleted
+          ? "bg-primary border-primary text-primary-foreground"
+          : "border-muted hover:border-primary bg-background",
+      )}
+    >
+      <AnimatePresence initial={false}>
+        {isCompleted && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={transitions.springBouncy}
+          >
+            <Check className="size-3.5" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
+// ARQUITECTURA: Sección de notas con estado local aislado
+function NotesSection({ 
+  initialNotes, 
+  onSave 
+}: { 
+  initialNotes: string;
+  onSave: (notes: string) => void;
+}) {
+  const [notes, setNotes] = useState(initialNotes);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Sincronizar con props iniciales
+  useEffect(() => {
+    setNotes(initialNotes);
+  }, [initialNotes]);
+
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    await onSave(notes);
+    setIsSaving(false);
+    setIsEditing(false);
+  }, [notes, onSave]);
+
+  const handleCancel = useCallback(() => {
+    setNotes(initialNotes);
+    setIsEditing(false);
+  }, [initialNotes]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h3 className="font-medium flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
+          <Tag className="size-4" />
+          Notas y código
+        </h3>
+        {!isEditing && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+            className="h-8 transition-colors"
+          >
+            Editar
+          </Button>
+        )}
+      </div>
+
+      {isEditing ? (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex flex-col gap-3"
+        >
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Escribe aquí tus notas, comandos SQL, snippets de código..."
+            className="min-h-[16rem] font-mono text-sm resize-none"
+            autoFocus
+          />
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="gap-1.5 transition-all hover:scale-105"
+            >
+              <Save className="size-3.5" />
+              {isSaving ? "Guardando..." : "Guardar"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              className="transition-colors"
+            >
+              Cancelar
+            </Button>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+          onClick={() => setIsEditing(true)}
+          className={cn(
+            "min-h-[200px] p-4 rounded-lg border transition-all duration-200 cursor-text whitespace-pre-wrap font-mono text-sm",
+            notes
+              ? "bg-muted/30 border-border/50"
+              : "bg-muted/10 border-border/30 text-muted-foreground italic",
+            "hover:border-border hover:bg-muted/20",
+          )}
+        >
+          {notes || "Haz click aquí para agregar notas, comandos SQL, links..."}
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+// ARQUITECTURA: Tarjeta de contexto simplificada sin AnimatePresence
+function ContextCard({
+  task,
+  type,
+  onClick,
+}: {
+  task: Task;
+  type: "parent" | "child";
+  onClick: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.2, delay: type === "parent" ? 0.1 : 0.15 }}
+    >
+      <Card
+        className="cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all border-l-4 border-l-primary/50"
+        onClick={onClick}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+            {type === "parent" ? (
+              <>
+                <ArrowLeft className="size-3" />
+                Viene de
+              </>
+            ) : (
+              <>
+                <ArrowRight className="size-3" />
+                Continúa en
+              </>
+            )}
+          </div>
+          <p className="text-sm font-medium line-clamp-2">{task.title}</p>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
 interface TaskDetailModalProps {
-  task: Task | null;
+  task: Task;
   isOpen: boolean;
   onClose: () => void;
   onToggle: (id: string) => void;
@@ -85,6 +312,7 @@ interface TaskDetailModalProps {
   onNavigateToTask?: (task: Task) => void;
 }
 
+// ARQUITECTURA: Componente principal con mínimo estado y sin AnimatePresence anidados problemáticos
 export function TaskDetailModal({
   task,
   isOpen,
@@ -96,16 +324,13 @@ export function TaskDetailModal({
   onNavigateToTask,
 }: TaskDetailModalProps) {
   const { themeClasses } = useThemeState();
-  const [notes, setNotes] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
 
   const updateNotesMutation = useUpdateTaskNotes();
-  const { data: parentTask } = useTaskParent(task?.id || "");
-  const { data: childTask } = useTaskChild(task?.id || "");
+  const { data: parentTask } = useTaskParent(task.id);
+  const { data: childTask } = useTaskChild(task.id);
 
-  // Precalculate celebration positions with useMemo (4 elements instead of 6)
+  // ARQUITECTURA: Precalcular posiciones de celebración una sola vez
   const celebrationPositions = useMemo(() => {
     return [0, 1, 2, 3].map((i) => {
       const angle = (i * 90 * Math.PI) / 180;
@@ -116,95 +341,50 @@ export function TaskDetailModal({
     });
   }, []);
 
-  useEffect(() => {
-    if (task) {
-      setNotes(task.notes || "");
+  // ARQUITECTURA: Callbacks memoizados para evitar re-renders
+  const handleToggleTask = useCallback(() => {
+    onToggle(task.id);
+    if (!task.isCompleted) {
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 2000);
     }
-  }, [task?.id, task?.notes]);
+  }, [onToggle, task.id, task.isCompleted]);
 
-  const handleSaveNotes = () => {
-    if (task) {
-      updateNotesMutation.mutate({ id: task.id, notes });
-      setIsEditing(false);
+  const handleSaveNotes = useCallback(async (notes: string) => {
+    await updateNotesMutation.mutateAsync({ id: task.id, notes });
+  }, [updateNotesMutation, task.id]);
+
+  const handleDelete = useCallback(() => {
+    if (confirm("¿Eliminar esta nota?")) {
+      onDelete(task.id);
+      onClose();
     }
-  };
+  }, [onDelete, onClose, task.id]);
 
-  const handleToggleTask = () => {
-    if (task) {
-      onToggle(task.id);
-      if (!task.isCompleted) {
-        // Mostrar celebración al completar
-        setShowCelebration(true);
-        setTimeout(() => setShowCelebration(false), 2000);
-      }
-    }
-  };
-
-  if (!task) return null;
+  const handleSetCurrent = useCallback(() => {
+    onSetCurrent(task.id);
+  }, [onSetCurrent, task.id]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0" showCloseButton={false}>
+      <DialogContent 
+        className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0" 
+        showCloseButton={false}
+      >
         <DialogHeader className="px-6 py-5 border-b border-border/50">
           <div className="flex flex-col gap-3">
             {/* Top row: Title and actions */}
             <div className="flex items-start gap-4">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleToggleTask}
-                className={cn(
-                  "mt-0.5 size-6 rounded-full border-2 flex items-center justify-center transition-all shrink-0 relative",
-                  task.isCompleted
-                    ? "bg-primary border-primary text-primary-foreground"
-                    : "border-muted hover:border-primary bg-background",
-                )}
-              >
-                <AnimatePresence>
-                  {task.isCompleted && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={transitions.springBouncy}
-                    >
-                      <Check className="size-3.5" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                
-                {/* Celebración al completar - Optimized with GPU acceleration */}
-                <AnimatePresence>
-                  {showCelebration && !prefersReducedMotion && (
-                    <>
-                      {celebrationPositions.map((pos, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ scale: 0, opacity: 1 }}
-                          animate={{
-                            scale: [0, 1.5, 0],
-                            opacity: [1, 1, 0],
-                            x: pos.x,
-                            y: pos.y,
-                          }}
-                          exit={{ opacity: 0 }}
-                          transition={{ 
-                            duration: 0.6, 
-                            ease: [0.4, 0, 0.2, 1] // Lighter cubic-bezier easing
-                          }}
-                          style={{
-                            willChange: "transform, opacity",
-                            transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
-                          }}
-                          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                        >
-                          <Sparkles className="size-3 text-primary" />
-                        </motion.div>
-                      ))}
-                    </>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+              <div className="relative">
+                <AnimatedCheckbox 
+                  isCompleted={task.isCompleted} 
+                  onClick={handleToggleTask} 
+                />
+                <CelebrationEffect 
+                  show={showCelebration} 
+                  positions={celebrationPositions} 
+                />
+              </div>
 
               <div className="flex-1 min-w-0 pt-0.5">
                 <DialogTitle
@@ -223,7 +403,7 @@ export function TaskDetailModal({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onSetCurrent(task.id)}
+                    onClick={handleSetCurrent}
                     className="gap-1.5 h-9 transition-all hover:scale-105"
                   >
                     <Play className="size-3.5" />
@@ -271,29 +451,26 @@ export function TaskDetailModal({
                   <CategoryName categoryId={task.categoryId} />
                 </Badge>
               )}
-              <AnimatePresence>
-                {task.isCurrent && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, x: -10 }}
-                    transition={transitions.spring}
+              {task.isCurrent && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Badge
+                    variant="default"
+                    className={cn(
+                      "gap-1 h-7 px-2.5",
+                      themeClasses.gradientBg,
+                      themeClasses.textPrimary,
+                      "border-0",
+                    )}
                   >
-                    <Badge
-                      variant="default"
-                      className={cn(
-                        "gap-1 h-7 px-2.5",
-                        themeClasses.gradientBg,
-                        themeClasses.textPrimary,
-                        "border-0",
-                      )}
-                    >
-                      <Focus className="size-3" />
-                      Actual
-                    </Badge>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <Focus className="size-3" />
+                    Actual
+                  </Badge>
+                </motion.div>
+              )}
             </div>
           </div>
 
@@ -332,95 +509,11 @@ export function TaskDetailModal({
 
               <Separator />
 
-              {/* Notes section */}
-              <div>
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <h3 className="font-medium flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
-                    <Tag className="size-4" />
-                    Notas y código
-                  </h3>
-                  <AnimatePresence mode="wait">
-                    {!isEditing ? (
-                      <motion.div
-                        key="edit-button"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsEditing(true)}
-                          className="h-8 transition-colors"
-                        >
-                          Editar
-                        </Button>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {isEditing ? (
-                    <motion.div
-                      key="edit-mode"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={transitions.spring}
-                      className="flex flex-col gap-3"
-                    >
-                      <Textarea
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Escribe aquí tus notas, comandos SQL, snippets de código..."
-                        className="min-h-[16rem] font-mono text-sm resize-none"
-                        autoFocus
-                      />
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          onClick={handleSaveNotes}
-                          className="gap-1.5 transition-all hover:scale-105"
-                        >
-                          <Save className="size-3.5" />
-                          Guardar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setIsEditing(false);
-                            setNotes(task.notes || "");
-                          }}
-                          className="transition-colors"
-                        >
-                          Cancelar
-                        </Button>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="view-mode"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={transitions.spring}
-                      onClick={() => setIsEditing(true)}
-                      className={cn(
-                        "min-h-[200px] p-4 rounded-lg border transition-all duration-200 cursor-text whitespace-pre-wrap font-mono text-sm",
-                        notes
-                          ? "bg-muted/30 border-border/50"
-                          : "bg-muted/10 border-border/30 text-muted-foreground italic",
-                        "hover:border-border hover:bg-muted/20",
-                      )}
-                    >
-                      {notes ||
-                        "Haz click aquí para agregar notas, comandos SQL, links..."}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              {/* Notes section - Componente aislado */}
+              <NotesSection
+                initialNotes={task.notes || ""}
+                onSave={handleSaveNotes}
+              />
             </div>
 
             {/* Sidebar - Context */}
@@ -430,86 +523,36 @@ export function TaskDetailModal({
                 <h3 className="font-medium">Contexto</h3>
               </div>
 
-              <AnimatePresence mode="wait">
-                {parentTask && (
-                  <motion.div
-                    key={parentTask.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={transitions.spring}
-                  >
-                    <Card
-                      className="cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all border-l-4 border-l-primary/50"
-                      onClick={() => onNavigateToTask?.(parentTask)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                          <ArrowLeft className="size-3" />
-                          Viene de
-                        </div>
-                        <p className="text-sm font-medium line-clamp-2">
-                          {parentTask.title}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {parentTask && (
+                <ContextCard
+                  task={parentTask}
+                  type="parent"
+                  onClick={() => onNavigateToTask?.(parentTask)}
+                />
+              )}
 
-              <AnimatePresence mode="wait">
-                {childTask && (
-                  <motion.div
-                    key={childTask.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={transitions.spring}
-                  >
-                    <Card
-                      className="cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all border-l-4 border-l-primary/50"
-                      onClick={() => onNavigateToTask?.(childTask)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                          <ArrowRight className="size-3" />
-                          Continúa en
-                        </div>
-                        <p className="text-sm font-medium line-clamp-2">
-                          {childTask.title}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {childTask && (
+                <ContextCard
+                  task={childTask}
+                  type="child"
+                  onClick={() => onNavigateToTask?.(childTask)}
+                />
+              )}
 
-              <AnimatePresence>
-                {!parentTask && !childTask && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="bg-muted/20 p-4 rounded-lg border border-dashed border-border"
-                  >
-                    <p className="text-sm text-muted-foreground italic leading-relaxed">
-                      Esta nota no tiene relaciones. Usa el pipeline para
-                      establecer el orden.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {!parentTask && !childTask && (
+                <div className="bg-muted/20 p-4 rounded-lg border border-dashed border-border">
+                  <p className="text-sm text-muted-foreground italic leading-relaxed">
+                    Esta nota no tiene relaciones. Usa el pipeline para
+                    establecer el orden.
+                  </p>
+                </div>
+              )}
 
               <div className="pt-4">
                 <Button
                   variant="outline"
                   className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 gap-2 transition-all"
-                  onClick={() => {
-                    if (confirm("¿Eliminar esta nota?")) {
-                      onDelete(task.id);
-                      onClose();
-                    }
-                  }}
+                  onClick={handleDelete}
                 >
                   <Trash2 className="size-4" />
                   Eliminar nota
