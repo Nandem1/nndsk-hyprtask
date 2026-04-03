@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/shared/theme";
 import { QueryProvider } from "@/shared/lib/query-client";
 import { Toaster } from "@/shared/ui/sonner";
+import { ConfirmProvider } from "@/shared/hooks/use-confirm";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -38,8 +39,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange={false}
           >
-            {children}
-            <Toaster position="bottom-right" />
+            <ConfirmProvider>
+              {children}
+              <Toaster position="bottom-right" />
+            </ConfirmProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

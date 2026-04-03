@@ -2,14 +2,140 @@
 
 import { useState, useMemo } from "react";
 import { cn } from "@/shared/lib/utils";
-import { X, Settings, FolderKanban, Tag } from "lucide-react";
-import { useThemeState } from "@/store/hooks";
-import { useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
+import { X, Settings, Tag } from "lucide-react";
+import { useThemeState, useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
 import { useActiveTasks, useActiveProjects, useActiveCategories } from "@/entities/task";
 import { Button } from "@/shared/ui/button";
 import { ProjectConfigModal } from "@/entities/task/ui/ProjectConfigModal";
 import { CategoryConfigModal } from "@/entities/task/ui/CategoryConfigModal";
-import * as Icons from "lucide-react";
+import {
+  Server,
+  Code,
+  Bot,
+  FolderOpen,
+  FolderKanban,
+  Layers,
+  Box,
+  Container,
+  Database,
+  Cloud,
+  Globe,
+  Smartphone,
+  Monitor,
+  Laptop,
+  Cpu,
+  CircuitBoard,
+  GitBranch,
+  GitCommit,
+  Github,
+  Terminal,
+  FileCode,
+  Briefcase,
+  Building,
+  Home,
+  Rocket,
+  Zap,
+  Star,
+  Heart,
+  Bookmark,
+  Flag,
+  Target,
+  Crosshair,
+  Bug,
+  Wrench,
+  Sparkles,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  HelpCircle,
+  FileText,
+  FileCheck,
+  FilePlus,
+  FileMinus,
+  FileX,
+  FileQuestion,
+  Clipboard,
+  ClipboardCheck,
+  ClipboardList,
+  List,
+  ListChecks,
+  ListTodo,
+  Layout,
+  LayoutGrid,
+  Grid,
+  Table,
+  BarChart,
+  PieChart,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+} from "lucide-react";
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Server,
+  Code,
+  Bot,
+  FolderOpen,
+  FolderKanban,
+  Layers,
+  Box,
+  Container,
+  Database,
+  Cloud,
+  Globe,
+  Smartphone,
+  Monitor,
+  Laptop,
+  Cpu,
+  CircuitBoard,
+  GitBranch,
+  GitCommit,
+  Github,
+  Terminal,
+  FileCode,
+  Briefcase,
+  Building,
+  Home,
+  Rocket,
+  Zap,
+  Star,
+  Heart,
+  Bookmark,
+  Flag,
+  Target,
+  Crosshair,
+  Bug,
+  Wrench,
+  Sparkles,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  HelpCircle,
+  FileText,
+  FileCheck,
+  FilePlus,
+  FileMinus,
+  FileX,
+  FileQuestion,
+  Clipboard,
+  ClipboardCheck,
+  ClipboardList,
+  List,
+  ListChecks,
+  ListTodo,
+  Layout,
+  LayoutGrid,
+  Grid,
+  Table,
+  BarChart,
+  PieChart,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Pulse: Activity,
+};
 
 interface TaskSidebarProps {
   onClose?: () => void;
@@ -17,7 +143,7 @@ interface TaskSidebarProps {
 
 export function TaskSidebar({ onClose }: TaskSidebarProps) {
   const { themeClasses } = useThemeState();
-  const { selectedProjectId, selectedCategoryId } = useTaskFiltersState();
+  const { selectedProjectId, selectedCategoryId, hasActiveFilters } = useTaskFiltersState();
   const { setSelectedProject, setSelectedCategory } = useTaskFiltersActions();
   const { data: tasks = [] } = useActiveTasks();
   const { data: projects = [] } = useActiveProjects();
@@ -55,14 +181,8 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
   };
 
   const getIconComponent = (iconName: string) => {
-    const IconComponent = Icons[
-      iconName as keyof typeof Icons
-    ] as React.ComponentType<{ className?: string }>;
-    return IconComponent || Icons.FolderKanban;
+    return ICON_MAP[iconName] || FolderKanban;
   };
-
-  const hasActiveFilters =
-    selectedProjectId !== "all" || selectedCategoryId !== "all";
 
   return (
     <aside className="w-72 border-r border-border bg-card h-full overflow-y-auto">

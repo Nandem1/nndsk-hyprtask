@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import { AnimatePresence } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { Plus, Circle, Check } from "lucide-react";
@@ -23,7 +24,7 @@ interface KanbanColumnProps {
   onEnterFocus: (task: Task) => void;
 }
 
-function KanbanColumn({
+const KanbanColumn = memo(function KanbanColumn({
   title,
   icon,
   count,
@@ -82,7 +83,7 @@ function KanbanColumn({
       </div>
     </div>
   );
-}
+});
 
 interface KanbanViewProps {
   tasks: Task[];
@@ -91,7 +92,6 @@ interface KanbanViewProps {
   onSetCurrent: (id: string) => void;
   classes: ExtendedThemeClasses;
   totalCount: number;
-  filteredCount: number;
   onSelectTask: (task: Task) => void;
   onEnterFocus: (task: Task) => void;
   onCreateTask: () => void;
@@ -105,15 +105,16 @@ export function KanbanView({
   onSetCurrent,
   classes,
   totalCount,
-  filteredCount,
   onSelectTask,
   onEnterFocus,
   onCreateTask,
   canAddTask,
 }: KanbanViewProps) {
-  const todoTasks = tasks.filter((t) => !t.isCompleted && !t.isCurrent);
-  const activeTask = tasks.find((t) => t.isCurrent && !t.isCompleted);
-  const doneTasks = tasks.filter((t) => t.isCompleted);
+  const { todoTasks, activeTask, doneTasks } = useMemo(() => ({
+    todoTasks: tasks.filter((t) => !t.isCompleted && !t.isCurrent),
+    activeTask: tasks.find((t) => t.isCurrent && !t.isCompleted) ?? null,
+    doneTasks: tasks.filter((t) => t.isCompleted),
+  }), [tasks]);
 
   return (
     <div className="flex flex-col gap-4">

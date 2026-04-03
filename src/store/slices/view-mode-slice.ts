@@ -48,15 +48,7 @@ export class ViewModeActionImpl {
     // Finalizar transición después del delay
     setTimeout(() => {
       this.#set({ isTransitioning: false });
-    }, 150);
-  };
-
-  /**
-   * Cambio inmediato sin animación
-   */
-  setViewModeImmediate = (mode: TaskViewMode): void => {
-    if (this.#get().viewMode === mode) return;
-    this.#set({ viewMode: mode, isTransitioning: false });
+    }, 250);
   };
 }
 

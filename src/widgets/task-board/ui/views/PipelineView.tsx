@@ -1,35 +1,18 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
-import {
-  transitions,
-  listItemVariants,
-  containerVariants,
-} from "@/shared/lib/animations";
-import {
-  Check,
-  Circle,
-  Lock,
-  Clock,
-  ChevronRight,
-  Zap,
-  Plus,
-  Focus,
-  GripVertical,
-} from "lucide-react";
-import type { Task } from "@/entities/task";
-import {
-  useProjectInfo,
-  useCategoryInfo,
-} from "@/entities/task/hooks/use-project-colors";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
-import { EmptyState } from "@/shared/ui/empty-state";
-import { Alert, AlertDescription } from "@/shared/ui/alert";
-import { useTaskDrag } from "../../lib/dnd-context";
-import { CSS } from "@dnd-kit/utilities";
+import { transitions, containerVariants } from "@/shared/lib/animations";
+import { Circle, Lock, Plus } from "lucide-react";
+ import type { Task } from "@/entities/task";
+ import { Button } from "@/shared/ui/button";
+ import { EmptyState } from "@/shared/ui/empty-state";
+ import { Alert, AlertDescription } from "@/shared/ui/alert";
+ import { PipelineStep } from "./PipelineStep";
+ import type { useThemeState } from "@/store/hooks";
+
+
 
 interface PipelineViewProps {
   tasks: Task[];
@@ -40,320 +23,7 @@ interface PipelineViewProps {
   onReorder?: (tasks: Task[]) => void;
   onCreateTask: () => void;
   canAddTask: boolean;
-  classes: {
-    textPrimary: string;
-    border: string;
-    gradientBg: string;
-    gradient: string;
-    glassBg?: string;
-    glassBorder?: string;
-    depthShadow?: string;
-    depthShadowHover?: string;
-  };
-}
-
-function TaskMetadataBadges({
-  projectId,
-  categoryId,
-}: {
-  projectId?: string;
-  categoryId?: string;
-}) {
-  const projectInfo = useProjectInfo(projectId);
-  const categoryInfo = useCategoryInfo(categoryId);
-
-  return (
-    <>
-      {projectId && projectInfo.name ? (
-        <motion.span
-          whileHover={{ scale: 1.05 }}
-          className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border transition-colors",
-            projectInfo.colorClasses?.badge ||
-              "bg-muted text-muted-foreground border-border hover:border-primary/30",
-          )}
-        >
-          {projectInfo.name}
-        </motion.span>
-      ) : null}
-      {categoryId && categoryInfo.name ? (
-        <motion.span
-          whileHover={{ scale: 1.05 }}
-          className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border transition-colors",
-            categoryInfo.colorClasses?.badge ||
-              "bg-muted text-muted-foreground border-border hover:border-primary/30",
-          )}
-        >
-          {categoryInfo.name}
-        </motion.span>
-      ) : null}
-    </>
-  );
-}
-
-function PipelineStep({
-  task,
-  index,
-  status,
-  isLast,
-  onToggle,
-  onSetCurrent,
-  onSelect,
-  onEnterFocus,
-  classes,
-  enableDrag = false,
-}: {
-  task: Task;
-  index: number;
-  status: "completed" | "current" | "pending";
-  isLast: boolean;
-  onToggle: (id: string) => void;
-  onSetCurrent: (id: string) => void;
-  onSelect: (task: Task) => void;
-  onEnterFocus?: (task: Task) => void;
-  classes: PipelineViewProps["classes"];
-  enableDrag?: boolean;
-}) {
-  const isCompleted = status === "completed";
-  const isCurrent = status === "current";
-  const shouldReduceMotion = useReducedMotion();
-
-  // Drag and drop setup
-  const { attributes, listeners, setNodeRef, transform, isDragging } = enableDrag
-    ? useTaskDrag(task.id)
-    : {
-        attributes: {},
-        listeners: undefined,
-        setNodeRef: () => {},
-        transform: null,
-        isDragging: false,
-      };
-
-  const style = transform
-    ? {
-        transform: CSS.Transform.toString(transform),
-      }
-    : undefined;
-
-  return (
-    <motion.div
-      ref={setNodeRef}
-      style={style}
-      // ELIMINADO: layout prop que causaba layout thrashing
-      variants={listItemVariants}
-      initial={shouldReduceMotion ? { opacity: 1 } : "hidden"}
-      animate={isDragging ? { opacity: 0.5, scale: 1.02 } : "visible"}
-      exit={{ opacity: 0, x: -20 }}
-      transition={shouldReduceMotion ? { duration: 0 } : transitions.spring}
-      className={cn("flex items-start gap-4", isDragging && "opacity-50")}
-    >
-      {/* Step indicator */}
-      <div className="flex flex-col items-center">
-        <motion.button
-          whileHover={shouldReduceMotion ? undefined : { scale: 1.1 }}
-          whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
-          onClick={() => onToggle(task.id)}
-          className={cn(
-            "size-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 shrink-0",
-            isCompleted
-              ? "bg-primary border-primary text-primary-foreground"
-              : isCurrent
-                ? cn("border-primary bg-primary/10", classes.textPrimary)
-                : "border-border bg-card hover:border-primary/50",
-          )}
-        >
-          <AnimatePresence mode="wait">
-            {isCompleted ? (
-              <motion.div
-                key="check"
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0, rotate: 180 }}
-                transition={transitions.springBouncy}
-              >
-                <Check className="size-5" />
-              </motion.div>
-            ) : (
-              <motion.span
-                key="number"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                transition={transitions.spring}
-                className="text-sm font-semibold"
-              >
-                {index + 1}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
-
-        {!isLast ? (
-          <motion.div
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            className={cn(
-              "w-0.5 h-16 mt-2 origin-top transition-colors duration-500",
-              isCompleted ? "bg-primary/50" : "bg-border",
-            )}
-          />
-        ) : null}
-      </div>
-
-      {/* Card */}
-      <div className="flex-1 pb-8">
-        <motion.div
-          // ELIMINADO: layout prop que causaba layout thrashing
-          whileHover={shouldReduceMotion ? undefined : { y: -2, transition: { duration: 0.2 } }}
-        >
-          <Card
-            className={cn(
-              "relative cursor-pointer overflow-hidden",
-              // Reducido: backdrop-blur-xl → backdrop-blur-sm para mejor rendimiento
-              "backdrop-blur-sm bg-white/5 dark:bg-black/10",
-              "border border-white/10 dark:border-white/5",
-              isCurrent
-                ? cn(classes.border, "ring-1 ring-primary/20 bg-accent/30")
-                : "hover:border-primary/30",
-              "hover:shadow-lg",
-              isDragging && "shadow-2xl scale-105 rotate-1",
-            )}
-            onClick={() => onSelect(task)}
-          >
-            {/* Drag handle */}
-            {enableDrag && (
-              <div
-                {...attributes}
-                {...listeners}
-                className={cn(
-                  "absolute left-2 top-1/2 -translate-y-1/2 z-10",
-                  "p-1.5 rounded-md cursor-grab active:cursor-grabbing",
-                  "text-muted-foreground hover:text-foreground",
-                  "hover:bg-white/10 dark:hover:bg-white/5",
-                  "transition-colors",
-                )}
-              >
-                <GripVertical className="size-4" />
-              </div>
-            )}
-
-            {/* Left accent line for current */}
-            <AnimatePresence>
-              {isCurrent && (
-                <motion.div
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
-                  exit={{ scaleY: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={cn(
-                    "absolute left-0 top-0 bottom-0 w-1 origin-top",
-                    classes.gradientBg?.replace("/10", "") || "bg-primary",
-                  )}
-                />
-              )}
-            </AnimatePresence>
-
-            <CardContent className={cn("p-4", enableDrag && "pl-10")}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <motion.h3
-                    // ELIMINADO: layout="position" que causaba recálculos
-                    className={cn(
-                      "font-medium transition-all duration-300",
-                      isCompleted && "line-through text-muted-foreground",
-                      isCurrent && cn(classes.textPrimary, "text-lg"),
-                    )}
-                  >
-                    {task.title}
-                  </motion.h3>
-
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <TaskMetadataBadges
-                      projectId={task.projectId}
-                      categoryId={task.categoryId}
-                    />
-                    {task.dueDate ? (
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="size-3" />
-                        {new Date(task.dueDate).toLocaleDateString("es-ES", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <AnimatePresence>
-                    {(task as Task & { notes?: string }).notes ? (
-                      <motion.p
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="mt-3 text-sm text-muted-foreground line-clamp-2 bg-muted/30 p-2 rounded"
-                      >
-                        {(task as Task & { notes?: string }).notes}
-                      </motion.p>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
-                  {!isCurrent && !isCompleted ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSetCurrent(task.id);
-                      }}
-                      className="text-muted-foreground hover:text-primary h-9 transition-colors"
-                      title="Marcar como actual"
-                    >
-                      <ChevronRight className="size-4 mr-1" />
-                      <span className="hidden sm:inline">Actual</span>
-                    </Button>
-                  ) : null}
-                  {isCurrent ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEnterFocus?.(task);
-                        }}
-                        className={cn(
-                          "gap-1.5 h-9 transition-all duration-200 hover:scale-105",
-                          classes.gradientBg,
-                          classes.textPrimary,
-                        )}
-                      >
-                        <Zap className="size-3.5" />
-                        <span className="hidden sm:inline">Foco</span>
-                      </Button>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "gap-1 border-primary/30 h-9 px-2.5 py-0 flex items-center",
-                          classes.textPrimary,
-                        )}
-                      >
-                        <Focus className="size-3" />
-                        <span className="hidden sm:inline">ACTUAL</span>
-                      </Badge>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
+  classes: ReturnType<typeof useThemeState>["themeClasses"];
 }
 
 export function PipelineView({
@@ -368,13 +38,13 @@ export function PipelineView({
   classes,
 }: PipelineViewProps) {
   const shouldReduceMotion = useReducedMotion();
-  const completedTasks = tasks.filter((t) => t.isCompleted);
-  const currentTask = tasks.find((t) => t.isCurrent && !t.isCompleted);
-  const pendingTasks = tasks.filter((t) => !t.isCompleted && !t.isCurrent);
-
-  const orderedTasks = [...completedTasks, currentTask, ...pendingTasks].filter(
-    Boolean,
-  ) as Task[];
+  const { completedTasks, pendingTasks, orderedTasks } = useMemo(() => {
+    const completed = tasks.filter((t) => t.isCompleted);
+    const current = tasks.find((t) => t.isCurrent && !t.isCompleted);
+    const pending = tasks.filter((t) => !t.isCompleted && !t.isCurrent);
+    const ordered = [...completed, current, ...pending].filter(Boolean) as Task[];
+    return { completedTasks: completed, pendingTasks: pending, orderedTasks: ordered };
+  }, [tasks]);
 
   if (tasks.length === 0) {
     return (
@@ -396,7 +66,6 @@ export function PipelineView({
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold">Pipeline de desarrollo</h2>
@@ -418,7 +87,6 @@ export function PipelineView({
         ) : null}
       </div>
 
-      {/* Steps */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -452,7 +120,6 @@ export function PipelineView({
         </AnimatePresence>
       </motion.div>
 
-      {/* Limit alert */}
       <AnimatePresence>
         {pendingTasks.length > 0 && !canAddTask ? (
           <motion.div

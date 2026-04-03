@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { transitions } from "@/shared/lib/animations";
@@ -15,11 +16,14 @@ import { useTaskBoardState } from "../hooks/useTaskBoardState";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
-import { KanbanViewWrapper } from "./KanbanViewWrapper";
 import { PipelineView } from "./views/PipelineView";
+import { KanbanView } from "./views/KanbanView";
 import { TaskDetailModal } from "./TaskDetailModal";
 import { TaskCreateModal } from "./TaskCreateModal";
-import { FocusMode } from "./FocusMode";
+
+const FocusMode = React.lazy(() =>
+  import("./FocusMode").then((mod) => ({ default: mod.FocusMode })),
+);
 
 const VIEW_MODES = [
   { id: "pipeline" as const, label: "Pipeline", icon: GitBranch },
@@ -28,7 +32,7 @@ const VIEW_MODES = [
 
 export function TaskBoard() {
   const { themeClasses } = useThemeState();
-  const { viewMode } = useViewModeState();
+  const { viewMode, isTransitioning } = useViewModeState();
   const { setViewMode } = useViewModeActions();
   const { selectedProjectId, selectedCategoryId } = useTaskFiltersState();
   const { data: allTasks = [] } = useActiveTasks();
@@ -54,26 +58,61 @@ export function TaskBoard() {
     handleTaskCreated,
   } = useTaskBoardState();
 
-  const tasks = allTasks.filter((task) => {
-    if (selectedProjectId !== "all" && task.projectId !== selectedProjectId)
-      return false;
-    if (selectedCategoryId !== "all" && task.categoryId !== selectedCategoryId)
-      return false;
-    return true;
-  });
+  const tasks = useMemo(
+    () =>
+      allTasks.filter((task) => {
+        if (selectedProjectId !== "all" && task.projectId !== selectedProjectId)
+          return false;
+        if (selectedCategoryId !== "all" && task.categoryId !== selectedCategoryId)
+          return false;
+        return true;
+      }),
+    [allTasks, selectedProjectId, selectedCategoryId],
+  );
 
   const canAddTask = allTasks.length < maxTasks;
   const remainingSlots = maxTasks - allTasks.length;
   const filteredCount = tasks.length;
   const totalCount = allTasks.length;
 
-  const commonProps = {
-    tasks,
-    onToggle: handleToggle,
-    onDelete: handleDelete,
-    onSetCurrent: handleSetCurrent,
-    classes: themeClasses,
-  };
+  const commonProps = useMemo(
+    () => ({
+      tasks,
+      onToggle: handleToggle,
+      onDelete: handleDelete,
+      onSetCurrent: handleSetCurrent,
+      classes: themeClasses,
+    }),
+    [tasks, handleToggle, handleDelete, handleSetCurrent, themeClasses],
+  );
+
+  const handleCloseDetailModal = useCallback(
+    () => setIsDetailModalOpen(false),
+    [setIsDetailModalOpen],
+  );
+
+  const handleEnterFocusFromDetail = useCallback(
+    () => {
+      if (selectedTask) {
+        handleEnterFocus(selectedTask);
+      }
+    },
+    [selectedTask, handleEnterFocus],
+  );
+
+  const handleCloseFocusMode = useCallback(
+    () => setIsFocusModeOpen(false),
+    [setIsFocusModeOpen],
+  );
+
+  const handleToggleFocusTask = useCallback(
+    () => {
+      if (focusTask) {
+        handleToggle(focusTask.id);
+      }
+    },
+    [focusTask, handleToggle],
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -105,13 +144,14 @@ export function TaskBoard() {
             onValueChange={(value) => {
               if (value) setViewMode(value as "pipeline" | "kanban");
             }}
+            disabled={isTransitioning}
             className="bg-muted p-1 rounded-lg"
           >
             {VIEW_MODES.map((mode) => (
               <ToggleGroupItem
                 key={mode.id}
                 value={mode.id}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground transition-all duration-200"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground transition-colors duration-200"
               >
                 <mode.icon className="size-4" />
                 <span className="hidden sm:inline">{mode.label}</span>
@@ -143,15 +183,13 @@ export function TaskBoard() {
         </div>
       </div>
 
-      {/* ARQUITECTURA: mode="sync" en lugar de mode="wait" para evitar gap visual */}
-      {/* initial={false} previene animación en el montaje inicial */}
-      <AnimatePresence mode="sync" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={viewMode}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
         >
           {viewMode === "pipeline" ? (
             <PipelineView
@@ -162,22 +200,13 @@ export function TaskBoard() {
               canAddTask={canAddTask}
             />
           ) : (
-            <KanbanViewWrapper
-              viewMode={viewMode}
-              tasks={tasks}
-              allTasks={allTasks}
-              filteredCount={filteredCount}
-              totalCount={totalCount}
-              canAddTask={canAddTask}
-              remainingSlots={remainingSlots}
-              maxTasks={maxTasks}
-              onToggle={handleToggle}
-              onDelete={handleDelete}
-              onSetCurrent={handleSetCurrent}
-              onCreateTask={handleOpenCreateModal}
+            <KanbanView
+              {...commonProps}
               onSelectTask={handleSelectTask}
               onEnterFocus={handleEnterFocus}
-              themeClasses={themeClasses}
+              onCreateTask={handleOpenCreateModal}
+              canAddTask={canAddTask}
+              totalCount={totalCount}
             />
           )}
         </motion.div>
@@ -208,15 +237,11 @@ export function TaskBoard() {
           <TaskDetailModal
             task={selectedTask}
             isOpen={isDetailModalOpen}
-            onClose={() => setIsDetailModalOpen(false)}
+            onClose={handleCloseDetailModal}
             onToggle={handleToggle}
             onSetCurrent={handleSetCurrent}
             onDelete={handleDelete}
-            onEnterFocus={() => {
-              if (selectedTask) {
-                handleEnterFocus(selectedTask);
-              }
-            }}
+            onEnterFocus={handleEnterFocusFromDetail}
             onNavigateToTask={handleNavigateToTask}
           />
         )}
@@ -236,19 +261,15 @@ export function TaskBoard() {
         }
       />
 
-      <FocusMode
-        task={focusTask || selectedTask || tasks[0]}
-        isOpen={isFocusModeOpen}
-        onClose={() => setIsFocusModeOpen(false)}
-        onComplete={() => {
-          setIsFocusModeOpen(false);
-        }}
-        onToggleTask={() => {
-          if (focusTask) {
-            handleToggle(focusTask.id);
-          }
-        }}
-      />
+      <React.Suspense fallback={null}>
+        <FocusMode
+          task={focusTask || selectedTask || tasks[0]}
+          isOpen={isFocusModeOpen}
+          onClose={handleCloseFocusMode}
+          onComplete={handleCloseFocusMode}
+          onToggleTask={handleToggleFocusTask}
+        />
+      </React.Suspense>
     </div>
   );
 }

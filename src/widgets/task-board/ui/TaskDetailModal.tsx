@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { transitions } from "@/shared/lib/animations";
@@ -17,7 +17,6 @@ import {
   Zap,
   Focus,
   X,
-  Sparkles,
 } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import type { Task } from "@/entities/task";
@@ -40,8 +39,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/shared/ui/dialog";
+import { CelebrationEffect } from "@/shared/ui/celebration-effect";
+import { useConfirm } from "@/shared/hooks/use-confirm";
 
-// ARQUITECTURA: Componentes puros para evitar re-renders innecesarios
+// Componentes puros para evitar re-renders innecesarios
 function ProjectName({ projectId }: { projectId: string }) {
   const { name, colorClasses } = useProjectInfo(projectId);
   return (
@@ -53,73 +54,6 @@ function CategoryName({ categoryId }: { categoryId: string }) {
   const { name, colorClasses } = useCategoryInfo(categoryId);
   return (
     <span className={cn("text-xs font-medium", colorClasses.text)}>{name}</span>
-  );
-}
-
-// ARQUITECTURA: Hook para detectar reduced motion de forma eficiente
-function useReducedMotion(): boolean {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, []);
-
-  return prefersReducedMotion;
-}
-
-// ARQUITECTURA: Componente de celebración aislado con su propio AnimatePresence
-function CelebrationEffect({ 
-  show, 
-  positions 
-}: { 
-  show: boolean; 
-  positions: Array<{ x: number; y: number }>;
-}) {
-  const prefersReducedMotion = useReducedMotion();
-  
-  if (prefersReducedMotion) return null;
-
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.div
-          key="celebration"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="absolute inset-0 pointer-events-none"
-        >
-          {positions.map((pos, i) => (
-            <motion.div
-              key={i}
-              initial={{ scale: 0, opacity: 1 }}
-              animate={{
-                scale: [0, 1.5, 0],
-                opacity: [1, 1, 0],
-                x: pos.x,
-                y: pos.y,
-              }}
-              transition={{
-                duration: 0.6,
-                ease: [0.4, 0, 0.2, 1]
-              }}
-              style={{ willChange: "transform, opacity" }}
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-            >
-              <Sparkles className="size-3 text-primary" />
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-    </AnimatePresence>
   );
 }
 
@@ -170,11 +104,6 @@ function NotesSection({
   const [notes, setNotes] = useState(initialNotes);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  // Sincronizar con props iniciales
-  useEffect(() => {
-    setNotes(initialNotes);
-  }, [initialNotes]);
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -335,6 +264,7 @@ export function TaskDetailModal({
 }: TaskDetailModalProps) {
   const { themeClasses } = useThemeState();
   const [showCelebration, setShowCelebration] = useState(false);
+  const { confirm } = useConfirm();
 
   const updateNotesMutation = useUpdateTaskNotes();
   const { data: parentTask } = useTaskParent(task.id);
@@ -364,12 +294,19 @@ export function TaskDetailModal({
     await updateNotesMutation.mutateAsync({ id: task.id, notes });
   }, [updateNotesMutation, task.id]);
 
-  const handleDelete = useCallback(() => {
-    if (confirm("¿Eliminar esta nota?")) {
+  const handleDelete = useCallback(async () => {
+    const confirmed = await confirm({
+      title: "Eliminar nota",
+      description: `¿Estás seguro de que quieres eliminar "${task.title}"?`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "destructive",
+    });
+    if (confirmed) {
       onDelete(task.id);
       onClose();
     }
-  }, [onDelete, onClose, task.id]);
+  }, [confirm, onDelete, onClose, task.id, task.title]);
 
   const handleSetCurrent = useCallback(() => {
     onSetCurrent(task.id);
@@ -390,9 +327,11 @@ export function TaskDetailModal({
                   isCompleted={task.isCompleted} 
                   onClick={handleToggleTask} 
                 />
-                <CelebrationEffect 
-                  show={showCelebration} 
-                  positions={celebrationPositions} 
+                <CelebrationEffect
+                  show={showCelebration}
+                  mode="positions"
+                  positions={celebrationPositions}
+                  size="sm"
                 />
               </div>
 
@@ -521,6 +460,7 @@ export function TaskDetailModal({
 
               {/* Notes section - Componente aislado */}
               <NotesSection
+                key={task.id}
                 initialNotes={task.notes || ""}
                 onSave={handleSaveNotes}
               />

@@ -1,16 +1,14 @@
 "use client";
 
+import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
-import { Check, Trash2, Target, Zap, GripVertical } from "lucide-react";
+import { Check, Trash2, Target, Zap } from "lucide-react";
 import type { Task } from "@/entities/task";
 import type { useThemeState } from "@/store/hooks";
-import {
-  useProjectInfo,
-  useCategoryInfo,
-} from "@/entities/task/hooks/use-project-colors";
-import { useTaskDrag } from "../../lib/dnd-context";
-import { CSS } from "@dnd-kit/utilities";
+import { TaskMetadataBadges } from "@/shared/ui/task-metadata-badges";
+import { DragHandle } from "../DragHandle";
+import { useOptionalTaskDrag } from "../../lib/dnd-context";
 
 interface KanbanTaskCardProps {
   task: Task;
@@ -24,45 +22,7 @@ interface KanbanTaskCardProps {
   enableDrag?: boolean;
 }
 
-function TaskMetadataBadges({
-  projectId,
-  categoryId,
-}: {
-  projectId?: string;
-  categoryId?: string;
-}) {
-  const projectInfo = useProjectInfo(projectId);
-  const categoryInfo = useCategoryInfo(categoryId);
-
-  return (
-    <>
-      {projectId && projectInfo.name ? (
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border",
-            projectInfo.colorClasses?.badge ||
-              "bg-muted text-muted-foreground border-border",
-          )}
-        >
-          {projectInfo.name}
-        </span>
-      ) : null}
-      {categoryId && categoryInfo.name ? (
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border",
-            categoryInfo.colorClasses?.badge ||
-              "bg-muted text-muted-foreground border-border",
-          )}
-        >
-          {categoryInfo.name}
-        </span>
-      ) : null}
-    </>
-  );
-}
-
-export function KanbanTaskCard({
+export const KanbanTaskCard = memo(function KanbanTaskCard({
   task,
   index,
   onToggle,
@@ -75,22 +35,8 @@ export function KanbanTaskCard({
 }: KanbanTaskCardProps) {
   const shouldReduceMotion = useReducedMotion();
 
-  // Drag and drop setup
-  const { attributes, listeners, setNodeRef, transform, isDragging } = enableDrag
-    ? useTaskDrag(task.id)
-    : {
-        attributes: {},
-        listeners: undefined,
-        setNodeRef: () => {},
-        transform: null,
-        isDragging: false,
-      };
-
-  const style = transform
-    ? {
-        transform: CSS.Transform.toString(transform),
-      }
-    : undefined;
+  const { attributes, listeners, setNodeRef, style, isDragging } =
+    useOptionalTaskDrag(task.id, enableDrag);
 
   return (
     <motion.div
@@ -110,7 +56,6 @@ export function KanbanTaskCard({
         onClick={() => onSelect(task)}
         className={cn(
           "relative rounded-xl border p-4 cursor-pointer overflow-hidden",
-          // Optimizado: reducido backdrop blur y eliminado transition-all conflictivo
           "backdrop-blur-sm bg-white/5 dark:bg-black/10",
           "border-white/10 dark:border-white/5",
           task.isCurrent
@@ -119,24 +64,10 @@ export function KanbanTaskCard({
           isDragging && "shadow-2xl scale-105 rotate-1 z-50"
         )}
       >
-        {/* Drag handle */}
         {enableDrag && (
-          <div
-            {...attributes}
-            {...listeners}
-            className={cn(
-              "absolute left-2 top-1/2 -translate-y-1/2 z-10",
-              "p-1.5 rounded-md cursor-grab active:cursor-grabbing",
-              "text-muted-foreground hover:text-foreground",
-              "hover:bg-white/10 dark:hover:bg-white/5",
-              "transition-colors opacity-0 group-hover:opacity-100"
-            )}
-          >
-            <GripVertical className="size-4" />
-          </div>
+          <DragHandle attributes={attributes} listeners={listeners} />
         )}
 
-        {/* Indicator line for current task */}
         {task.isCurrent && (
           <div
             className={cn(
@@ -176,7 +107,6 @@ export function KanbanTaskCard({
               {task.title}
             </p>
 
-            {/* Badges row */}
             {(task.projectId || task.categoryId) && !task.isCompleted && (
               <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                 <TaskMetadataBadges
@@ -187,7 +117,6 @@ export function KanbanTaskCard({
             )}
           </div>
 
-          {/* Action buttons */}
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {!task.isCurrent && !task.isCompleted && (
               <>
@@ -252,4 +181,4 @@ export function KanbanTaskCard({
       </div>
     </motion.div>
   );
-}
+});

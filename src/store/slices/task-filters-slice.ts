@@ -9,7 +9,6 @@ export interface TaskFiltersState {
   selectedCategoryId: string | "all";
   searchQuery: string;
   hasActiveFilters: boolean;
-  activeFiltersCount: number;
 }
 
 function computeHasActiveFilters(
@@ -24,24 +23,11 @@ function computeHasActiveFilters(
   );
 }
 
-function computeActiveFiltersCount(
-  selectedProjectId: string | "all",
-  selectedCategoryId: string | "all",
-  searchQuery: string,
-): number {
-  let count = 0;
-  if (selectedProjectId !== "all") count++;
-  if (selectedCategoryId !== "all") count++;
-  if (searchQuery !== "") count++;
-  return count;
-}
-
 export const initialTaskFiltersState: TaskFiltersState = {
   selectedProjectId: "all",
   selectedCategoryId: "all",
   searchQuery: "",
   hasActiveFilters: false,
-  activeFiltersCount: 0,
 };
 
 // ============================================================================
@@ -76,11 +62,6 @@ export class TaskFiltersActionImpl {
       selectedCategoryId,
       searchQuery,
       hasActiveFilters: computeHasActiveFilters(
-        selectedProjectId,
-        selectedCategoryId,
-        searchQuery,
-      ),
-      activeFiltersCount: computeActiveFiltersCount(
         selectedProjectId,
         selectedCategoryId,
         searchQuery,
@@ -125,23 +106,6 @@ export class TaskFiltersActionImpl {
       state.selectedCategoryId,
       query,
     );
-  };
-
-  clearSearchQuery = (): void => {
-    const state = this.#get();
-    this.#updateFiltersState(
-      state.selectedProjectId,
-      state.selectedCategoryId,
-      "",
-    );
-  };
-
-  // --------------------------------------------------------------------------
-  // Public Actions - Global
-  // --------------------------------------------------------------------------
-
-  clearFilters = (): void => {
-    this.#updateFiltersState("all", "all", "");
   };
 }
 

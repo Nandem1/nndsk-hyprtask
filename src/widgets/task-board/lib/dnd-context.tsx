@@ -17,7 +17,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from "react";
 import type { Task } from "@/entities/task";
 
 // ============================================================================
@@ -68,7 +68,7 @@ export function TaskDndProvider({ children, tasks, onReorder }: TaskDndProviderP
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Minimum drag distance before activation
+        distance: 8,
       },
     })
   );
@@ -97,9 +97,10 @@ export function TaskDndProvider({ children, tasks, onReorder }: TaskDndProviderP
   );
 
   const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
+  const contextValue = useMemo(() => ({ activeId, setActiveId }), [activeId]);
 
   return (
-    <DndContextState.Provider value={{ activeId, setActiveId }}>
+    <DndContextState.Provider value={contextValue}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -116,7 +117,6 @@ export function TaskDndProvider({ children, tasks, onReorder }: TaskDndProviderP
         <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)" }}>
           {activeTask ? (
             <div className="opacity-80 rotate-2 scale-105 cursor-grabbing">
-              {/* Drag preview - will be rendered by parent component */}
               <DragPreview task={activeTask} />
             </div>
           ) : null}
@@ -126,7 +126,6 @@ export function TaskDndProvider({ children, tasks, onReorder }: TaskDndProviderP
   );
 }
 
-// Simple drag preview component
 function DragPreview({ task }: { task: Task }) {
   return (
     <div className="p-4 rounded-xl bg-card border-2 border-primary/50 shadow-2xl">
@@ -150,8 +149,62 @@ export function useTaskDrag(taskId: string): UseTaskDragReturn {
     isDragging,
   } = useSortable({ id: taskId });
 
+  return {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform: transform
+      ? {
+          x: transform.x,
+          y: transform.y,
+          scaleX: "scaleX" in transform ? (transform.scaleX as number) : 1,
+          scaleY: "scaleY" in transform ? (transform.scaleY as number) : 1,
+        }
+      : null,
+    transition,
+    isDragging,
+  };
+}
+
+// ============================================================================
+// Hook for optional drag (with fallback when disabled)
+// ============================================================================
+
+interface UseOptionalTaskDragReturn {
+  attributes: import('@dnd-kit/core').DraggableAttributes;
+  listeners: import('@dnd-kit/core/dist/hooks/utilities').SyntheticListenerMap | undefined;
+  setNodeRef: (node: HTMLElement | null) => void;
+  transform: { x: number; y: number; scaleX: number; scaleY: number } | null;
+  transition: string | undefined;
+  isDragging: boolean;
+  style: { transform: string | undefined; transition: string | undefined };
+}
+
+const defaultAttributes: import('@dnd-kit/core').DraggableAttributes = {
+  role: "button",
+  tabIndex: 0,
+  "aria-disabled": false,
+  "aria-pressed": false,
+  "aria-roledescription": "draggable",
+  "aria-describedby": "",
+};
+
+export function useOptionalTaskDrag(taskId: string, enabled: boolean): UseOptionalTaskDragReturn {
+  const sortable = useSortable({ id: taskId, disabled: !enabled });
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = enabled
+    ? sortable
+    : {
+        attributes: defaultAttributes,
+        listeners: undefined,
+        setNodeRef: () => {},
+        transform: null,
+        transition: undefined,
+        isDragging: false,
+      };
+
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: transform ? CSS.Transform.toString(transform) : undefined,
     transition,
   };
 
@@ -167,8 +220,9 @@ export function useTaskDrag(taskId: string): UseTaskDragReturn {
           scaleY: "scaleY" in transform ? (transform.scaleY as number) : 1,
         }
       : null,
-    transition: style.transition,
+    transition,
     isDragging,
+    style,
   };
 }
 

@@ -18,12 +18,3 @@ export type StoreGetter<T> = () => T;
 export type PublicActions<T> = {
   [K in keyof T]: T[K];
 };
-
-/**
- * Helper para crear slices de store
- */
-export type SliceCreator<TState, TActions> = (
-  set: StoreSetter<TState>,
-  get: StoreGetter<TState>,
-  api?: unknown
-) => TActions;

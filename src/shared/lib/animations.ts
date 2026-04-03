@@ -4,13 +4,6 @@ import type { Variants, Transition } from "framer-motion";
 // Easing Functions
 // ============================================================================
 
-export const easings = {
-  standard: [0.4, 0, 0.2, 1] as [number, number, number, number],
-  decelerate: [0, 0, 0.2, 1] as [number, number, number, number],
-  accelerate: [0.4, 0, 1, 1] as [number, number, number, number],
-  bounce: [0.68, -0.55, 0.265, 1.55] as [number, number, number, number],
-};
-
 // ============================================================================
 // Performance-First Transition System
 // Categorized by use case for consistent, GPU-accelerated animations
@@ -18,30 +11,12 @@ export const easings = {
 
 export const transitions = {
   /**
-   * Micro-interactions (hover, focus, small UI feedback)
-   * Fast, snappy response
-   */
-  micro: {
-    duration: 0.15,
-    ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
-  } satisfies Transition,
-
-  /**
    * Enter/Exit animations for components
    * Smooth but not bouncy
    */
   enterExit: {
     duration: 0.2,
     ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
-  } satisfies Transition,
-
-  /**
-   * Layout animations (reordering, expanding)
-   * Use sparingly - more expensive
-   */
-  layout: {
-    duration: 0.3,
-    ease: [0.4, 0, 0.2, 1] as [number, number, number, number],
   } satisfies Transition,
 
   /**
@@ -62,16 +37,6 @@ export const transitions = {
     type: "spring" as const,
     damping: 15,
     stiffness: 300,
-  } satisfies Transition,
-
-  /**
-   * Stiff spring for precise movements
-   * Quick settle with minimal bounce
-   */
-  springStiff: {
-    type: "spring" as const,
-    damping: 30,
-    stiffness: 400,
   } satisfies Transition,
 } as const;
 
@@ -103,26 +68,6 @@ export const animations: Record<string, Variants> = {
   scaleIn: {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { opacity: 1, scale: 1 },
-  },
-  scaleInUp: {
-    hidden: { opacity: 0, scale: 0.9, y: 20 },
-    visible: { opacity: 1, scale: 1, y: 0 },
-  },
-  slideInLeft: {
-    hidden: { opacity: 0, x: -50 },
-    visible: { opacity: 1, x: 0 },
-  },
-  slideInRight: {
-    hidden: { opacity: 0, x: 50 },
-    visible: { opacity: 1, x: 0 },
-  },
-  slideInUp: {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0 },
-  },
-  slideInDown: {
-    hidden: { opacity: 0, y: -50 },
-    visible: { opacity: 1, y: 0 },
   },
 };
 

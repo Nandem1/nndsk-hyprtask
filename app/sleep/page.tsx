@@ -1,22 +1,26 @@
-import dynamic from "next/dynamic";
 import { Header } from "@/widgets";
 import { SleepPageSkeleton } from "./SleepPageSkeleton";
+import { SleepDashboardWrapper } from "./SleepDashboardWrapper";
 
-const SleepDashboard = dynamic(
-  () => import("@/widgets/sleep-dashboard").then((mod) => mod.SleepDashboard),
-  {
-    ssr: false,
-    loading: () => <SleepPageSkeleton />,
-  },
-);
-
-// Server Component - Main Page
+/**
+ * SleepPage - Server Component
+ * 
+ * Arquitectura:
+ * - Server Component para layout inicial y SEO
+ * - SleepPageSkeleton se renderiza en servidor (instantáneo)
+ * - SleepDashboardWrapper (Client Component) carga el dashboard dinámicamente
+ * 
+ * Beneficios de rendimiento:
+ * - SSR para el shell inicial (Header + Skeleton)
+ * - Streaming del dashboard pesado
+ * - Mejor TTFB y perceived performance
+ */
 export default function SleepPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <SleepDashboard />
+        <SleepDashboardWrapper />
       </main>
     </div>
   );

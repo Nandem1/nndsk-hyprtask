@@ -24,8 +24,42 @@ import type {
   ProjectIcon,
 } from "../model/project-types";
 import { PROJECT_COLOR_CLASSES } from "../model/project-types";
-import * as Icons from "lucide-react";
+import {
+  Server,
+  Code,
+  Bot,
+  FolderOpen,
+  FolderKanban,
+  Layers,
+  Box,
+  Container,
+  Database,
+  Cloud,
+  Globe,
+  Smartphone,
+  Monitor,
+  Laptop,
+  Cpu,
+  CircuitBoard,
+  GitBranch,
+  GitCommit,
+  Github,
+  Terminal,
+  FileCode,
+  Briefcase,
+  Building,
+  Home,
+  Rocket,
+  Zap,
+  Star,
+  Heart,
+  Bookmark,
+  Flag,
+  Target,
+  Crosshair,
+} from "lucide-react";
 import { Plus, Trash2, GripVertical } from "lucide-react";
+import { useConfirm } from "@/shared/hooks/use-confirm";
 
 interface ProjectConfigModalProps {
   isOpen: boolean;
@@ -46,6 +80,41 @@ const AVAILABLE_COLORS: ProjectColor[] = [
   "yellow",
   "gray",
 ];
+
+const PROJECT_ICON_MAP: Record<ProjectIcon, React.ComponentType<{ className?: string }>> = {
+  Server,
+  Code,
+  Bot,
+  FolderOpen,
+  FolderKanban,
+  Layers,
+  Box,
+  Container,
+  Database,
+  Cloud,
+  Globe,
+  Smartphone,
+  Monitor,
+  Laptop,
+  Cpu,
+  CircuitBoard,
+  GitBranch,
+  GitCommit,
+  Github,
+  Terminal,
+  FileCode,
+  Briefcase,
+  Building,
+  Home,
+  Rocket,
+  Zap,
+  Star,
+  Heart,
+  Bookmark,
+  Flag,
+  Target,
+  Crosshair,
+};
 
 const AVAILABLE_ICONS: ProjectIcon[] = [
   "Server",
@@ -82,6 +151,7 @@ export function ProjectConfigModal({
   const { data: projects = [] } = useActiveProjects();
   const saveProjectMutation = useSaveProject();
   const deleteProjectMutation = useDeleteProject();
+  const { confirm } = useConfirm();
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -116,8 +186,15 @@ export function ProjectConfigModal({
     });
   };
 
-  const handleDelete = (project: Project) => {
-    if (confirm(`¿Eliminar el proyecto "${project.name}"?`)) {
+  const handleDelete = async (project: Project) => {
+    const confirmed = await confirm({
+      title: "Eliminar proyecto",
+      description: `¿Estás seguro de que quieres eliminar "${project.name}"?`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "destructive",
+    });
+    if (confirmed) {
       deleteProjectMutation.mutate(project.id);
     }
   };
@@ -131,10 +208,7 @@ export function ProjectConfigModal({
   };
 
   const getIconComponent = (iconName: ProjectIcon) => {
-    const IconComponent = Icons[
-      iconName as keyof typeof Icons
-    ] as React.ComponentType<{ className?: string }>;
-    return IconComponent || Icons.FolderKanban;
+    return PROJECT_ICON_MAP[iconName] || FolderKanban;
   };
 
   return (

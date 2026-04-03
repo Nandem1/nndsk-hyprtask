@@ -17,9 +17,7 @@ export const DEFAULT_THEME_CLASSES: ExtendedThemeClasses = getExtendedThemeClass
 
 export interface ThemeState {
   palette: ThemePalette;
-  // Store computed values in state for SSR compatibility
   themeClasses: ExtendedThemeClasses;
-  isDarkPalette: boolean;
 }
 
 export function computeThemeClasses(palette: ThemePalette): ExtendedThemeClasses {
@@ -30,14 +28,9 @@ export function computeThemeClasses(palette: ThemePalette): ExtendedThemeClasses
   }
 }
 
-export function computeIsDarkPalette(palette: ThemePalette): boolean {
-  return ["midnight", "forest", "coffee"].includes(palette);
-}
-
 export const initialThemeState: ThemeState = {
   palette: DEFAULT_PALETTE,
   themeClasses: DEFAULT_THEME_CLASSES,
-  isDarkPalette: false,
 };
 
 // ============================================================================
@@ -66,7 +59,6 @@ export class ThemeActionImpl {
     this.#set({
       palette,
       themeClasses: computeThemeClasses(palette),
-      isDarkPalette: computeIsDarkPalette(palette),
     });
   };
 

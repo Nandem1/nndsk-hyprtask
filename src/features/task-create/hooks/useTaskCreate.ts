@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCreateTask, useSetTaskChild } from "@/entities/task";
+import { useCreateTask, useSetTaskChild, useDeleteTask } from "@/entities/task";
 import type { TaskPriority } from "@/entities/task";
 import {
   createTaskSchema,
@@ -31,6 +31,7 @@ export function useTaskCreate(options: UseTaskCreateOptions): UseTaskCreateRetur
 
   const createTaskMutation = useCreateTask();
   const setTaskChildMutation = useSetTaskChild();
+  const deleteTaskMutation = useDeleteTask();
 
   const {
     control,
@@ -80,19 +81,24 @@ export function useTaskCreate(options: UseTaskCreateOptions): UseTaskCreateRetur
         await createTaskMutation.mutateAsync(newTask);
 
         if (data.parentTaskId) {
-          await setTaskChildMutation.mutateAsync({
-            taskId: data.parentTaskId,
-            childTaskId: newTask.id,
-          });
+          try {
+            await setTaskChildMutation.mutateAsync({
+              taskId: data.parentTaskId,
+              childTaskId: newTask.id,
+            });
+          } catch {
+            await deleteTaskMutation.mutateAsync(newTask.id);
+            return;
+          }
         }
 
         reset(defaultValues);
         onSuccess();
-      } catch (error) {
-        console.error("Error al crear la tarea:", error);
+      } catch {
+        // Error silenciado — la UI muestra el formulario sin cambios
       }
     },
-    [canCreate, createTaskMutation, setTaskChildMutation, reset, onSuccess]
+    [canCreate, createTaskMutation, setTaskChildMutation, deleteTaskMutation, reset, onSuccess]
   );
 
   return {

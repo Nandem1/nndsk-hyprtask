@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   useToggleTask,
   useDeleteTask,
@@ -19,30 +19,38 @@ export function useTaskBoardState() {
   const deleteTaskMutation = useDeleteTask();
   const setCurrentTaskMutation = useSetCurrentTask();
 
-  const handleToggle = (id: string) => toggleTaskMutation.mutate(id);
-  const handleDelete = (id: string) => deleteTaskMutation.mutate(id);
-  const handleSetCurrent = (id: string) => setCurrentTaskMutation.mutate(id);
+  const handleToggle = useCallback(
+    (id: string) => toggleTaskMutation.mutate(id),
+    [toggleTaskMutation],
+  );
+  const handleDelete = useCallback(
+    (id: string) => deleteTaskMutation.mutate(id),
+    [deleteTaskMutation],
+  );
+  const handleSetCurrent = useCallback(
+    (id: string) => setCurrentTaskMutation.mutate(id),
+    [setCurrentTaskMutation],
+  );
 
-  const handleSelectTask = (task: Task) => {
+  const handleSelectTask = useCallback((task: Task) => {
     setSelectedTask(task);
     setIsDetailModalOpen(true);
-  };
+  }, []);
 
-  const handleEnterFocus = (task: Task) => {
+  const handleEnterFocus = useCallback((task: Task) => {
     setFocusTask(task);
     setIsFocusModeOpen(true);
-  };
+  }, []);
 
-  const handleNavigateToTask = (task: Task) => {
+  const handleNavigateToTask = useCallback((task: Task) => {
     setSelectedTask(task);
-  };
+  }, []);
 
-  const handleOpenCreateModal = () => setIsCreateModalOpen(true);
-  const handleCloseCreateModal = () => setIsCreateModalOpen(false);
-  const handleTaskCreated = () => setIsCreateModalOpen(false);
+  const handleOpenCreateModal = useCallback(() => setIsCreateModalOpen(true), []);
+  const handleCloseCreateModal = useCallback(() => setIsCreateModalOpen(false), []);
+  const handleTaskCreated = useCallback(() => setIsCreateModalOpen(false), []);
 
   return {
-    // Modal state
     selectedTask,
     isDetailModalOpen,
     setIsDetailModalOpen,
@@ -50,7 +58,6 @@ export function useTaskBoardState() {
     focusTask,
     isFocusModeOpen,
     setIsFocusModeOpen,
-    // Handlers
     handleToggle,
     handleDelete,
     handleSetCurrent,

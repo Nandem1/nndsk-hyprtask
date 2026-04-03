@@ -10,7 +10,6 @@ import {
   type ThemeActions,
   DEFAULT_PALETTE,
   computeThemeClasses,
-  computeIsDarkPalette,
 } from "./slices/theme-slice";
 import {
   createTaskFiltersSlice,
@@ -38,7 +37,6 @@ export interface AppStore
     TaskFiltersActions,
     ViewModeActions {
   // Persist middleware properties
-  _hasHydrated?: boolean;
 }
 
 // ============================================================================
@@ -65,7 +63,6 @@ export const useStore = create<AppStore>()(
           createTaskFiltersSlice(...params),
           createViewModeSlice(...params),
         ]),
-        _hasHydrated: false,
       }),
       {
         name: "hyprtask-store",
@@ -106,26 +103,16 @@ export const useStore = create<AppStore>()(
             selectedProjectId !== "all" ||
             selectedCategoryId !== "all" ||
             searchQuery !== "";
-          const activeFiltersCount =
-            (selectedProjectId !== "all" ? 1 : 0) +
-            (selectedCategoryId !== "all" ? 1 : 0) +
-            (searchQuery !== "" ? 1 : 0);
 
           return {
             ...currentState,
-            // Theme
             palette,
             themeClasses: computeThemeClasses(palette),
-            isDarkPalette: computeIsDarkPalette(palette),
-            // Filters
             selectedProjectId,
             selectedCategoryId,
             searchQuery,
             hasActiveFilters,
-            activeFiltersCount,
-            // View Mode
             viewMode,
-            _hasHydrated: true,
           };
         },
         // Skip hydration during SSR

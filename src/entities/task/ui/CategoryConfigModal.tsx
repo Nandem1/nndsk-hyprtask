@@ -24,8 +24,66 @@ import type {
   CategoryIcon,
 } from "../model/project-types";
 import { CATEGORY_COLOR_CLASSES } from "../model/project-types";
-import * as Icons from "lucide-react";
+import {
+  Bug,
+  Wrench,
+  Zap,
+  Sparkles,
+  FolderKanban,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  FileText,
+  FileCheck,
+  Clipboard,
+  ClipboardList,
+  List,
+  ListChecks,
+  ListTodo,
+  Layout,
+  LayoutGrid,
+  BarChart,
+  TrendingUp,
+  Activity,
+} from "lucide-react";
 import { Plus, Trash2, GripVertical } from "lucide-react";
+
+const CATEGORY_ICON_MAP: Record<CategoryIcon, React.ComponentType<{ className?: string }>> = {
+  Bug,
+  Wrench,
+  Zap,
+  Sparkles,
+  FolderKanban,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  HelpCircle: AlertCircle,
+  FileText,
+  FileCheck,
+  FilePlus: FileCheck,
+  FileMinus: FileText,
+  FileX: FileText,
+  FileQuestion: FileText,
+  Clipboard,
+  ClipboardCheck: Clipboard,
+  ClipboardList,
+  List,
+  ListChecks,
+  ListTodo,
+  Layout,
+  LayoutGrid,
+  Grid: LayoutGrid,
+  Table: LayoutGrid,
+  BarChart,
+  PieChart: BarChart,
+  TrendingUp,
+  TrendingDown: TrendingUp,
+  Activity,
+  Pulse: Activity,
+};
+import { useConfirm } from "@/shared/hooks/use-confirm";
 
 interface CategoryConfigModalProps {
   isOpen: boolean;
@@ -87,6 +145,8 @@ export function CategoryConfigModal({
   const [color, setColor] = useState<CategoryColor>("blue");
   const [icon, setIcon] = useState<CategoryIcon>("FolderKanban");
 
+  const { confirm } = useConfirm();
+
   const resetForm = () => {
     setName("");
     setColor("blue");
@@ -113,8 +173,15 @@ export function CategoryConfigModal({
     });
   };
 
-  const handleDelete = (category: Category) => {
-    if (confirm(`¿Eliminar la categoría "${category.name}"?`)) {
+  const handleDelete = async (category: Category) => {
+    const confirmed = await confirm({
+      title: "Eliminar categoría",
+      description: `¿Estás seguro de que quieres eliminar "${category.name}"?`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "destructive",
+    });
+    if (confirmed) {
       deleteCategoryMutation.mutate(category.id);
     }
   };
@@ -128,10 +195,7 @@ export function CategoryConfigModal({
   };
 
   const getIconComponent = (iconName: CategoryIcon) => {
-    const IconComponent = Icons[
-      iconName as keyof typeof Icons
-    ] as React.ComponentType<{ className?: string }>;
-    return IconComponent || Icons.FolderKanban;
+    return CATEGORY_ICON_MAP[iconName] || FolderKanban;
   };
 
   return (
@@ -252,10 +316,10 @@ export function CategoryConfigModal({
             </div>
           </>
         ) : (
-          <Button onClick={() => setIsCreating(true)} className="w-full">
-            <Plus data-icon="inline-start" />
-            Agregar Categoría
-          </Button>
+        <Button onClick={() => setIsCreating(true)} className="w-full">
+          <Plus data-icon="inline-start" />
+          Agregar Categoría
+        </Button>
         )}
       </DialogContent>
     </Dialog>
