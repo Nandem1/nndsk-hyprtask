@@ -20,7 +20,7 @@ import { useThemeState } from "@/store/hooks";
 import type { Task } from "@/entities/task";
 import { useProjectInfo } from "@/entities/task";
 import { Button } from "@/shared/ui/button";
-import { ParticlesBackground } from "@/shared/components/particles-background";
+import { DNAHelixBackground } from "@/shared/components/dna-helix-background";
 import { useFocusSessions } from "@/entities/task";
 import { EndSessionDialog } from "./EndSessionDialog";
 import { playSuccessSound } from "@/shared/lib/audio";
@@ -266,8 +266,8 @@ export function FocusMode({
                   onClick={() => setShowParticles(!showParticles)}
                   title={
                     showParticles
-                      ? "Ocultar particulas"
-                      : "Mostrar particulas"
+                      ? "Ocultar ADN"
+                      : "Mostrar ADN"
                   }
                 >
                   <Zap className="size-4" />
@@ -297,11 +297,10 @@ export function FocusMode({
             </motion.div>
 
             {showParticles ? (
-              <ParticlesBackground
-                density="medium"
+              <DNAHelixBackground
                 speed="slow"
                 className="absolute inset-0 pointer-events-none"
-                particleColor={themeClasses.particleColor}
+                helixColor={themeClasses.particleColor}
               />
             ) : null}
 

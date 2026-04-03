@@ -10,6 +10,7 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { TaskMetadataBadges } from "@/shared/ui/task-metadata-badges";
+import { DNAHelix } from "@/shared/ui/dna-helix";
 import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";
 import type { useThemeState } from "@/store/hooks";
@@ -98,14 +99,11 @@ export const PipelineStep = memo(function PipelineStep({
         </motion.button>
 
         {!isLast ? (
-          <motion.div
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            className={cn(
-              "w-0.5 h-16 mt-2 origin-top transition-colors duration-500",
-              isCompleted ? "bg-primary/50" : "bg-border",
-            )}
+          <DNAHelix
+            isCompleted={isCompleted}
+            isActive={isCurrent}
+            delay={index * 0.1}
+            className="mt-1"
           />
         ) : null}
       </div>
