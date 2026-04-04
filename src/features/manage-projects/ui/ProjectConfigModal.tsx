@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import {
   Dialog,
@@ -13,201 +12,33 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Separator } from "@/shared/ui/separator";
-import {
-  useActiveProjects,
-  useSaveProject,
-  useDeleteProject,
-  type Project,
-  type ProjectColor,
-  type ProjectIcon,
-  PROJECT_COLOR_CLASSES,
-} from "@/entities/project";
-import {
-  Server,
-  Code,
-  Bot,
-  FolderOpen,
-  FolderKanban,
-  Layers,
-  Box,
-  Container,
-  Database,
-  Cloud,
-  Globe,
-  Smartphone,
-  Monitor,
-  Laptop,
-  Cpu,
-  CircuitBoard,
-  GitBranch,
-  GitCommit,
-  Github,
-  Terminal,
-  FileCode,
-  Briefcase,
-  Building,
-  Home,
-  Rocket,
-  Zap,
-  Star,
-  Heart,
-  Bookmark,
-  Flag,
-  Target,
-  Crosshair,
-} from "lucide-react";
+import { PROJECT_COLOR_CLASSES } from "@/entities/project";
 import { Plus, Trash2, GripVertical } from "lucide-react";
-import { useConfirm } from "@/shared/hooks/use-confirm";
-
-interface ProjectConfigModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const AVAILABLE_COLORS: ProjectColor[] = [
-  "blue",
-  "indigo",
-  "purple",
-  "green",
-  "teal",
-  "cyan",
-  "pink",
-  "rose",
-  "orange",
-  "amber",
-  "yellow",
-  "gray",
-];
-
-const PROJECT_ICON_MAP: Record<ProjectIcon, React.ComponentType<{ className?: string }>> = {
-  Server,
-  Code,
-  Bot,
-  FolderOpen,
-  FolderKanban,
-  Layers,
-  Box,
-  Container,
-  Database,
-  Cloud,
-  Globe,
-  Smartphone,
-  Monitor,
-  Laptop,
-  Cpu,
-  CircuitBoard,
-  GitBranch,
-  GitCommit,
-  Github,
-  Terminal,
-  FileCode,
-  Briefcase,
-  Building,
-  Home,
-  Rocket,
-  Zap,
-  Star,
-  Heart,
-  Bookmark,
-  Flag,
-  Target,
-  Crosshair,
-};
-
-const AVAILABLE_ICONS: ProjectIcon[] = [
-  "Server",
-  "Code",
-  "Bot",
-  "FolderOpen",
-  "FolderKanban",
-  "Layers",
-  "Box",
-  "Database",
-  "Cloud",
-  "Globe",
-  "Monitor",
-  "Laptop",
-  "Cpu",
-  "GitBranch",
-  "Terminal",
-  "Briefcase",
-  "Building",
-  "Home",
-  "Rocket",
-  "Zap",
-  "Star",
-  "Heart",
-  "Bookmark",
-  "Flag",
-  "Target",
-];
+import { useProjectConfig } from "../hooks/useProjectConfig";
+import { AVAILABLE_COLORS, AVAILABLE_ICONS } from "../model/constants";
+import type { ProjectConfigModalProps } from "../model/types";
 
 export function ProjectConfigModal({
   isOpen,
   onClose,
 }: ProjectConfigModalProps) {
-  const { data: projects = [] } = useActiveProjects();
-  const saveProjectMutation = useSaveProject();
-  const deleteProjectMutation = useDeleteProject();
-  const { confirm } = useConfirm();
-
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-
-  const [name, setName] = useState("");
-  const [color, setColor] = useState<ProjectColor>("blue");
-  const [icon, setIcon] = useState<ProjectIcon>("FolderKanban");
-
-  const resetForm = () => {
-    setName("");
-    setColor("blue");
-    setIcon("FolderKanban");
-    setIsCreating(false);
-    setEditingProject(null);
-  };
-
-  const handleSave = () => {
-    if (!name.trim()) return;
-
-    const project: Project = {
-      id: editingProject?.id || crypto.randomUUID(),
-      name: name.trim(),
-      color,
-      icon,
-      isActive: true,
-      order: editingProject?.order ?? projects.length,
-      createdAt: editingProject?.createdAt || new Date().toISOString(),
-    };
-
-    saveProjectMutation.mutate(project, {
-      onSuccess: resetForm,
-    });
-  };
-
-  const handleDelete = async (project: Project) => {
-    const confirmed = await confirm({
-      title: "Eliminar proyecto",
-      description: `¿Estás seguro de que quieres eliminar "${project.name}"?`,
-      confirmText: "Eliminar",
-      cancelText: "Cancelar",
-      variant: "destructive",
-    });
-    if (confirmed) {
-      deleteProjectMutation.mutate(project.id);
-    }
-  };
-
-  const startEditing = (project: Project) => {
-    setEditingProject(project);
-    setName(project.name);
-    setColor(project.color);
-    setIcon(project.icon);
-    setIsCreating(true);
-  };
-
-  const getIconComponent = (iconName: ProjectIcon) => {
-    return PROJECT_ICON_MAP[iconName] || FolderKanban;
-  };
+  const {
+    projects,
+    isCreating,
+    setIsCreating,
+    editingProject,
+    name,
+    setName,
+    color,
+    setColor,
+    icon,
+    setIcon,
+    handleSave,
+    handleDelete,
+    startEditing,
+    resetForm,
+    getIconComponent,
+  } = useProjectConfig(onClose);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

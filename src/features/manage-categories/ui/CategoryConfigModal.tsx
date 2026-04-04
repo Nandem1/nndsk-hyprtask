@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import {
   Dialog,
@@ -13,188 +12,33 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Separator } from "@/shared/ui/separator";
-import {
-  useActiveCategories,
-  useSaveCategory,
-  useDeleteCategory,
-  type Category,
-  type CategoryColor,
-  type CategoryIcon,
-  CATEGORY_COLOR_CLASSES,
-} from "@/entities/project";
-import {
-  Bug,
-  Wrench,
-  Zap,
-  Sparkles,
-  FolderKanban,
-  CheckCircle,
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  FileText,
-  FileCheck,
-  Clipboard,
-  ClipboardList,
-  List,
-  ListChecks,
-  ListTodo,
-  Layout,
-  LayoutGrid,
-  BarChart,
-  TrendingUp,
-  Activity,
-} from "lucide-react";
+import { CATEGORY_COLOR_CLASSES } from "@/entities/project";
 import { Plus, Trash2, GripVertical } from "lucide-react";
-
-const CATEGORY_ICON_MAP: Record<CategoryIcon, React.ComponentType<{ className?: string }>> = {
-  Bug,
-  Wrench,
-  Zap,
-  Sparkles,
-  FolderKanban,
-  CheckCircle,
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  HelpCircle: AlertCircle,
-  FileText,
-  FileCheck,
-  FilePlus: FileCheck,
-  FileMinus: FileText,
-  FileX: FileText,
-  FileQuestion: FileText,
-  Clipboard,
-  ClipboardCheck: Clipboard,
-  ClipboardList,
-  List,
-  ListChecks,
-  ListTodo,
-  Layout,
-  LayoutGrid,
-  Grid: LayoutGrid,
-  Table: LayoutGrid,
-  BarChart,
-  PieChart: BarChart,
-  TrendingUp,
-  TrendingDown: TrendingUp,
-  Activity,
-  Pulse: Activity,
-};
-import { useConfirm } from "@/shared/hooks/use-confirm";
-
-interface CategoryConfigModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const AVAILABLE_COLORS: CategoryColor[] = [
-  "red",
-  "orange",
-  "amber",
-  "yellow",
-  "green",
-  "teal",
-  "cyan",
-  "blue",
-  "indigo",
-  "purple",
-  "pink",
-  "rose",
-  "gray",
-];
-
-const AVAILABLE_ICONS: CategoryIcon[] = [
-  "Bug",
-  "Wrench",
-  "Zap",
-  "Sparkles",
-  "FolderKanban",
-  "CheckCircle",
-  "AlertCircle",
-  "AlertTriangle",
-  "Info",
-  "FileText",
-  "FileCheck",
-  "Clipboard",
-  "ClipboardList",
-  "List",
-  "ListChecks",
-  "ListTodo",
-  "Layout",
-  "LayoutGrid",
-  "BarChart",
-  "TrendingUp",
-  "Activity",
-];
+import { useCategoryConfig } from "../hooks/useCategoryConfig";
+import { AVAILABLE_COLORS, AVAILABLE_ICONS } from "../model/constants";
+import type { CategoryConfigModalProps } from "../model/types";
 
 export function CategoryConfigModal({
   isOpen,
   onClose,
 }: CategoryConfigModalProps) {
-  const { data: categories = [] } = useActiveCategories();
-  const saveCategoryMutation = useSaveCategory();
-  const deleteCategoryMutation = useDeleteCategory();
-
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-
-  const [name, setName] = useState("");
-  const [color, setColor] = useState<CategoryColor>("blue");
-  const [icon, setIcon] = useState<CategoryIcon>("FolderKanban");
-
-  const { confirm } = useConfirm();
-
-  const resetForm = () => {
-    setName("");
-    setColor("blue");
-    setIcon("FolderKanban");
-    setIsCreating(false);
-    setEditingCategory(null);
-  };
-
-  const handleSave = () => {
-    if (!name.trim()) return;
-
-    const category: Category = {
-      id: editingCategory?.id || crypto.randomUUID(),
-      name: name.trim(),
-      color,
-      icon,
-      isActive: true,
-      order: editingCategory?.order ?? categories.length,
-      createdAt: editingCategory?.createdAt || new Date().toISOString(),
-    };
-
-    saveCategoryMutation.mutate(category, {
-      onSuccess: resetForm,
-    });
-  };
-
-  const handleDelete = async (category: Category) => {
-    const confirmed = await confirm({
-      title: "Eliminar categoría",
-      description: `¿Estás seguro de que quieres eliminar "${category.name}"?`,
-      confirmText: "Eliminar",
-      cancelText: "Cancelar",
-      variant: "destructive",
-    });
-    if (confirmed) {
-      deleteCategoryMutation.mutate(category.id);
-    }
-  };
-
-  const startEditing = (category: Category) => {
-    setEditingCategory(category);
-    setName(category.name);
-    setColor(category.color);
-    setIcon(category.icon);
-    setIsCreating(true);
-  };
-
-  const getIconComponent = (iconName: CategoryIcon) => {
-    return CATEGORY_ICON_MAP[iconName] || FolderKanban;
-  };
+  const {
+    categories,
+    isCreating,
+    setIsCreating,
+    editingCategory,
+    name,
+    setName,
+    color,
+    setColor,
+    icon,
+    setIcon,
+    handleSave,
+    handleDelete,
+    startEditing,
+    resetForm,
+    getIconComponent,
+  } = useCategoryConfig(onClose);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -314,10 +158,10 @@ export function CategoryConfigModal({
             </div>
           </>
         ) : (
-        <Button onClick={() => setIsCreating(true)} className="w-full">
-          <Plus data-icon="inline-start" />
-          Agregar Categoría
-        </Button>
+          <Button onClick={() => setIsCreating(true)} className="w-full">
+            <Plus data-icon="inline-start" />
+            Agregar Categoría
+          </Button>
         )}
       </DialogContent>
     </Dialog>

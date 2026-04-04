@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -12,37 +11,11 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Briefcase, Save } from "lucide-react";
-import {
-  useWorkSettings,
-  useSaveWorkSettings,
-  type WorkSettings,
-} from "@/entities/work";
+import { useWorkConfig } from "../hooks/useWorkConfig";
 
 export function WorkConfigForm() {
-  const { data: settings } = useWorkSettings();
-  const saveSettingsMutation = useSaveWorkSettings();
-
-  const [startTime, setStartTime] = useState<string>("09:00");
-  const [endTime, setEndTime] = useState<string>("18:00");
-
-  useEffect(() => {
-    if (settings) {
-      setStartTime(settings.startTime);
-      setEndTime(settings.endTime);
-    }
-  }, [settings]);
-
-  const handleSave = () => {
-    const newSettings: WorkSettings = {
-      id: settings?.id || crypto.randomUUID(),
-      startTime,
-      endTime,
-      updatedAt: new Date().toISOString(),
-      ...(settings?.createdAt && { createdAt: settings.createdAt }),
-    };
-
-    saveSettingsMutation.mutate(newSettings);
-  };
+  const { startTime, setStartTime, endTime, setEndTime, isSaving, handleSave } =
+    useWorkConfig();
 
   return (
     <Card>
@@ -80,15 +53,9 @@ export function WorkConfigForm() {
           </p>
         </div>
 
-        <Button
-          onClick={handleSave}
-          disabled={saveSettingsMutation.isPending}
-          className="w-full"
-        >
+        <Button onClick={handleSave} disabled={isSaving} className="w-full">
           <Save data-icon="inline-start" />
-          {saveSettingsMutation.isPending
-            ? "Guardando..."
-            : "Guardar configuracion"}
+          {isSaving ? "Guardando..." : "Guardar configuracion"}
         </Button>
       </CardContent>
     </Card>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -13,40 +12,19 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
 import { Settings, Save } from "lucide-react";
-import {
-  useSleepSettings,
-  useSaveSleepSettings,
-  type SleepSettings,
-} from "@/entities/sleep";
+import { useSleepConfig } from "../hooks/useSleepConfig";
 
 export function SleepConfigForm() {
-  const { data: settings } = useSleepSettings();
-  const saveSettingsMutation = useSaveSleepSettings();
-
-  const [wakeupTime, setWakeupTime] = useState<string>("07:00");
-  const [desiredSleepHours, setDesiredSleepHours] = useState<number>(7);
-  const [sleepReminders, setSleepReminders] = useState<boolean>(true);
-
-  useEffect(() => {
-    if (settings) {
-      setWakeupTime(settings.wakeupTime);
-      setDesiredSleepHours(settings.desiredSleepHours);
-      setSleepReminders(settings.sleepReminders);
-    }
-  }, [settings]);
-
-  const handleSave = () => {
-    const newSettings: SleepSettings = {
-      id: settings?.id || crypto.randomUUID(),
-      wakeupTime,
-      desiredSleepHours,
-      sleepReminders,
-      updatedAt: new Date().toISOString(),
-      ...(settings?.createdAt && { createdAt: settings.createdAt }),
-    };
-
-    saveSettingsMutation.mutate(newSettings);
-  };
+  const {
+    wakeupTime,
+    setWakeupTime,
+    desiredSleepHours,
+    setDesiredSleepHours,
+    sleepReminders,
+    setSleepReminders,
+    isSaving,
+    handleSave,
+  } = useSleepConfig();
 
   return (
     <Card>
@@ -99,15 +77,9 @@ export function SleepConfigForm() {
           </Label>
         </div>
 
-        <Button
-          onClick={handleSave}
-          disabled={saveSettingsMutation.isPending}
-          className="w-full"
-        >
+        <Button onClick={handleSave} disabled={isSaving} className="w-full">
           <Save data-icon="inline-start" />
-          {saveSettingsMutation.isPending
-            ? "Guardando..."
-            : "Guardar configuracion"}
+          {isSaving ? "Guardando..." : "Guardar configuracion"}
         </Button>
       </CardContent>
     </Card>
