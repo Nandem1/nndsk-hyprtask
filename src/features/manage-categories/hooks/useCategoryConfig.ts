@@ -10,8 +10,7 @@ import {
   type CategoryIcon,
 } from "@/entities/project";
 import { useConfirm } from "@/shared/hooks/use-confirm";
-import { CATEGORY_ICON_MAP } from "../model/constants";
-import { FolderKanban } from "lucide-react";
+import { getCategoryIcon } from "@/entities/project";
 
 export function useCategoryConfig(onClose: () => void) {
   const { data: categories = [] } = useActiveCategories();
@@ -70,9 +69,7 @@ export function useCategoryConfig(onClose: () => void) {
     setIsCreating(true);
   };
 
-  const getIconComponent = (iconName: CategoryIcon) => {
-    return CATEGORY_ICON_MAP[iconName] || FolderKanban;
-  };
+  const getIconComponent = (iconName: CategoryIcon) => getCategoryIcon(iconName);
 
   return {
     categories,

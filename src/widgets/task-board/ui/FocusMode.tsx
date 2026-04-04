@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { cn } from "@/shared/lib/utils";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
@@ -33,6 +33,7 @@ import {
 } from "../lib/focus-timer-constants";
 import { FocusTimerCircle } from "./FocusTimerCircle";
 import { BreakModeContent } from "./BreakModeContent";
+import { useFocusTimer } from "../hooks/useFocusTimer";
 
 interface FocusModeProps {
   task: Task;
@@ -57,65 +58,37 @@ export function FocusMode({
   const { themeClasses } = useThemeState();
   const shouldReduceMotion = useReducedMotion();
   const { incrementSession, getStats } = useFocusSessions();
-  const [timerState, setTimerState] = useState<
-    "idle" | "running" | "paused" | "break"
-  >("idle");
-  const [timeLeft, setTimeLeft] = useState(FOCUS_DURATION);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showParticles, setShowParticles] = useState(true);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  const timeLeftRef = useRef(timeLeft);
-  const timerStateRef = useRef(timerState);
-
-  useEffect(() => {
-    timeLeftRef.current = timeLeft;
-  }, [timeLeft]);
-
-  useEffect(() => {
-    timerStateRef.current = timerState;
-  }, [timerState]);
-
-  const { sessionsToday, totalMinutesToday } = getStats();
-
-  const totalTime = timerState === "break" ? BREAK_DURATION : FOCUS_DURATION;
-
-  const handleSessionComplete = useCallback(() => {
+  const handleFocusComplete = useCallback(() => {
     incrementSession(FOCUS_DURATION / 60);
     if (soundEnabled) {
       playSuccessSound();
     }
     setShowCelebration(true);
-    setTimerState("break");
-    setTimeLeft(BREAK_DURATION);
   }, [soundEnabled, incrementSession]);
 
-  useEffect(() => {
-    if (timerState !== "running") return;
+  const {
+    timerState,
+    timeLeft,
+    timeLeftRef,
+    startTimer,
+    pauseTimer,
+    resetTimer,
+    skipBreak,
+  } = useFocusTimer({
+    focusDuration: FOCUS_DURATION,
+    breakDuration: BREAK_DURATION,
+    onFocusComplete: handleFocusComplete,
+  });
 
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          if (timerStateRef.current === "running") {
-            handleSessionComplete();
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  const { sessionsToday, totalMinutesToday } = getStats();
 
-    return () => clearInterval(interval);
-  }, [timerState, handleSessionComplete]);
-
-  useEffect(() => {
-    if (timeLeft === 0 && timerState === "break") {
-      setTimerState("idle");
-      setTimeLeft(FOCUS_DURATION);
-    }
-  }, [timeLeft, timerState]);
+  const totalTime = timerState === "break" ? BREAK_DURATION : FOCUS_DURATION;
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -129,10 +102,10 @@ export function FocusMode({
 
   useEffect(() => {
     if (isOpen) {
-      setTimerState("idle");
-      setTimeLeft(FOCUS_DURATION);
+      resetTimer();
       setShowCelebration(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   useEffect(() => {
@@ -141,17 +114,6 @@ export function FocusMode({
       return () => clearTimeout(timer);
     }
   }, [showCelebration]);
-
-  const startTimer = () => setTimerState("running");
-  const pauseTimer = () => setTimerState("paused");
-  const resetTimer = () => {
-    setTimerState("idle");
-    setTimeLeft(FOCUS_DURATION);
-  };
-  const skipBreak = () => {
-    setTimerState("idle");
-    setTimeLeft(FOCUS_DURATION);
-  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {

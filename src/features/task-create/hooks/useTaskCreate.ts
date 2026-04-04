@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateTask, useSetTaskChild, useDeleteTask } from "@/entities/task";
+import { toast } from "sonner";
 import type { TaskPriority } from "@/entities/task";
 import {
   createTaskSchema,
@@ -95,7 +96,7 @@ export function useTaskCreate(options: UseTaskCreateOptions): UseTaskCreateRetur
         reset(defaultValues);
         onSuccess();
       } catch {
-        // Error silenciado — la UI muestra el formulario sin cambios
+        toast.error("Error al crear la tarea. Inténtalo de nuevo.");
       }
     },
     [canCreate, createTaskMutation, setTaskChildMutation, deleteTaskMutation, reset, onSuccess]

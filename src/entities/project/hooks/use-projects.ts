@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   getProjects,
   getActiveProjects,
@@ -10,6 +10,7 @@ import {
 } from "../lib/storage";
 import { projectKeys } from "../model/query-keys";
 import type { Project } from "../model/types";
+import { useUpsertMutation, useDeleteEntityMutation } from "./use-entity-mutations";
 
 // ============================================================================
 // Query Hooks
@@ -44,81 +45,16 @@ export function useProject(id: string) {
 // Mutation Hooks
 // ============================================================================
 
+const projectMutationKeys = {
+  all: projectKeys.all,
+  listAll: projectKeys.lists(),
+  listActive: projectKeys.list({ isActive: true }),
+};
+
 export function useSaveProject() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: saveProject,
-    onMutate: async (newProject: Project) => {
-      await queryClient.cancelQueries({ queryKey: projectKeys.all });
-
-      const previousProjects = queryClient.getQueryData<Project[]>(
-        projectKeys.lists(),
-      );
-
-      queryClient.setQueryData<Project[]>(projectKeys.lists(), (old) => {
-        if (!old) return [newProject];
-        const existingIndex = old.findIndex((p) => p.id === newProject.id);
-        if (existingIndex >= 0) {
-          const updated = [...old];
-          updated[existingIndex] = newProject;
-          return updated;
-        }
-        return [...old, newProject];
-      });
-
-      return { previousProjects };
-    },
-    onError: (_err, _project, context) => {
-      if (context?.previousProjects) {
-        queryClient.setQueryData(projectKeys.lists(), context.previousProjects);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.all });
-    },
-  });
+  return useUpsertMutation<Project>(saveProject, projectMutationKeys);
 }
 
 export function useDeleteProject() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: deleteProject,
-    onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: projectKeys.all });
-
-      const previousProjects = queryClient.getQueryData<Project[]>(
-        projectKeys.lists(),
-      );
-      const previousActiveProjects = queryClient.getQueryData<Project[]>(
-        projectKeys.list({ isActive: true }),
-      );
-
-      queryClient.setQueryData<Project[]>(projectKeys.lists(), (old) =>
-        old?.map((p) => (p.id === id ? { ...p, isActive: false } : p)),
-      );
-
-      queryClient.setQueryData<Project[]>(
-        projectKeys.list({ isActive: true }),
-        (old) => old?.filter((p) => p.id !== id),
-      );
-
-      return { previousProjects, previousActiveProjects };
-    },
-    onError: (_err, _id, context) => {
-      if (context?.previousProjects) {
-        queryClient.setQueryData(projectKeys.lists(), context.previousProjects);
-      }
-      if (context?.previousActiveProjects) {
-        queryClient.setQueryData(
-          projectKeys.list({ isActive: true }),
-          context.previousActiveProjects,
-        );
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.all });
-    },
-  });
+  return useDeleteEntityMutation<Project>(deleteProject, projectMutationKeys);
 }

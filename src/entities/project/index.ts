@@ -43,6 +43,13 @@ export {
   useDeleteCategory,
 } from "./hooks/use-categories";
 export { useProjectInfo, useCategoryInfo } from "./hooks/use-project-colors";
+export {
+  PROJECT_ICON_MAP,
+  CATEGORY_ICON_MAP,
+  getProjectIcon,
+  getCategoryIcon,
+  getEntityIcon,
+} from "./lib/icons";
 
 // UI Components
 export { TaskMetadataBadges } from "./ui/TaskMetadataBadges";

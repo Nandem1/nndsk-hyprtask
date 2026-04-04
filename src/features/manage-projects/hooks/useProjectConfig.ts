@@ -10,8 +10,7 @@ import {
   type ProjectIcon,
 } from "@/entities/project";
 import { useConfirm } from "@/shared/hooks/use-confirm";
-import { PROJECT_ICON_MAP } from "../model/constants";
-import { FolderKanban } from "lucide-react";
+import { getProjectIcon } from "@/entities/project";
 
 export function useProjectConfig(onClose: () => void) {
   const { data: projects = [] } = useActiveProjects();
@@ -70,9 +69,7 @@ export function useProjectConfig(onClose: () => void) {
     setIsCreating(true);
   };
 
-  const getIconComponent = (iconName: ProjectIcon) => {
-    return PROJECT_ICON_MAP[iconName] || FolderKanban;
-  };
+  const getIconComponent = (iconName: ProjectIcon) => getProjectIcon(iconName);
 
   return {
     projects,

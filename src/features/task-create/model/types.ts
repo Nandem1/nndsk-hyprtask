@@ -1,4 +1,7 @@
+import type { Control, UseFormWatch, FieldErrors } from "react-hook-form";
 import type { CreateTaskFormData } from "./schema";
+import type { Project, Category } from "@entities/project";
+import type { Task } from "@entities/task";
 
 /**
  * Props para el hook useTaskCreate
@@ -21,18 +24,15 @@ export interface UseTaskCreateOptions {
  */
 export interface UseTaskCreateReturn {
   /** Controlador de React Hook Form */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: any;
+  control: Control<CreateTaskFormData>;
   /** Función watch de React Hook Form */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  watch: (name: string) => any;
+  watch: UseFormWatch<CreateTaskFormData>;
   /** Estado de envío del formulario */
   isSubmitting: boolean;
   /** Si el formulario es válido */
   isValid: boolean;
   /** Errores de validación */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  errors: any;
+  errors: FieldErrors<CreateTaskFormData>;
   /** Handler para enviar el formulario */
   onSubmit: () => Promise<void>;
   /** Valor actual del título (para contador de caracteres) */
@@ -46,23 +46,17 @@ export interface UseTaskCreateReturn {
  */
 export interface TaskCreateFieldsProps {
   /** Controlador de React Hook Form */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: any;
+  control: Control<CreateTaskFormData>;
   /** Función watch de React Hook Form */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  watch: (name: string) => any;
+  watch: UseFormWatch<CreateTaskFormData>;
   /** Errores de validación */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  errors: any;
+  errors: FieldErrors<CreateTaskFormData>;
   /** Lista de proyectos disponibles */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  projects: any[];
+  projects: Project[];
   /** Lista de categorías disponibles */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  categories: any[];
+  categories: Category[];
   /** Lista de tareas incompletas para vinculación */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  incompleteTasks: any[];
+  incompleteTasks: Task[];
   /** Valor actual del título */
   titleValue: string;
 }

@@ -11,7 +11,7 @@ import {
   useViewModeActions,
   useTaskFiltersState,
 } from "@/store/hooks";
-import { useActiveTasks, useTaskSettings } from "@/entities/task";
+import { useActiveTasks, useTaskSettings, useFilteredTasks } from "@/entities/task";
 import { useTaskBoardState } from "../hooks/useTaskBoardState";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -58,17 +58,7 @@ export function TaskBoard() {
     handleTaskCreated,
   } = useTaskBoardState();
 
-  const tasks = useMemo(
-    () =>
-      allTasks.filter((task) => {
-        if (selectedProjectId !== "all" && task.projectId !== selectedProjectId)
-          return false;
-        if (selectedCategoryId !== "all" && task.categoryId !== selectedCategoryId)
-          return false;
-        return true;
-      }),
-    [allTasks, selectedProjectId, selectedCategoryId],
-  );
+  const tasks = useFilteredTasks(allTasks, selectedProjectId, selectedCategoryId);
 
   const canAddTask = allTasks.length < maxTasks;
   const remainingSlots = maxTasks - allTasks.length;

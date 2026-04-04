@@ -2,141 +2,13 @@
 
 import { useState, useMemo } from "react";
 import { cn } from "@/shared/lib/utils";
-import { X, Settings, Tag } from "lucide-react";
+import { X, Settings, Tag, FolderKanban } from "lucide-react";
 import { useThemeState, useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
 import { useActiveTasks } from "@/entities/task";
-import { useActiveProjects, useActiveCategories } from "@/entities/project";
+import { useActiveProjects, useActiveCategories, getEntityIcon } from "@/entities/project";
 import { Button } from "@/shared/ui/button";
 import { ProjectConfigModal } from "@/features/manage-projects";
 import { CategoryConfigModal } from "@/features/manage-categories";
-import {
-  Server,
-  Code,
-  Bot,
-  FolderOpen,
-  FolderKanban,
-  Layers,
-  Box,
-  Container,
-  Database,
-  Cloud,
-  Globe,
-  Smartphone,
-  Monitor,
-  Laptop,
-  Cpu,
-  CircuitBoard,
-  GitBranch,
-  GitCommit,
-  Github,
-  Terminal,
-  FileCode,
-  Briefcase,
-  Building,
-  Home,
-  Rocket,
-  Zap,
-  Star,
-  Heart,
-  Bookmark,
-  Flag,
-  Target,
-  Crosshair,
-  Bug,
-  Wrench,
-  Sparkles,
-  CheckCircle,
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  HelpCircle,
-  FileText,
-  FileCheck,
-  FilePlus,
-  FileMinus,
-  FileX,
-  FileQuestion,
-  Clipboard,
-  ClipboardCheck,
-  ClipboardList,
-  List,
-  ListChecks,
-  ListTodo,
-  Layout,
-  LayoutGrid,
-  Grid,
-  Table,
-  BarChart,
-  PieChart,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-} from "lucide-react";
-
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Server,
-  Code,
-  Bot,
-  FolderOpen,
-  FolderKanban,
-  Layers,
-  Box,
-  Container,
-  Database,
-  Cloud,
-  Globe,
-  Smartphone,
-  Monitor,
-  Laptop,
-  Cpu,
-  CircuitBoard,
-  GitBranch,
-  GitCommit,
-  Github,
-  Terminal,
-  FileCode,
-  Briefcase,
-  Building,
-  Home,
-  Rocket,
-  Zap,
-  Star,
-  Heart,
-  Bookmark,
-  Flag,
-  Target,
-  Crosshair,
-  Bug,
-  Wrench,
-  Sparkles,
-  CheckCircle,
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  HelpCircle,
-  FileText,
-  FileCheck,
-  FilePlus,
-  FileMinus,
-  FileX,
-  FileQuestion,
-  Clipboard,
-  ClipboardCheck,
-  ClipboardList,
-  List,
-  ListChecks,
-  ListTodo,
-  Layout,
-  LayoutGrid,
-  Grid,
-  Table,
-  BarChart,
-  PieChart,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Pulse: Activity,
-};
 
 interface TaskSidebarProps {
   onClose?: () => void;
@@ -153,23 +25,29 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
-  const projectCounts = useMemo(
-    () =>
-      projects.map((project) => ({
-        ...project,
-        count: tasks.filter((t) => t.projectId === project.id).length,
-      })),
-    [projects, tasks],
-  );
+  const projectCounts = useMemo(() => {
+    const countMap = new Map<string, number>();
+    tasks.forEach((t) => {
+      if (t.projectId)
+        countMap.set(t.projectId, (countMap.get(t.projectId) ?? 0) + 1);
+    });
+    return projects.map((project) => ({
+      ...project,
+      count: countMap.get(project.id) ?? 0,
+    }));
+  }, [projects, tasks]);
 
-  const categoryCounts = useMemo(
-    () =>
-      categories.map((category) => ({
-        ...category,
-        count: tasks.filter((t) => t.categoryId === category.id).length,
-      })),
-    [categories, tasks],
-  );
+  const categoryCounts = useMemo(() => {
+    const countMap = new Map<string, number>();
+    tasks.forEach((t) => {
+      if (t.categoryId)
+        countMap.set(t.categoryId, (countMap.get(t.categoryId) ?? 0) + 1);
+    });
+    return categories.map((category) => ({
+      ...category,
+      count: countMap.get(category.id) ?? 0,
+    }));
+  }, [categories, tasks]);
 
   const handleProjectChange = (projectId: string | "all") => {
     setSelectedProject(projectId);
@@ -179,10 +57,6 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
   const handleCategoryChange = (categoryId: string | "all") => {
     setSelectedCategory(categoryId);
     if (onClose) onClose();
-  };
-
-  const getIconComponent = (iconName: string) => {
-    return ICON_MAP[iconName] || FolderKanban;
   };
 
   return (
@@ -234,7 +108,7 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
           </div>
           <div className="flex flex-col gap-1">
             {projectCounts.map((project) => {
-              const IconComponent = getIconComponent(project.icon);
+              const IconComponent = getEntityIcon(project.icon);
               const isSelected = selectedProjectId === project.id;
 
               return (
@@ -302,7 +176,7 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
           </div>
           <div className="flex flex-col gap-1">
             {categoryCounts.map((category) => {
-              const IconComponent = getIconComponent(category.icon);
+              const IconComponent = getEntityIcon(category.icon);
               const isSelected = selectedCategoryId === category.id;
 
               return (

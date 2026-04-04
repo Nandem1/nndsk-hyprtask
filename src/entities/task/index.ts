@@ -50,6 +50,9 @@ export {
   useReorderTasks,
 } from "./hooks/use-task-relations";
 
+// Hook de filtrado
+export { useFilteredTasks } from "./hooks/use-filtered-tasks";
+
 // Hooks de focus sessions
 export { useFocusSessions } from "./hooks/use-focus-sessions";
 export type { FocusSessionData } from "./hooks/use-focus-sessions";
