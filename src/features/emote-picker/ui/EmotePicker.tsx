@@ -48,7 +48,7 @@ const EmoteItem = memo(function EmoteItem({
         title={`Insertar ${emote.name}`}
       >
         <img
-          src={getEmoteUrl(emote.id, "1x", emote.animated)}
+          src={getEmoteUrl(emote.id, "1x")}
           alt={emote.name}
           className="h-7 w-7 shrink-0"
           loading="lazy"

@@ -2,7 +2,6 @@
 
 import { useMemo, useState, memo } from "react";
 import { cn } from "@/shared/lib/utils";
-import { getEmoteUrl } from "@/shared/lib/seventv-api";
 import { parseEmotes } from "@/shared/lib/emote-parser";
 import type { UserEmote } from "@/shared/types/emote";
 
@@ -15,13 +14,6 @@ interface EmoteImgProps {
   forceStatic?: boolean;
 }
 
-const FALLBACK_ORDER = (id: string, animated: boolean) => [
-  getEmoteUrl(id, "1x", animated),
-  getEmoteUrl(id, "1x", false),
-  getEmoteUrl(id, "2x", false),
-  `https://cdn.7tv.app/emote/${id}/1x.avif`,
-];
-
 const EmoteImg = memo(function EmoteImg({
   id,
   name,
@@ -30,26 +22,29 @@ const EmoteImg = memo(function EmoteImg({
   className,
   forceStatic,
 }: EmoteImgProps) {
+  const [failed, setFailed] = useState(false);
   const showAnimated = animated && !forceStatic;
-  const fallbacks = useMemo(
-    () => FALLBACK_ORDER(id, showAnimated),
-    [id, showAnimated],
-  );
-  const [attempt, setAttempt] = useState(0);
 
-  if (attempt >= fallbacks.length) {
-    return <span title={name}>{name}</span>;
-  }
+  if (failed) return <span title={name}>{name}</span>;
+
+  const base = `https://cdn.7tv.app/emote/${id}`;
 
   return (
-    <img
-      src={fallbacks[attempt]}
-      alt={name}
-      title={name}
-      onError={() => setAttempt((a) => a + 1)}
-      className={cn("inline-block h-[1.4em] w-auto align-middle mx-px", className)}
-      loading="lazy"
-    />
+    <picture>
+      {!showAnimated && animated && (
+        <source srcSet={`${base}/${size}_static.webp`} type="image/webp" />
+      )}
+      <source srcSet={`${base}/${size}.webp`} type="image/webp" />
+      <source srcSet={`${base}/${size}.avif`} type="image/avif" />
+      <img
+        src={`${base}/${size}.webp`}
+        alt={name}
+        title={name}
+        onError={() => setFailed(true)}
+        className={cn("inline-block h-[1.4em] w-auto align-middle mx-px", className)}
+        loading="lazy"
+      />
+    </picture>
   );
 });
 

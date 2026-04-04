@@ -27,7 +27,7 @@ const EmoteItem = memo(function EmoteItem({
   return (
     <div className="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
       <img
-        src={getEmoteUrl(emote.id, "2x", emote.animated)}
+        src={getEmoteUrl(emote.id, "2x")}
         alt={emote.name}
         className="h-10 w-10 shrink-0"
         loading="lazy"
