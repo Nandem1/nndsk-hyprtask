@@ -2,13 +2,14 @@
 // Funciones puras, sin dependencias externas
 
 import type { SleepSettings, SleepCalculation, SleepAlert } from '../model/types';
+import { parseTimeString, timeToMinutes } from '@shared/lib/time-utils';
 
 /**
  * Calcula tiempo hasta hora de dormir en minutos
  */
 export function calculateTimeUntilBedtime(bedtime: string): number {
   const now = new Date();
-  const [hours, minutes] = bedtime.split(':').map(Number);
+  const { hours, minutes } = parseTimeString(bedtime);
 
   const bedtimeToday = new Date();
   bedtimeToday.setHours(hours, minutes, 0, 0);
@@ -29,8 +30,7 @@ export function calculateRecommendedBedtime(
   wakeupTime: string,
   desiredSleepHours: number
 ): string {
-  const [wakeHours, wakeMinutes] = wakeupTime.split(':').map(Number);
-  const wakeTotal = wakeHours * 60 + wakeMinutes;
+  const wakeTotal = timeToMinutes(wakeupTime);
 
   // Calcular ciclos de 90 minutos (redondea al ciclo más cercano)
   const cycles = Math.round((desiredSleepHours * 60) / 90);

@@ -13,13 +13,13 @@ import { useConfirm } from "@/shared/hooks/use-confirm";
 import { getProjectIcon } from "@/entities/project";
 
 export function useProjectConfig(onClose: () => void) {
-  const { data: projects = [] } = useActiveProjects();
+  const { data: entities = [] } = useActiveProjects();
   const saveProjectMutation = useSaveProject();
   const deleteProjectMutation = useDeleteProject();
   const { confirm } = useConfirm();
 
   const [isCreating, setIsCreating] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingEntity, setEditingEntity] = useState<Project | null>(null);
   const [name, setName] = useState("");
   const [color, setColor] = useState<ProjectColor>("blue");
   const [icon, setIcon] = useState<ProjectIcon>("FolderKanban");
@@ -29,53 +29,53 @@ export function useProjectConfig(onClose: () => void) {
     setColor("blue");
     setIcon("FolderKanban");
     setIsCreating(false);
-    setEditingProject(null);
+    setEditingEntity(null);
   };
 
   const handleSave = () => {
     if (!name.trim()) return;
 
     const project: Project = {
-      id: editingProject?.id || crypto.randomUUID(),
+      id: editingEntity?.id || crypto.randomUUID(),
       name: name.trim(),
       color,
       icon,
       isActive: true,
-      order: editingProject?.order ?? projects.length,
-      createdAt: editingProject?.createdAt || new Date().toISOString(),
+      order: editingEntity?.order ?? entities.length,
+      createdAt: editingEntity?.createdAt || new Date().toISOString(),
     };
 
     saveProjectMutation.mutate(project, { onSuccess: resetForm });
   };
 
-  const handleDelete = async (project: Project) => {
+  const handleDelete = async (entity: Project) => {
     const confirmed = await confirm({
       title: "Eliminar proyecto",
-      description: `¿Estás seguro de que quieres eliminar "${project.name}"?`,
+      description: `¿Estás seguro de que quieres eliminar "${entity.name}"?`,
       confirmText: "Eliminar",
       cancelText: "Cancelar",
       variant: "destructive",
     });
     if (confirmed) {
-      deleteProjectMutation.mutate(project.id);
+      deleteProjectMutation.mutate(entity.id);
     }
   };
 
-  const startEditing = (project: Project) => {
-    setEditingProject(project);
-    setName(project.name);
-    setColor(project.color);
-    setIcon(project.icon);
+  const startEditing = (entity: Project) => {
+    setEditingEntity(entity);
+    setName(entity.name);
+    setColor(entity.color);
+    setIcon(entity.icon);
     setIsCreating(true);
   };
 
   const getIconComponent = (iconName: ProjectIcon) => getProjectIcon(iconName);
 
   return {
-    projects,
+    entities,
     isCreating,
     setIsCreating,
-    editingProject,
+    editingEntity,
     name,
     setName,
     color,
@@ -90,4 +90,5 @@ export function useProjectConfig(onClose: () => void) {
   };
 }
 
+/** @internal */
 export type UseProjectConfigReturn = ReturnType<typeof useProjectConfig>;

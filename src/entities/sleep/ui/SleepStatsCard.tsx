@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -11,59 +10,12 @@ import {
 import { Separator } from "@/shared/ui/separator";
 import { EmptyState } from "@/shared/ui/empty-state";
 import { BarChart3, TrendingUp } from "lucide-react";
-import { getSleepLogs } from "../lib/storage";
-import type { SleepLog } from "../model/types";
+import { useSleepLogs } from "../hooks/use-sleep-settings";
+import { useSleepStats } from "../hooks/use-sleep-stats";
 
 export function SleepStatsCard() {
-  const [logs, setLogs] = useState<SleepLog[]>([]);
-  const [averageHours, setAverageHours] = useState<number>(0);
-  const [averageQuality, setAverageQuality] = useState<number>(0);
-
-  useEffect(() => {
-    const loadLogs = async () => {
-      const sleepLogs = await getSleepLogs();
-      const last7Days = sleepLogs.slice(0, 7);
-      setLogs(last7Days);
-
-      const logsWithHours = last7Days.filter(
-        (log) => log.actualBedtime && log.actualWakeup,
-      );
-
-      if (logsWithHours.length > 0) {
-        const totalHours = logsWithHours.reduce((acc, log) => {
-          if (!log.actualBedtime || !log.actualWakeup) return acc;
-
-          const [bedHours, bedMins] = log.actualBedtime.split(":").map(Number);
-          const [wakeHours, wakeMins] = log.actualWakeup.split(":").map(Number);
-
-          const bedTotal = bedHours * 60 + bedMins;
-          let wakeTotal = wakeHours * 60 + wakeMins;
-
-          if (wakeTotal < bedTotal) {
-            wakeTotal += 24 * 60;
-          }
-
-          return acc + (wakeTotal - bedTotal) / 60;
-        }, 0);
-
-        setAverageHours(totalHours / logsWithHours.length);
-
-        const logsWithQuality = last7Days.filter(
-          (log) => log.qualityRating !== null,
-        );
-
-        if (logsWithQuality.length > 0) {
-          const totalQuality = logsWithQuality.reduce(
-            (acc, log) => acc + (log.qualityRating || 0),
-            0,
-          );
-          setAverageQuality(totalQuality / logsWithQuality.length);
-        }
-      }
-    };
-
-    loadLogs();
-  }, []);
+  const { data: allLogs = [] } = useSleepLogs();
+  const { logs, averageHours, averageQuality } = useSleepStats(allLogs);
 
   return (
     <Card>

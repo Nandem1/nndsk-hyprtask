@@ -1,6 +1,13 @@
 // ABSTRACCIÓN DE ALMACENAMIENTO
 
 import type { SleepSettings, SleepLog } from "../model/types";
+import {
+  storageGet,
+  storageGetList,
+  storageSet,
+  storageRemove,
+  upsertItem,
+} from "@shared/lib/storage";
 
 const STORAGE_KEYS = {
   SETTINGS: "hyprtodo_sleep_settings",
@@ -11,64 +18,35 @@ const STORAGE_KEYS = {
 // SLEEP SETTINGS
 // ============================================
 
-export async function getSleepSettings(): Promise<SleepSettings | null> {
-  if (typeof window === "undefined") return null;
-
-  const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-  if (!stored) return null;
-
-  return JSON.parse(stored) as SleepSettings;
+export function getSleepSettings(): SleepSettings | null {
+  return storageGet<SleepSettings>(STORAGE_KEYS.SETTINGS);
 }
 
-export async function saveSleepSettings(
-  settings: SleepSettings,
-): Promise<void> {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+export function saveSleepSettings(settings: SleepSettings): void {
+  storageSet(STORAGE_KEYS.SETTINGS, settings);
 }
 
-export async function deleteSleepSettings(): Promise<void> {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(STORAGE_KEYS.SETTINGS);
+export function deleteSleepSettings(): void {
+  storageRemove(STORAGE_KEYS.SETTINGS);
 }
 
 // ============================================
 // SLEEP LOGS
 // ============================================
 
-export async function getSleepLogs(): Promise<SleepLog[]> {
-  if (typeof window === "undefined") return [];
-
-  const stored = localStorage.getItem(STORAGE_KEYS.LOGS);
-  if (!stored) return [];
-
-  return JSON.parse(stored) as SleepLog[];
+export function getSleepLogs(): SleepLog[] {
+  return storageGetList<SleepLog>(STORAGE_KEYS.LOGS);
 }
 
-export async function getSleepLogByDate(
-  date: string,
-): Promise<SleepLog | null> {
-  const logs = await getSleepLogs();
-  return logs.find((log) => log.date === date) || null;
+export function getSleepLogByDate(date: string): SleepLog | null {
+  const logs = getSleepLogs();
+  return logs.find((log) => log.date === date) ?? null;
 }
 
-export async function saveSleepLog(log: SleepLog): Promise<void> {
-  if (typeof window === "undefined") return;
-  const logs = await getSleepLogs();
-  const existingIndex = logs.findIndex((l) => l.id === log.id);
-
-  if (existingIndex >= 0) {
-    logs[existingIndex] = log;
-  } else {
-    logs.push(log);
-  }
-
-  localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(logs));
+export function saveSleepLog(log: SleepLog): void {
+  storageSet(STORAGE_KEYS.LOGS, upsertItem(getSleepLogs(), log));
 }
 
-export async function deleteSleepLog(id: string): Promise<void> {
-  if (typeof window === "undefined") return;
-  const logs = await getSleepLogs();
-  const filtered = logs.filter((log) => log.id !== id);
-  localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(filtered));
+export function deleteSleepLog(id: string): void {
+  storageSet(STORAGE_KEYS.LOGS, getSleepLogs().filter((log) => log.id !== id));
 }

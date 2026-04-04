@@ -13,13 +13,13 @@ import { useConfirm } from "@/shared/hooks/use-confirm";
 import { getCategoryIcon } from "@/entities/project";
 
 export function useCategoryConfig(onClose: () => void) {
-  const { data: categories = [] } = useActiveCategories();
+  const { data: entities = [] } = useActiveCategories();
   const saveCategoryMutation = useSaveCategory();
   const deleteCategoryMutation = useDeleteCategory();
   const { confirm } = useConfirm();
 
   const [isCreating, setIsCreating] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingEntity, setEditingEntity] = useState<Category | null>(null);
   const [name, setName] = useState("");
   const [color, setColor] = useState<CategoryColor>("blue");
   const [icon, setIcon] = useState<CategoryIcon>("FolderKanban");
@@ -29,53 +29,53 @@ export function useCategoryConfig(onClose: () => void) {
     setColor("blue");
     setIcon("FolderKanban");
     setIsCreating(false);
-    setEditingCategory(null);
+    setEditingEntity(null);
   };
 
   const handleSave = () => {
     if (!name.trim()) return;
 
     const category: Category = {
-      id: editingCategory?.id || crypto.randomUUID(),
+      id: editingEntity?.id || crypto.randomUUID(),
       name: name.trim(),
       color,
       icon,
       isActive: true,
-      order: editingCategory?.order ?? categories.length,
-      createdAt: editingCategory?.createdAt || new Date().toISOString(),
+      order: editingEntity?.order ?? entities.length,
+      createdAt: editingEntity?.createdAt || new Date().toISOString(),
     };
 
     saveCategoryMutation.mutate(category, { onSuccess: resetForm });
   };
 
-  const handleDelete = async (category: Category) => {
+  const handleDelete = async (entity: Category) => {
     const confirmed = await confirm({
       title: "Eliminar categoría",
-      description: `¿Estás seguro de que quieres eliminar "${category.name}"?`,
+      description: `¿Estás seguro de que quieres eliminar "${entity.name}"?`,
       confirmText: "Eliminar",
       cancelText: "Cancelar",
       variant: "destructive",
     });
     if (confirmed) {
-      deleteCategoryMutation.mutate(category.id);
+      deleteCategoryMutation.mutate(entity.id);
     }
   };
 
-  const startEditing = (category: Category) => {
-    setEditingCategory(category);
-    setName(category.name);
-    setColor(category.color);
-    setIcon(category.icon);
+  const startEditing = (entity: Category) => {
+    setEditingEntity(entity);
+    setName(entity.name);
+    setColor(entity.color);
+    setIcon(entity.icon);
     setIsCreating(true);
   };
 
   const getIconComponent = (iconName: CategoryIcon) => getCategoryIcon(iconName);
 
   return {
-    categories,
+    entities,
     isCreating,
     setIsCreating,
-    editingCategory,
+    editingEntity,
     name,
     setName,
     color,
@@ -90,4 +90,5 @@ export function useCategoryConfig(onClose: () => void) {
   };
 }
 
+/** @internal */
 export type UseCategoryConfigReturn = ReturnType<typeof useCategoryConfig>;

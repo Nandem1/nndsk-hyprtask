@@ -17,6 +17,8 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { GitBranch, Link2, Check } from "lucide-react";
 import type { TaskCreateFieldsProps } from "../model";
+import { SENTINEL_NONE, fromSentinel, toSentinel } from "@shared/lib/form";
+import { OptionalSelectField } from "./OptionalSelectField";
 
 const priorityOptions = [
   { value: "low" as const, label: "Baja" },
@@ -26,20 +28,20 @@ const priorityOptions = [
 
 // GPU-accelerated animation variants using scaleY instead of height
 const parentTaskSectionVariants = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     scaleY: 0,
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scaleY: 1,
     transition: {
       duration: 0.3,
       ease: [0.4, 0, 0.2, 1], // standard easing
     },
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     scaleY: 0,
     transition: {
       duration: 0.2,
@@ -65,9 +67,9 @@ export function TaskCreateFields({
   titleValue,
 }: TaskCreateFieldsProps) {
   const shouldReduceMotion = useReducedMotion();
-  
+
   const parentTaskId = watch("parentTaskId");
-  
+
   const selectedParentTask = useMemo(() => {
     return incompleteTasks.find((t) => t.id === parentTaskId);
   }, [parentTaskId, incompleteTasks]);
@@ -101,8 +103,8 @@ export function TaskCreateFields({
             className={cn(
               "absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground",
               "transition-all duration-200",
-              titleValue.length > 0 
-                ? "opacity-100 translate-x-0" 
+              titleValue.length > 0
+                ? "opacity-100 translate-x-0"
                 : "opacity-0 translate-x-2 pointer-events-none"
             )}
           >
@@ -116,65 +118,20 @@ export function TaskCreateFields({
 
       {/* Project & Category */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Proyecto</Label>
-          <Controller
-            name="projectId"
-            control={control}
-            render={({ field }) => (
-              <Select
-                value={field.value || "__none__"}
-                onValueChange={(value) =>
-                  field.onChange(value === "__none__" ? undefined : value)
-                }
-              >
-                <SelectTrigger className="transition-colors hover:border-primary/50">
-                  <SelectValue placeholder="Sin proyecto" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="__none__">Sin proyecto</SelectItem>
-                    {projects.map((proj) => (
-                      <SelectItem key={proj.id} value={proj.id}>
-                        {proj.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Categoría</Label>
-          <Controller
-            name="categoryId"
-            control={control}
-            render={({ field }) => (
-              <Select
-                value={field.value || "__none__"}
-                onValueChange={(value) =>
-                  field.onChange(value === "__none__" ? undefined : value)
-                }
-              >
-                <SelectTrigger className="transition-colors hover:border-primary/50">
-                  <SelectValue placeholder="Sin categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="__none__">Sin categoría</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
+        <OptionalSelectField
+          name="projectId"
+          control={control}
+          label="Proyecto"
+          placeholder="Sin proyecto"
+          options={projects.map((p) => ({ value: p.id, label: p.name }))}
+        />
+        <OptionalSelectField
+          name="categoryId"
+          control={control}
+          label="Categoría"
+          placeholder="Sin categoría"
+          options={categories.map((c) => ({ value: c.id, label: c.name }))}
+        />
       </div>
 
       {/* Priority */}
@@ -215,7 +172,7 @@ export function TaskCreateFields({
           animate="visible"
           exit="exit"
           variants={variants}
-          style={{ 
+          style={{
             transformOrigin: "top",
             willChange: shouldReduceMotion ? "auto" : "transform, opacity",
           }}
@@ -230,10 +187,8 @@ export function TaskCreateFields({
             control={control}
             render={({ field }) => (
               <Select
-                value={field.value || "__none__"}
-                onValueChange={(value) =>
-                  field.onChange(value === "__none__" ? undefined : value)
-                }
+                value={toSentinel(field.value)}
+                onValueChange={(value) => field.onChange(fromSentinel(value))}
               >
                 <SelectTrigger
                   className={cn(
@@ -247,7 +202,7 @@ export function TaskCreateFields({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="__none__">Sin relación</SelectItem>
+                    <SelectItem value={SENTINEL_NONE}>Sin relación</SelectItem>
                     {incompleteTasks.map((task) => (
                       <SelectItem key={task.id} value={task.id}>
                         <span className="flex items-center gap-2">
@@ -269,8 +224,8 @@ export function TaskCreateFields({
             className={cn(
               "flex items-center gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20 text-sm",
               "transition-all duration-200",
-              selectedParentTask 
-                ? "opacity-100 translate-y-0 scale-100" 
+              selectedParentTask
+                ? "opacity-100 translate-y-0 scale-100"
                 : "opacity-0 -translate-y-2 scale-95 pointer-events-none h-0 py-0 overflow-hidden"
             )}
           >

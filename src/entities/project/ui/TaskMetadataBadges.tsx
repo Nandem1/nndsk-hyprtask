@@ -14,6 +14,30 @@ interface TaskMetadataBadgesProps {
   animated?: boolean;
 }
 
+interface BadgeItemProps {
+  name: string;
+  badgeClass?: string;
+  animated: boolean;
+  baseClasses: string;
+}
+
+function BadgeItem({ name, badgeClass, animated, baseClasses }: BadgeItemProps) {
+  const className = cn(
+    baseClasses,
+    badgeClass || "bg-muted text-muted-foreground border-border",
+  );
+
+  if (animated) {
+    return (
+      <motion.span whileHover={{ scale: 1.05 }} className={cn(className, "hover:border-primary/30")}>
+        {name}
+      </motion.span>
+    );
+  }
+
+  return <span className={className}>{name}</span>;
+}
+
 export const TaskMetadataBadges = memo(function TaskMetadataBadges({
   projectId,
   categoryId,
@@ -28,52 +52,20 @@ export const TaskMetadataBadges = memo(function TaskMetadataBadges({
   return (
     <>
       {projectId && projectInfo.name ? (
-        animated ? (
-          <motion.span
-            whileHover={{ scale: 1.05 }}
-            className={cn(
-              baseClasses,
-              projectInfo.colorClasses?.badge ||
-                "bg-muted text-muted-foreground border-border hover:border-primary/30",
-            )}
-          >
-            {projectInfo.name}
-          </motion.span>
-        ) : (
-          <span
-            className={cn(
-              baseClasses,
-              projectInfo.colorClasses?.badge ||
-                "bg-muted text-muted-foreground border-border",
-            )}
-          >
-            {projectInfo.name}
-          </span>
-        )
+        <BadgeItem
+          name={projectInfo.name}
+          badgeClass={projectInfo.colorClasses?.badge}
+          animated={animated}
+          baseClasses={baseClasses}
+        />
       ) : null}
       {categoryId && categoryInfo.name ? (
-        animated ? (
-          <motion.span
-            whileHover={{ scale: 1.05 }}
-            className={cn(
-              baseClasses,
-              categoryInfo.colorClasses?.badge ||
-                "bg-muted text-muted-foreground border-border hover:border-primary/30",
-            )}
-          >
-            {categoryInfo.name}
-          </motion.span>
-        ) : (
-          <span
-            className={cn(
-              baseClasses,
-              categoryInfo.colorClasses?.badge ||
-                "bg-muted text-muted-foreground border-border",
-            )}
-          >
-            {categoryInfo.name}
-          </span>
-        )
+        <BadgeItem
+          name={categoryInfo.name}
+          badgeClass={categoryInfo.colorClasses?.badge}
+          animated={animated}
+          baseClasses={baseClasses}
+        />
       ) : null}
     </>
   );

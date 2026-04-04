@@ -1,0 +1,16 @@
+/**
+ * Valor centinela para campos Select opcionales.
+ * Representa "sin selección" en el DOM (los Select no admiten undefined como value).
+ */
+export const SENTINEL_NONE = "__none__" as const;
+export type SentinelNone = typeof SENTINEL_NONE;
+
+/** Convierte un valor de Select al valor real: "__none__" → undefined */
+export function fromSentinel<T extends string>(value: string): T | undefined {
+  return value === SENTINEL_NONE ? undefined : (value as T);
+}
+
+/** Convierte un valor real al value del Select: undefined → "__none__" */
+export function toSentinel<T extends string>(value: T | undefined): T | SentinelNone {
+  return value ?? SENTINEL_NONE;
+}

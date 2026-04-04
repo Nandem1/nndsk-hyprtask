@@ -6,6 +6,7 @@ import {
   saveSleepSettings,
   getSleepLogs,
 } from "../lib/storage";
+import { asyncWrap } from "@shared/lib/storage";
 import { calculateSleepData } from "../lib/calculations";
 import { sleepKeys } from "../model/query-keys";
 
@@ -25,7 +26,7 @@ export function useSaveSleepSettings() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: saveSleepSettings,
+    mutationFn: asyncWrap(saveSleepSettings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: sleepKeys.all });
     },

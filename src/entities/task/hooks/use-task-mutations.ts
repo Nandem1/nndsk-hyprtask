@@ -11,6 +11,7 @@ import {
   setTaskParent,
   setTaskChild,
 } from "../lib/storage";
+import { asyncWrap } from "@shared/lib/storage";
 import type { TaskSettings } from "../model/types";
 import type { Task } from "../model/types";
 import { taskKeys } from "../model/query-keys";
@@ -19,7 +20,7 @@ export function useCreateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: saveTask,
+    mutationFn: asyncWrap(saveTask),
     onMutate: async (newTask: Task) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.all });
       const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
@@ -64,7 +65,7 @@ export function useToggleTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: toggleTask,
+    mutationFn: asyncWrap(toggleTask),
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.all });
       const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
@@ -116,7 +117,7 @@ export function useDeleteTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteTask,
+    mutationFn: asyncWrap(deleteTask),
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.all });
       const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
@@ -153,7 +154,7 @@ export function useSetCurrentTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: setCurrentTask,
+    mutationFn: asyncWrap(setCurrentTask),
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.all });
       const previousCurrent = queryClient.getQueryData<Task | null>(
@@ -190,7 +191,7 @@ export function useUpdateTaskSettings() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: saveTaskSettings,
+    mutationFn: asyncWrap(saveTaskSettings),
     onMutate: async (newSettings: TaskSettings) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.settings() });
       const previousSettings = queryClient.getQueryData<TaskSettings>(
@@ -214,8 +215,9 @@ export function useUpdateTaskNotes() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, notes }: { id: string; notes: string }) =>
-      updateTaskNotes(id, notes),
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      updateTaskNotes(id, notes);
+    },
     onMutate: async ({ id, notes }) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.all });
       const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
@@ -243,13 +245,13 @@ export function useSetTaskParent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       taskId,
       parentTaskId,
     }: {
       taskId: string;
       parentTaskId?: string;
-    }) => setTaskParent(taskId, parentTaskId),
+    }) => { setTaskParent(taskId, parentTaskId); },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
       queryClient.invalidateQueries({
@@ -268,13 +270,13 @@ export function useSetTaskChild() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       taskId,
       childTaskId,
     }: {
       taskId: string;
       childTaskId?: string;
-    }) => setTaskChild(taskId, childTaskId),
+    }) => { setTaskChild(taskId, childTaskId); },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
       queryClient.invalidateQueries({

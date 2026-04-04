@@ -1,6 +1,7 @@
 // ABSTRACCIÓN DE ALMACENAMIENTO PARA HORARIO LABORAL
 
 import type { WorkSettings } from "../model/types";
+import { storageGet, storageSet, storageRemove } from "@shared/lib/storage";
 
 const STORAGE_KEYS = {
   SETTINGS: "hyprtodo_work_settings",
@@ -10,21 +11,14 @@ const STORAGE_KEYS = {
 // WORK SETTINGS
 // ============================================
 
-export async function getWorkSettings(): Promise<WorkSettings | null> {
-  if (typeof window === "undefined") return null;
-
-  const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-  if (!stored) return null;
-
-  return JSON.parse(stored) as WorkSettings;
+export function getWorkSettings(): WorkSettings | null {
+  return storageGet<WorkSettings>(STORAGE_KEYS.SETTINGS);
 }
 
-export async function saveWorkSettings(settings: WorkSettings): Promise<void> {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+export function saveWorkSettings(settings: WorkSettings): void {
+  storageSet(STORAGE_KEYS.SETTINGS, settings);
 }
 
-export async function deleteWorkSettings(): Promise<void> {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(STORAGE_KEYS.SETTINGS);
+export function deleteWorkSettings(): void {
+  storageRemove(STORAGE_KEYS.SETTINGS);
 }

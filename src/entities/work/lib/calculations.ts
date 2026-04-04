@@ -2,13 +2,14 @@
 // Funciones puras, sin dependencias externas
 
 import type { WorkSettings, WorkCalculation } from '../model/types';
+import { parseTimeString, timeToMinutes } from '@shared/lib/time-utils';
 
 /**
  * Calcula tiempo hasta hora de salida en minutos
  */
 export function calculateTimeUntilEnd(endTime: string): number {
   const now = new Date();
-  const [hours, minutes] = endTime.split(':').map(Number);
+  const { hours, minutes } = parseTimeString(endTime);
 
   const endToday = new Date();
   endToday.setHours(hours, minutes, 0, 0);
@@ -25,11 +26,8 @@ export function calculateTimeUntilEnd(endTime: string): number {
  * Calcula horas de trabajo entre entrada y salida
  */
 export function calculateWorkHours(startTime: string, endTime: string): number {
-  const [startHours, startMinutes] = startTime.split(':').map(Number);
-  const [endHours, endMinutes] = endTime.split(':').map(Number);
-
-  const startTotal = startHours * 60 + startMinutes;
-  let endTotal = endHours * 60 + endMinutes;
+  const startTotal = timeToMinutes(startTime);
+  let endTotal = timeToMinutes(endTime);
 
   // Si la hora de salida es menor que la de entrada, es del día siguiente
   if (endTotal < startTotal) {

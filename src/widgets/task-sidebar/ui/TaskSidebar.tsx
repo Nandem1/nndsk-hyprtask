@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { cn } from "@/shared/lib/utils";
 import { X, Settings, Tag, FolderKanban } from "lucide-react";
 import { useThemeState, useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
 import { useActiveTasks } from "@/entities/task";
+import type { Task } from "@/entities/task";
 import { useActiveProjects, useActiveCategories, getEntityIcon } from "@/entities/project";
+import { useEntityCounts } from "../hooks/useEntityCounts";
 import { Button } from "@/shared/ui/button";
 import { ProjectConfigModal } from "@/features/manage-projects";
 import { CategoryConfigModal } from "@/features/manage-categories";
@@ -25,29 +27,10 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
-  const projectCounts = useMemo(() => {
-    const countMap = new Map<string, number>();
-    tasks.forEach((t) => {
-      if (t.projectId)
-        countMap.set(t.projectId, (countMap.get(t.projectId) ?? 0) + 1);
-    });
-    return projects.map((project) => ({
-      ...project,
-      count: countMap.get(project.id) ?? 0,
-    }));
-  }, [projects, tasks]);
-
-  const categoryCounts = useMemo(() => {
-    const countMap = new Map<string, number>();
-    tasks.forEach((t) => {
-      if (t.categoryId)
-        countMap.set(t.categoryId, (countMap.get(t.categoryId) ?? 0) + 1);
-    });
-    return categories.map((category) => ({
-      ...category,
-      count: countMap.get(category.id) ?? 0,
-    }));
-  }, [categories, tasks]);
+  const getProjectId = useCallback((task: Task) => task.projectId, []);
+  const getCategoryId = useCallback((task: Task) => task.categoryId, []);
+  const projectCounts = useEntityCounts(tasks, projects, getProjectId);
+  const categoryCounts = useEntityCounts(tasks, categories, getCategoryId);
 
   const handleProjectChange = (projectId: string | "all") => {
     setSelectedProject(projectId);

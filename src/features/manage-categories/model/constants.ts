@@ -1,41 +1,4 @@
-import type { CategoryColor, CategoryIcon } from "@/entities/project";
-
-export const AVAILABLE_COLORS: CategoryColor[] = [
-  "red",
-  "orange",
-  "amber",
-  "yellow",
-  "green",
-  "teal",
-  "cyan",
-  "blue",
-  "indigo",
-  "purple",
-  "pink",
-  "rose",
-  "gray",
-];
-
-export const AVAILABLE_ICONS: CategoryIcon[] = [
-  "Bug",
-  "Wrench",
-  "Zap",
-  "Sparkles",
-  "FolderKanban",
-  "CheckCircle",
-  "AlertCircle",
-  "AlertTriangle",
-  "Info",
-  "FileText",
-  "FileCheck",
-  "Clipboard",
-  "ClipboardList",
-  "List",
-  "ListChecks",
-  "ListTodo",
-  "Layout",
-  "LayoutGrid",
-  "BarChart",
-  "TrendingUp",
-  "Activity",
-];
+export {
+  AVAILABLE_CATEGORY_COLORS as AVAILABLE_COLORS,
+  AVAILABLE_CATEGORY_ICONS as AVAILABLE_ICONS,
+} from "@/entities/project/model/available-options";

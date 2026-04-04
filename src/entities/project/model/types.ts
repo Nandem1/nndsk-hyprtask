@@ -231,6 +231,7 @@ export const PROJECT_COLOR_CLASSES: Record<
   },
 };
 
+/** Alias — categories share the same color palette */
 export const CATEGORY_COLOR_CLASSES = PROJECT_COLOR_CLASSES;
 
 /**
@@ -309,22 +310,3 @@ export const DEFAULT_CATEGORIES: Omit<Category, "createdAt">[] = [
   },
 ];
 
-/**
- * Mapeo legacy para migración
- * project name -> project id
- */
-export const LEGACY_PROJECT_MAP: Record<string, string> = {
-  "MH-Backend": "proj-mh-backend",
-  "Wails-Letter-MH": "proj-wails-letter",
-  "MH-Next": "proj-mh-next",
-  "La Cantera": "proj-cantera",
-  general: "",
-};
-
-export const LEGACY_CATEGORY_MAP: Record<string, string> = {
-  issues: "cat-issues",
-  fixes: "cat-fixes",
-  hotfix: "cat-hotfix",
-  features: "cat-features",
-  general: "",
-};

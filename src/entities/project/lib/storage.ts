@@ -2,10 +2,9 @@
 // localStorage por ahora, preparado para migrar a Supabase
 
 import type { Project, Category } from "../model/types";
-import {
-  DEFAULT_PROJECTS,
-  DEFAULT_CATEGORIES,
-} from "../model/types";
+import { DEFAULT_PROJECTS, DEFAULT_CATEGORIES } from "../model/types";
+import { storageSet, upsertItem } from "@shared/lib/storage";
+import { reorderById } from "@shared/lib/array";
 
 const STORAGE_KEYS = {
   PROJECTS: "hyprtask_projects",
@@ -16,62 +15,35 @@ const STORAGE_KEYS = {
 // PROJECTS
 // ============================================
 
-export async function getProjects(): Promise<Project[]> {
-  if (typeof window === "undefined") {
-    return initializeDefaultProjects();
-  }
+export function getProjects(): Project[] {
+  if (typeof window === "undefined") return initializeDefaultProjects();
 
   const stored = localStorage.getItem(STORAGE_KEYS.PROJECTS);
-  if (!stored) {
-    return initializeDefaultProjects();
-  }
+  if (!stored) return initializeDefaultProjects();
 
   return JSON.parse(stored) as Project[];
 }
 
-export async function getActiveProjects(): Promise<Project[]> {
-  const projects = await getProjects();
-  return projects.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+export function getActiveProjects(): Project[] {
+  return getProjects().filter((p) => p.isActive).sort((a, b) => a.order - b.order);
 }
 
-export async function getProjectById(id: string): Promise<Project | null> {
-  const projects = await getProjects();
-  return projects.find((p) => p.id === id) || null;
+export function getProjectById(id: string): Project | null {
+  return getProjects().find((p) => p.id === id) ?? null;
 }
 
-export async function saveProject(project: Project): Promise<void> {
-  const projects = await getProjects();
-  const existingIndex = projects.findIndex((p) => p.id === project.id);
-
-  if (existingIndex >= 0) {
-    projects[existingIndex] = project;
-  } else {
-    projects.push(project);
-  }
-
-  localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
+export function saveProject(project: Project): void {
+  storageSet(STORAGE_KEYS.PROJECTS, upsertItem(getProjects(), project));
 }
 
-export async function deleteProject(id: string): Promise<void> {
-  // Soft delete - marcar como inactivo en lugar de eliminar
-  const project = await getProjectById(id);
-  if (project) {
-    project.isActive = false;
-    await saveProject(project);
-  }
+export function deleteProject(id: string): void {
+  // Soft delete — marcar como inactivo en lugar de eliminar
+  const project = getProjectById(id);
+  if (project) saveProject({ ...project, isActive: false });
 }
 
-export async function reorderProjects(orderedIds: string[]): Promise<void> {
-  const projects = await getProjects();
-
-  orderedIds.forEach((id, index) => {
-    const project = projects.find((p) => p.id === id);
-    if (project) {
-      project.order = index;
-    }
-  });
-
-  localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
+export function reorderProjects(orderedIds: string[]): void {
+  storageSet(STORAGE_KEYS.PROJECTS, reorderById(getProjects(), orderedIds));
 }
 
 function initializeDefaultProjects(): Project[] {
@@ -79,11 +51,9 @@ function initializeDefaultProjects(): Project[] {
     ...p,
     createdAt: new Date().toISOString(),
   }));
-
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
   }
-
   return projects;
 }
 
@@ -91,62 +61,35 @@ function initializeDefaultProjects(): Project[] {
 // CATEGORIES
 // ============================================
 
-export async function getCategories(): Promise<Category[]> {
-  if (typeof window === "undefined") {
-    return initializeDefaultCategories();
-  }
+export function getCategories(): Category[] {
+  if (typeof window === "undefined") return initializeDefaultCategories();
 
   const stored = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-  if (!stored) {
-    return initializeDefaultCategories();
-  }
+  if (!stored) return initializeDefaultCategories();
 
   return JSON.parse(stored) as Category[];
 }
 
-export async function getActiveCategories(): Promise<Category[]> {
-  const categories = await getCategories();
-  return categories.filter((c) => c.isActive).sort((a, b) => a.order - b.order);
+export function getActiveCategories(): Category[] {
+  return getCategories().filter((c) => c.isActive).sort((a, b) => a.order - b.order);
 }
 
-export async function getCategoryById(id: string): Promise<Category | null> {
-  const categories = await getCategories();
-  return categories.find((c) => c.id === id) || null;
+export function getCategoryById(id: string): Category | null {
+  return getCategories().find((c) => c.id === id) ?? null;
 }
 
-export async function saveCategory(category: Category): Promise<void> {
-  const categories = await getCategories();
-  const existingIndex = categories.findIndex((c) => c.id === category.id);
-
-  if (existingIndex >= 0) {
-    categories[existingIndex] = category;
-  } else {
-    categories.push(category);
-  }
-
-  localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+export function saveCategory(category: Category): void {
+  storageSet(STORAGE_KEYS.CATEGORIES, upsertItem(getCategories(), category));
 }
 
-export async function deleteCategory(id: string): Promise<void> {
+export function deleteCategory(id: string): void {
   // Soft delete
-  const category = await getCategoryById(id);
-  if (category) {
-    category.isActive = false;
-    await saveCategory(category);
-  }
+  const category = getCategoryById(id);
+  if (category) saveCategory({ ...category, isActive: false });
 }
 
-export async function reorderCategories(orderedIds: string[]): Promise<void> {
-  const categories = await getCategories();
-
-  orderedIds.forEach((id, index) => {
-    const category = categories.find((c) => c.id === id);
-    if (category) {
-      category.order = index;
-    }
-  });
-
-  localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+export function reorderCategories(orderedIds: string[]): void {
+  storageSet(STORAGE_KEYS.CATEGORIES, reorderById(getCategories(), orderedIds));
 }
 
 function initializeDefaultCategories(): Category[] {
@@ -154,10 +97,8 @@ function initializeDefaultCategories(): Category[] {
     ...c,
     createdAt: new Date().toISOString(),
   }));
-
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
   }
-
   return categories;
 }

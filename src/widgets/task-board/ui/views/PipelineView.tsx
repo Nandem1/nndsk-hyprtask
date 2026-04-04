@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { transitions, containerVariants } from "@/shared/lib/animations";
 import { Circle, Lock, Plus } from "lucide-react";
  import type { Task } from "@/entities/task";
+import { useTasksByStatus } from "../../hooks/useTasksByStatus";
  import { Button } from "@/shared/ui/button";
  import { EmptyState } from "@/shared/ui/empty-state";
  import { Alert, AlertDescription } from "@/shared/ui/alert";
@@ -38,13 +38,7 @@ export function PipelineView({
   classes,
 }: PipelineViewProps) {
   const shouldReduceMotion = useReducedMotion();
-  const { completedTasks, pendingTasks, orderedTasks } = useMemo(() => {
-    const completed = tasks.filter((t) => t.isCompleted);
-    const current = tasks.find((t) => t.isCurrent && !t.isCompleted);
-    const pending = tasks.filter((t) => !t.isCompleted && !t.isCurrent);
-    const ordered = [...completed, current, ...pending].filter(Boolean) as Task[];
-    return { completedTasks: completed, pendingTasks: pending, orderedTasks: ordered };
-  }, [tasks]);
+  const { completedTasks, todoTasks: pendingTasks, orderedTasks } = useTasksByStatus(tasks);
 
   if (tasks.length === 0) {
     return (

@@ -1,44 +1,4 @@
-import type { ProjectColor, ProjectIcon } from "@/entities/project";
-
-export const AVAILABLE_COLORS: ProjectColor[] = [
-  "blue",
-  "indigo",
-  "purple",
-  "green",
-  "teal",
-  "cyan",
-  "pink",
-  "rose",
-  "orange",
-  "amber",
-  "yellow",
-  "gray",
-];
-
-export const AVAILABLE_ICONS: ProjectIcon[] = [
-  "Server",
-  "Code",
-  "Bot",
-  "FolderOpen",
-  "FolderKanban",
-  "Layers",
-  "Box",
-  "Database",
-  "Cloud",
-  "Globe",
-  "Monitor",
-  "Laptop",
-  "Cpu",
-  "GitBranch",
-  "Terminal",
-  "Briefcase",
-  "Building",
-  "Home",
-  "Rocket",
-  "Zap",
-  "Star",
-  "Heart",
-  "Bookmark",
-  "Flag",
-  "Target",
-];
+export {
+  AVAILABLE_PROJECT_COLORS as AVAILABLE_COLORS,
+  AVAILABLE_PROJECT_ICONS as AVAILABLE_ICONS,
+} from "@/entities/project/model/available-options";

@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getWorkSettings, saveWorkSettings } from "../lib/storage";
+import { asyncWrap } from "@shared/lib/storage";
 import { calculateWorkData } from "../lib/calculations";
 import { workKeys } from "../model/query-keys";
 
@@ -21,7 +22,7 @@ export function useSaveWorkSettings() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: saveWorkSettings,
+    mutationFn: asyncWrap(saveWorkSettings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workKeys.all });
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { AnimatePresence } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { Plus, Circle, Check } from "lucide-react";
@@ -9,6 +9,7 @@ import { EmptyState } from "@/shared/ui/empty-state";
 import type { Task } from "@/entities/task";
 import type { ExtendedThemeClasses } from "@/shared/types/theme";
 import { KanbanTaskCard } from "./KanbanTaskCard";
+import { useTasksByStatus } from "../../hooks/useTasksByStatus";
 
 interface KanbanColumnProps {
   title: string;
@@ -110,11 +111,7 @@ export function KanbanView({
   onCreateTask,
   canAddTask,
 }: KanbanViewProps) {
-  const { todoTasks, activeTask, doneTasks } = useMemo(() => ({
-    todoTasks: tasks.filter((t) => !t.isCompleted && !t.isCurrent),
-    activeTask: tasks.find((t) => t.isCurrent && !t.isCompleted) ?? null,
-    doneTasks: tasks.filter((t) => t.isCompleted),
-  }), [tasks]);
+  const { todoTasks, activeTask, completedTasks: doneTasks } = useTasksByStatus(tasks);
 
   return (
     <div className="flex flex-col gap-4">

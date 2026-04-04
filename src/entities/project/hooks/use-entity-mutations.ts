@@ -13,13 +13,13 @@ interface EntityMutationKeys {
  * Usado por useSaveProject y useSaveCategory.
  */
 export function useUpsertMutation<T extends { id: string }>(
-  mutationFn: (item: T) => Promise<void>,
+  mutationFn: (item: T) => void | Promise<void>,
   keys: EntityMutationKeys,
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn,
+    mutationFn: async (item: T) => { await mutationFn(item); },
     onMutate: async (newItem: T) => {
       await queryClient.cancelQueries({ queryKey: keys.all });
 
@@ -54,13 +54,13 @@ export function useUpsertMutation<T extends { id: string }>(
  * Usado por useDeleteProject y useDeleteCategory.
  */
 export function useDeleteEntityMutation<T extends { id: string; isActive: boolean }>(
-  mutationFn: (id: string) => Promise<void>,
+  mutationFn: (id: string) => void | Promise<void>,
   keys: EntityMutationKeys,
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn,
+    mutationFn: async (id: string) => { await mutationFn(id); },
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: keys.all });
 
