@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Settings, CheckSquare, Briefcase, Bed } from "lucide-react";
+import { Settings, CheckSquare, Briefcase, Bed, UtensilsCrossed } from "lucide-react";
 import { useCurrentTask } from "@/entities/task";
 import { useSleepCalculations } from "@/entities/sleep";
-import { useWorkCalculations } from "@/entities/work";
+import { useWorkCalculations, useWorkSettings } from "@/entities/work";
 import { formatMinutesToReadable } from "@/shared/lib/time-utils";
 import { Button } from "@/shared/ui/button";
 import { ThemeToggle } from "@/shared/theme";
+import { useColacionActions } from "@/store/hooks";
 
 export function HeaderClient() {
   const { data: currentTask } = useCurrentTask();
   const { data: sleepData } = useSleepCalculations();
   const { data: workData } = useWorkCalculations();
+  const { data: workSettings } = useWorkSettings();
+  const { openColacion } = useColacionActions();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -61,6 +64,18 @@ export function HeaderClient() {
               <span className="text-muted-foreground">Trabajo:</span>
               <span className="font-medium">{workData.endTime}</span>
             </div>
+          ) : null}
+
+          {workSettings ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openColacion}
+              className="size-9"
+              title="Iniciar colacion"
+            >
+              <UtensilsCrossed className="size-4" />
+            </Button>
           ) : null}
 
           <Button variant="ghost" size="icon" asChild className="size-9">

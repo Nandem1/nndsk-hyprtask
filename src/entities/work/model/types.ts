@@ -3,9 +3,10 @@
 
 export interface WorkSettings {
   id: string;
-  userId?: string; // Para Supabase, opcional en localStorage
-  startTime: string; // Formato HH:mm - Hora de entrada
-  endTime: string; // Formato HH:mm - Hora de salida
+  userId?: string;
+  startTime: string;
+  endTime: string;
+  breakDuration: number;
   createdAt?: string;
   updatedAt?: string;
 }

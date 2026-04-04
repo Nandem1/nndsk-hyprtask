@@ -23,6 +23,12 @@ import {
   type ViewModeState,
   type ViewModeActions,
 } from "./slices/view-mode-slice";
+import {
+  createColacionSlice,
+  initialColacionState,
+  type ColacionState,
+  type ColacionActions,
+} from "./slices/colacion-slice";
 
 // ============================================================================
 // Store Type
@@ -33,20 +39,22 @@ export interface AppStore
     ThemeState,
     TaskFiltersState,
     ViewModeState,
+    ColacionState,
     ThemeActions,
     TaskFiltersActions,
-    ViewModeActions {
-  // Persist middleware properties
+    ViewModeActions,
+    ColacionActions {
 }
 
 // ============================================================================
 // Initial State
 // ============================================================================
 
-const initialState: ThemeState & TaskFiltersState & ViewModeState = {
+const initialState: ThemeState & TaskFiltersState & ViewModeState & ColacionState = {
   ...initialThemeState,
   ...initialTaskFiltersState,
   ...initialViewModeState,
+  ...initialColacionState,
 };
 
 // ============================================================================
@@ -58,10 +66,11 @@ export const useStore = create<AppStore>()(
     persist(
       (...params) => ({
         ...initialState,
-        ...flattenActions<ThemeActions & TaskFiltersActions & ViewModeActions>([
+        ...flattenActions<ThemeActions & TaskFiltersActions & ViewModeActions & ColacionActions>([
           createThemeSlice(...params),
           createTaskFiltersSlice(...params),
           createViewModeSlice(...params),
+          createColacionSlice(...params),
         ]),
       }),
       {

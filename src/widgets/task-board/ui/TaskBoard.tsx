@@ -7,6 +7,8 @@ import {
   useViewModeState,
   useViewModeActions,
   useTaskFiltersState,
+  useColacionState,
+  useColacionActions,
 } from "@/store/hooks";
 import { useActiveTasks, useTaskSettings, useFilteredTasks } from "@/entities/task";
 import { useTaskBoardState } from "../hooks/useTaskBoardState";
@@ -20,11 +22,17 @@ const FocusMode = React.lazy(() =>
   import("./FocusMode").then((mod) => ({ default: mod.FocusMode })),
 );
 
+const ColacionMode = React.lazy(() =>
+  import("./ColacionMode").then((mod) => ({ default: mod.ColacionMode })),
+);
+
 export function TaskBoard() {
   const { themeClasses } = useThemeState();
   const { viewMode, isTransitioning } = useViewModeState();
   const { setViewMode } = useViewModeActions();
   const { selectedProjectId, selectedCategoryId } = useTaskFiltersState();
+  const { isColacionOpen } = useColacionState();
+  const { closeColacion } = useColacionActions();
   const { data: allTasks = [] } = useActiveTasks();
   const { data: settings } = useTaskSettings();
   const maxTasks = settings?.maxActiveTasks ?? 5;
@@ -129,6 +137,10 @@ export function TaskBoard() {
           onComplete={handleCloseFocusMode}
           onToggleTask={handleToggleFocusTask}
         />
+      </React.Suspense>
+
+      <React.Suspense fallback={null}>
+        <ColacionMode isOpen={isColacionOpen} onClose={closeColacion} />
       </React.Suspense>
     </div>
   );

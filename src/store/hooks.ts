@@ -57,3 +57,20 @@ export function useViewModeActions() {
     })),
   );
 }
+
+export function useColacionState() {
+  return useStore(
+    useShallow((state) => ({
+      isColacionOpen: state.isColacionOpen,
+    })),
+  );
+}
+
+export function useColacionActions() {
+  return useStore(
+    useShallow((state) => ({
+      openColacion: state.openColacion,
+      closeColacion: state.closeColacion,
+    })),
+  );
+}

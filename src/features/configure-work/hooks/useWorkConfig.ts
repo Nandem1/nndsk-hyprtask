@@ -10,11 +10,13 @@ export function useWorkConfig() {
 
   const [startTime, setStartTime] = useState<string>(defaultValues.startTime);
   const [endTime, setEndTime] = useState<string>(defaultValues.endTime);
+  const [breakDuration, setBreakDuration] = useState<number>(defaultValues.breakDuration);
 
   useEffect(() => {
     if (settings) {
       setStartTime(settings.startTime);
       setEndTime(settings.endTime);
+      setBreakDuration(settings.breakDuration ?? defaultValues.breakDuration);
     }
   }, [settings]);
 
@@ -23,6 +25,7 @@ export function useWorkConfig() {
       id: settings?.id || crypto.randomUUID(),
       startTime,
       endTime,
+      breakDuration,
       updatedAt: new Date().toISOString(),
       ...(settings?.createdAt && { createdAt: settings.createdAt }),
     };
@@ -34,6 +37,8 @@ export function useWorkConfig() {
     setStartTime,
     endTime,
     setEndTime,
+    breakDuration,
+    setBreakDuration,
     isSaving: saveSettingsMutation.isPending,
     handleSave,
   };
