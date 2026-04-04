@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, memo } from "react";
+import { useMemo, useState, memo } from "react";
 import { cn } from "@/shared/lib/utils";
 import { getEmoteUrl } from "@/shared/lib/seventv-api";
 import { parseEmotes } from "@/shared/lib/emote-parser";
@@ -23,14 +23,11 @@ const EmoteImg = memo(function EmoteImg({
   className,
   forceStatic,
 }: EmoteImgProps) {
-  const handleError = useCallback(
-    (e: React.SyntheticEvent<HTMLImageElement>) => {
-      const img = e.currentTarget;
-      const text = document.createTextNode(img.alt);
-      img.parentNode?.replaceChild(text, img);
-    },
-    [],
-  );
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return <span title={name}>{name}</span>;
+  }
 
   const showAnimated = animated && !forceStatic;
 
@@ -39,7 +36,7 @@ const EmoteImg = memo(function EmoteImg({
       src={getEmoteUrl(id, size, showAnimated)}
       alt={name}
       title={name}
-      onError={handleError}
+      onError={() => setFailed(true)}
       className={cn("inline-block h-[1.4em] w-auto align-middle mx-px", className)}
       loading="lazy"
     />

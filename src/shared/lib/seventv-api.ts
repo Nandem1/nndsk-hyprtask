@@ -35,21 +35,26 @@ interface GqlSearchResponse {
       search: {
         items: Array<{
           id: string;
-          default_name: string;
-          animated: boolean;
+          defaultName: string;
+          flags: {
+            animated: boolean;
+            defaultZeroWidth: boolean;
+            nsfw: boolean;
+            publicListed: boolean;
+          };
           images: Array<{
             url: string;
             mime: string;
             scale: number;
             width: number;
             height: number;
-            frame_count: number;
+            frameCount: number;
           }>;
         }>;
-        total_count: number;
+        totalCount: number;
       };
     };
-  };
+  } | null;
 }
 
 function mapRawEmote(raw: SevenTvEmoteRaw): SevenTvEmote {
@@ -77,14 +82,19 @@ export async function searchEmotes(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      query: `query($q: String!, $page: Int, $perPage: Int) {
+      query: `query($q: String!, $page: Int!, $perPage: Int!) {
         emotes {
-          search(query: $q, page: $page, per_page: $perPage) {
+          search(
+            query: $q
+            page: $page
+            perPage: $perPage
+            sort: { sortBy: TOP_ALL_TIME, order: DESCENDING }
+          ) {
             items {
               id
-              default_name
-              animated
-              images { url mime scale width height frame_count }
+              defaultName
+              flags { animated }
+              images { url mime scale width height frameCount }
             }
           }
         }
@@ -94,10 +104,11 @@ export async function searchEmotes(
   });
   if (!res.ok) throw new Error(`7TV GQL error: ${res.status}`);
   const json: GqlSearchResponse = await res.json();
+  if (!json.data?.emotes?.search?.items) return [];
   return json.data.emotes.search.items.map((item) => ({
     id: item.id,
-    name: item.default_name,
-    animated: item.animated,
+    name: item.defaultName,
+    animated: item.flags?.animated ?? false,
     flags: 0,
   }));
 }

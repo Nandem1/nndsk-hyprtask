@@ -36,8 +36,9 @@ const EmoteItem = memo(function EmoteItem({
   }, [emote, onToggle]);
 
   const handleInsert = useCallback(() => {
+    if (!isInCollection) onToggle(emote);
     onInsert?.(emote.name);
-  }, [emote.name, onInsert]);
+  }, [isInCollection, emote, onToggle, onInsert]);
 
   return (
     <div className="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
