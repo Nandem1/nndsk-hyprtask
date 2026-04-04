@@ -15,6 +15,13 @@ interface EmoteImgProps {
   forceStatic?: boolean;
 }
 
+const FALLBACK_ORDER = (id: string, animated: boolean) => [
+  getEmoteUrl(id, "1x", animated),
+  getEmoteUrl(id, "1x", false),
+  getEmoteUrl(id, "2x", false),
+  `https://cdn.7tv.app/emote/${id}/1x.avif`,
+];
+
 const EmoteImg = memo(function EmoteImg({
   id,
   name,
@@ -23,20 +30,23 @@ const EmoteImg = memo(function EmoteImg({
   className,
   forceStatic,
 }: EmoteImgProps) {
-  const [failed, setFailed] = useState(false);
+  const showAnimated = animated && !forceStatic;
+  const fallbacks = useMemo(
+    () => FALLBACK_ORDER(id, showAnimated),
+    [id, showAnimated],
+  );
+  const [attempt, setAttempt] = useState(0);
 
-  if (failed) {
+  if (attempt >= fallbacks.length) {
     return <span title={name}>{name}</span>;
   }
 
-  const showAnimated = animated && !forceStatic;
-
   return (
     <img
-      src={getEmoteUrl(id, size, showAnimated)}
+      src={fallbacks[attempt]}
       alt={name}
       title={name}
-      onError={() => setFailed(true)}
+      onError={() => setAttempt((a) => a + 1)}
       className={cn("inline-block h-[1.4em] w-auto align-middle mx-px", className)}
       loading="lazy"
     />
