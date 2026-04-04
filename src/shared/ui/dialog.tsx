@@ -124,17 +124,7 @@ function DialogContent({
       <AnimatePresence>
         {open && (
           <>
-            <DialogPrimitive.Overlay asChild forceMount>
-              <motion.div
-                key="dialog-overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={shouldReduceMotion ? { duration: 0 } : DIALOG_TRANSITION}
-                className="fixed inset-0 z-50 bg-black/50"
-                style={{ willChange: "opacity" }}
-              />
-            </DialogPrimitive.Overlay>
+            <DialogOverlay />
             <DialogPrimitive.Content asChild forceMount>
               <motion.div
                 key="dialog-content"

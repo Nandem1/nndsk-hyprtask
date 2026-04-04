@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getWorkSettings, saveWorkSettings } from "../lib/storage";
-import { asyncWrap } from "@shared/lib/storage";
+import { asyncWrap } from "@shared/lib/utils";
 import { calculateWorkData } from "../lib/calculations";
 import { workKeys } from "../model/query-keys";
 

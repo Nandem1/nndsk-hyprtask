@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useRef, useEffect } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { CIRCLE_CIRCUMFERENCE, formatTime } from "../lib/focus-timer-constants";
 import type { ExtendedThemeClasses } from "@/shared/types/theme";
@@ -9,7 +9,7 @@ import { CelebrationEffect } from "@/shared/ui/celebration-effect";
 
 interface FocusTimerCircleProps {
   timeLeft: number;
-  timerState: "idle" | "running" | "paused" | "break";
+  timerState: "idle" | "running" | "paused" | "break" | "completed";
   themeClasses: ExtendedThemeClasses;
   showCelebration: boolean;
   totalTime: number;

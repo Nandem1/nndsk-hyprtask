@@ -1,4 +1,4 @@
-import { StoreSetter, StoreGetter, PublicActions } from "../types";
+import { StoreSetter, StoreGetter } from "../types";
 
 // ============================================================================
 // State
@@ -11,7 +11,7 @@ export interface TaskFiltersState {
   hasActiveFilters: boolean;
 }
 
-function computeHasActiveFilters(
+export function computeHasActiveFilters(
   selectedProjectId: string | "all",
   selectedCategoryId: string | "all",
   searchQuery: string,
@@ -42,8 +42,7 @@ export class TaskFiltersActionImpl {
   readonly #get: Getter;
   readonly #set: Setter;
 
-  constructor(set: Setter, get: Getter, _api?: unknown) {
-    void _api;
+  constructor(set: Setter, get: Getter) {
     this.#set = set;
     this.#get = get;
   }
@@ -113,10 +112,13 @@ export class TaskFiltersActionImpl {
 // Slice Factory
 // ============================================================================
 
-export type TaskFiltersActions = PublicActions<TaskFiltersActionImpl>;
+export type TaskFiltersActions = {
+  setSelectedProject: (projectId: string | "all") => void;
+  setSelectedCategory: (categoryId: string | "all") => void;
+  setSearchQuery: (query: string) => void;
+};
 
 export const createTaskFiltersSlice = (
   set: Setter,
   get: Getter,
-  api?: unknown,
-) => new TaskFiltersActionImpl(set, get, api);
+) => new TaskFiltersActionImpl(set, get);

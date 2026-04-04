@@ -1,18 +1,15 @@
 "use client";
 
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { cn } from "@/shared/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import { transitions, containerVariants } from "@/shared/lib/animations";
 import { Circle, Lock, Plus } from "lucide-react";
- import type { Task } from "@/entities/task";
+import type { Task } from "@/entities/task";
 import { useTasksByStatus } from "../../hooks/useTasksByStatus";
- import { Button } from "@/shared/ui/button";
- import { EmptyState } from "@/shared/ui/empty-state";
- import { Alert, AlertDescription } from "@/shared/ui/alert";
- import { PipelineStep } from "./PipelineStep";
- import type { useThemeState } from "@/store/hooks";
-
-
+import { Button } from "@/shared/ui/button";
+import { EmptyState } from "@/shared/ui/empty-state";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { PipelineStep } from "./PipelineStep";
+import type { ExtendedThemeClasses } from "@/shared/types/theme";
 
 interface PipelineViewProps {
   tasks: Task[];
@@ -23,7 +20,7 @@ interface PipelineViewProps {
   onReorder?: (tasks: Task[]) => void;
   onCreateTask: () => void;
   canAddTask: boolean;
-  classes: ReturnType<typeof useThemeState>["themeClasses"];
+  classes: ExtendedThemeClasses;
 }
 
 export function PipelineView({
@@ -37,7 +34,6 @@ export function PipelineView({
   canAddTask,
   classes,
 }: PipelineViewProps) {
-  const shouldReduceMotion = useReducedMotion();
   const { completedTasks, todoTasks: pendingTasks, orderedTasks } = useTasksByStatus(tasks);
 
   if (tasks.length === 0) {

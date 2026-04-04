@@ -16,6 +16,7 @@ import {
   initialTaskFiltersState,
   type TaskFiltersState,
   type TaskFiltersActions,
+  computeHasActiveFilters,
 } from "./slices/task-filters-slice";
 import {
   createViewModeSlice,
@@ -24,11 +25,11 @@ import {
   type ViewModeActions,
 } from "./slices/view-mode-slice";
 import {
-  createColacionSlice,
-  initialColacionState,
-  type ColacionState,
-  type ColacionActions,
-} from "./slices/colacion-slice";
+  createUIPreferencesSlice,
+  initialUIPreferencesState,
+  type UIPreferencesState,
+  type UIPreferencesActions,
+} from "./slices/ui-preferences-slice";
 
 // ============================================================================
 // Store Type
@@ -39,22 +40,22 @@ export interface AppStore
     ThemeState,
     TaskFiltersState,
     ViewModeState,
-    ColacionState,
+    UIPreferencesState,
     ThemeActions,
     TaskFiltersActions,
     ViewModeActions,
-    ColacionActions {
+    UIPreferencesActions {
 }
 
 // ============================================================================
 // Initial State
 // ============================================================================
 
-const initialState: ThemeState & TaskFiltersState & ViewModeState & ColacionState = {
+const initialState: ThemeState & TaskFiltersState & ViewModeState & UIPreferencesState = {
   ...initialThemeState,
   ...initialTaskFiltersState,
   ...initialViewModeState,
-  ...initialColacionState,
+  ...initialUIPreferencesState,
 };
 
 // ============================================================================
@@ -64,13 +65,13 @@ const initialState: ThemeState & TaskFiltersState & ViewModeState & ColacionStat
 export const useStore = create<AppStore>()(
   devtools(
     persist(
-      (...params) => ({
+      (...params: any[]) => ({
         ...initialState,
-        ...flattenActions<ThemeActions & TaskFiltersActions & ViewModeActions & ColacionActions>([
-          createThemeSlice(...params),
-          createTaskFiltersSlice(...params),
-          createViewModeSlice(...params),
-          createColacionSlice(...params),
+        ...flattenActions<ThemeActions & TaskFiltersActions & ViewModeActions & UIPreferencesActions>([
+          createThemeSlice(params[0], params[1]),
+          createTaskFiltersSlice(params[0], params[1]),
+          createViewModeSlice(params[0], params[1]),
+          createUIPreferencesSlice(params[0], params[1]),
         ]),
       }),
       {
@@ -82,6 +83,7 @@ export const useStore = create<AppStore>()(
           selectedCategoryId: state.selectedCategoryId,
           searchQuery: state.searchQuery,
           viewMode: state.viewMode,
+          animatedEmotes: state.animatedEmotes,
         }),
         // Custom merge to handle computed values on rehydration
         merge: (persistedState, currentState) => {
@@ -91,7 +93,7 @@ export const useStore = create<AppStore>()(
             selectedCategoryId?: TaskFiltersState["selectedCategoryId"];
             searchQuery?: string;
             viewMode?: ViewModeState["viewMode"];
-            // Legacy fields for migration
+            animatedEmotes?: boolean;
             selectedProject?: string;
             selectedCategory?: string;
           };
@@ -106,12 +108,13 @@ export const useStore = create<AppStore>()(
 
           const searchQuery = persisted.searchQuery ?? "";
           const viewMode = persisted.viewMode ?? "pipeline";
+          const animatedEmotes = persisted.animatedEmotes ?? true;
 
-          // Re-compute computed values
-          const hasActiveFilters =
-            selectedProjectId !== "all" ||
-            selectedCategoryId !== "all" ||
-            searchQuery !== "";
+          const hasActiveFilters = computeHasActiveFilters(
+            selectedProjectId,
+            selectedCategoryId,
+            searchQuery,
+          );
 
           return {
             ...currentState,
@@ -122,6 +125,7 @@ export const useStore = create<AppStore>()(
             searchQuery,
             hasActiveFilters,
             viewMode,
+            animatedEmotes,
           };
         },
         // Skip hydration during SSR

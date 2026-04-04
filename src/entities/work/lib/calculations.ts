@@ -1,51 +1,19 @@
-// LÓGICA DE CÁLCULOS DE HORARIO LABORAL
-// Funciones puras, sin dependencias externas
-
 import type { WorkSettings, WorkCalculation } from '../model/types';
-import { parseTimeString, timeToMinutes } from '@shared/lib/time-utils';
+import { timeToMinutes, calculateMinutesUntilTime } from '@shared/lib/time-utils';
 
-/**
- * Calcula tiempo hasta hora de salida en minutos
- */
-export function calculateTimeUntilEnd(endTime: string): number {
-  const now = new Date();
-  const { hours, minutes } = parseTimeString(endTime);
-
-  const endToday = new Date();
-  endToday.setHours(hours, minutes, 0, 0);
-
-  // Si ya pasó la hora de salida hoy, calcular para mañana
-  if (endToday <= now) {
-    endToday.setDate(endToday.getDate() + 1);
-  }
-
-  return Math.floor((endToday.getTime() - now.getTime()) / (1000 * 60));
-}
-
-/**
- * Calcula horas de trabajo entre entrada y salida
- */
 export function calculateWorkHours(startTime: string, endTime: string): number {
-  const startTotal = timeToMinutes(startTime);
-  let endTotal = timeToMinutes(endTime);
-
-  // Si la hora de salida es menor que la de entrada, es del día siguiente
-  if (endTotal < startTotal) {
-    endTotal += 24 * 60;
-  }
-
-  const workMinutes = endTotal - startTotal;
-  return workMinutes / 60;
+  const start = timeToMinutes(startTime);
+  let end = timeToMinutes(endTime);
+  if (end < start) end += 24 * 60;
+  return end - start;
 }
 
-/**
- * Genera cálculo completo de horario laboral
- */
-export function calculateWorkData(settings: WorkSettings): WorkCalculation {
-  // Calcular tiempo hasta la hora de salida
-  const timeUntilEnd = calculateTimeUntilEnd(settings.endTime);
+export function calculateTimeUntilEnd(endTime: string): number {
+  return calculateMinutesUntilTime(endTime);
+}
 
-  // Calcular horas de trabajo
+export function calculateWorkData(settings: WorkSettings): WorkCalculation {
+  const timeUntilEnd = calculateTimeUntilEnd(settings.endTime);
   const workHours = calculateWorkHours(settings.startTime, settings.endTime);
 
   return {

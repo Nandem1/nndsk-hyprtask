@@ -4,6 +4,8 @@ import { useThemeState } from "@/store/hooks";
 import { ThemePaletteSelector } from "./ThemePaletteSelector";
 import { SleepConfigForm } from "@/features/configure-sleep";
 import { WorkConfigForm } from "@/features/configure-work";
+import { EmoteManager } from "@/features/emote-picker";
+import { Smile } from "lucide-react";
 
 export function ConfigPanel() {
   const { themeClasses } = useThemeState();
@@ -23,6 +25,19 @@ export function ConfigPanel() {
         <SleepConfigForm />
         <WorkConfigForm />
         <ThemePaletteSelector />
+
+        <div>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Smile className="size-5" />
+              Emotes 7TV
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Agrega emotes a tu colección para usarlos en notas y títulos
+            </p>
+          </div>
+          <EmoteManager />
+        </div>
       </div>
     </div>
   );

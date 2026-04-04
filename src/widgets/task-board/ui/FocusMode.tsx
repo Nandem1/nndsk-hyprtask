@@ -1,39 +1,30 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/shared/lib/utils";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  X,
-  Play,
-  Pause,
-  RotateCcw,
   Check,
-  Maximize2,
-  Minimize2,
   Timer,
   Zap,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import type { Task } from "@/entities/task";
-import { useProjectInfo } from "@/entities/project";
+import { ProjectName } from "@/entities/project";
 import { Button } from "@/shared/ui/button";
-import { DNAHelixBackground } from "@/shared/ui/dna-helix-background";
 import { useFocusSessions } from "@/entities/task";
 import { EndSessionDialog } from "./EndSessionDialog";
+import { RichText } from "./ConnectedRichText";
 import { playSuccessSound } from "@/shared/lib/audio";
 import {
   FOCUS_DURATION,
   BREAK_DURATION,
-  containerVariants,
-  contentVariants,
-  timerModeVariants,
 } from "../lib/focus-timer-constants";
 import { FocusTimerCircle } from "./FocusTimerCircle";
 import { BreakModeContent } from "./BreakModeContent";
 import { useFocusTimer } from "../hooks/useFocusTimer";
+import { FullscreenTimerLayout } from "./FullscreenTimerLayout";
+import { TimerControls } from "./TimerControls";
 
 interface FocusModeProps {
   task: Task;
@@ -43,11 +34,6 @@ interface FocusModeProps {
   onToggleTask: () => void;
 }
 
-const ProjectName = memo(function ProjectName({ projectId }: { projectId: string }) {
-  const { name } = useProjectInfo(projectId);
-  return <p className="text-muted-foreground mt-2">{name}</p>;
-});
-
 export function FocusMode({
   task,
   isOpen,
@@ -56,9 +42,7 @@ export function FocusMode({
   onToggleTask,
 }: FocusModeProps) {
   const { themeClasses } = useThemeState();
-  const shouldReduceMotion = useReducedMotion();
   const { incrementSession, getStats } = useFocusSessions();
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showParticles, setShowParticles] = useState(true);
   const [showEndDialog, setShowEndDialog] = useState(false);
@@ -91,16 +75,6 @@ export function FocusMode({
   const totalTime = timerState === "break" ? BREAK_DURATION : FOCUS_DURATION;
 
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
-  useEffect(() => {
     if (isOpen) {
       resetTimer();
       setShowCelebration(false);
@@ -114,16 +88,6 @@ export function FocusMode({
       return () => clearTimeout(timer);
     }
   }, [showCelebration]);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-  };
-
-  const handleEndSessionClick = () => setShowEndDialog(true);
 
   const handleConfirmComplete = () => {
     const elapsedMinutes = Math.round(
@@ -151,300 +115,151 @@ export function FocusMode({
     setShowEndDialog(false);
   };
 
-  if (!isOpen) return null;
+  const statusText =
+    timerState === "running"
+      ? "En foco"
+      : timerState === "break"
+        ? "Descanso"
+        : "Listo para empezar";
+
+  const statusColor =
+    timerState === "running"
+      ? "primary"
+      : timerState === "break"
+        ? "accent"
+        : "muted";
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        {isOpen && (
-          <motion.div
-            key="focus-mode"
-            variants={shouldReduceMotion ? undefined : containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="fixed inset-0 bg-background/95 backdrop-blur-sm flex flex-col overflow-hidden z-50"
-          >
-            {/* Header */}
-            <motion.div
-              variants={shouldReduceMotion ? undefined : contentVariants}
-              className="flex items-center justify-between p-4 border-b border-border"
-            >
-              <div className="flex items-center gap-3">
-                <motion.div
-                  animate={{
-                    scale:
-                      timerState === "running" ? [1, 1.2, 1] : 1,
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: timerState === "running" ? Infinity : 0,
-                  }}
-                  className={cn(
-                    "size-3 rounded-full",
-                    timerState === "running"
-                      ? "bg-primary"
-                      : timerState === "break"
-                        ? "bg-accent"
-                        : "bg-muted",
-                  )}
-                />
-                <span className="text-sm text-muted-foreground">
-                  {timerState === "running"
-                    ? "En foco"
-                    : timerState === "break"
-                      ? "Descanso"
-                      : "Listo para empezar"}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={soundEnabled ? "secondary" : "ghost"}
-                  size="icon"
-                  className={cn(
-                    "size-8 transition-colors",
-                    soundEnabled && "bg-primary/20 text-primary",
-                  )}
-                  onClick={() => setSoundEnabled(!soundEnabled)}
-                  title={
-                    soundEnabled ? "Sonido activado" : "Sonido desactivado"
-                  }
-                >
-                  {soundEnabled ? (
-                    <Volume2 className="size-4" />
-                  ) : (
-                    <VolumeX className="size-4" />
-                  )}
-                </Button>
-
-                <Button
-                  variant={showParticles ? "secondary" : "ghost"}
-                  size="icon"
-                  className={cn(
-                    "size-8 transition-colors",
-                    showParticles && "bg-primary/20 text-primary",
-                  )}
-                  onClick={() => setShowParticles(!showParticles)}
-                  title={
-                    showParticles
-                      ? "Ocultar ADN"
-                      : "Mostrar ADN"
-                  }
-                >
-                  <Zap className="size-4" />
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleFullscreen}
-                  className="transition-colors"
-                >
-                  {isFullscreen ? (
-                    <Minimize2 className="size-4" />
-                  ) : (
-                    <Maximize2 className="size-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="transition-colors"
-                >
-                  <X className="size-4" />
-                </Button>
-              </div>
-            </motion.div>
-
-            {showParticles ? (
-              <DNAHelixBackground
-                speed="slow"
-                className="absolute inset-0 pointer-events-none"
-                helixColor={themeClasses.particleColor}
-              />
-            ) : null}
-
-            <div className="flex-1 flex flex-col items-center justify-center p-8 relative z-10">
-              <motion.div
-                key={timerState}
-                variants={
-                  shouldReduceMotion ? undefined : timerModeVariants
-                }
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                className="w-full max-w-2xl"
-              >
-                {timerState === "break" ? (
-                  <BreakModeContent
-                    timeLeft={timeLeft}
-                    sessionsToday={sessionsToday}
-                    themeClasses={themeClasses}
-                    onSkipBreak={skipBreak}
-                  />
-                ) : (
-                  <div className="flex flex-col gap-8">
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Trabajando en
-                      </p>
-                      <h1
-                        className={cn(
-                          "text-3xl md:text-4xl font-bold",
-                          themeClasses.textPrimary,
-                        )}
-                      >
-                        {task.title}
-                      </h1>
-                      {task.projectId ? (
-                        <ProjectName projectId={task.projectId} />
-                      ) : null}
-                    </div>
-
-                    <FocusTimerCircle
-                      timeLeft={timeLeft}
-                      timerState={timerState}
-                      themeClasses={themeClasses}
-                      showCelebration={showCelebration}
-                      totalTime={totalTime}
-                    />
-
-                    <div className="flex items-center justify-center gap-4">
-                      {timerState === "idle" || timerState === "paused" ? (
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button
-                            size="lg"
-                            onClick={startTimer}
-                            className="px-8 gap-2"
-                          >
-                            <Play className="size-5" />
-                            {timerState === "paused" ? "Continuar" : "Empezar"}
-                          </Button>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            onClick={pauseTimer}
-                            className="px-8 gap-2"
-                          >
-                            <Pause className="size-5" />
-                            Pausar
-                          </Button>
-                        </motion.div>
-                      )}
-
-                      {timerState === "running" ||
-                      timerState === "paused" ? (
-                        <motion.div
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={resetTimer}
-                          >
-                            <RotateCcw className="size-5" />
-                          </Button>
-                        </motion.div>
-                      ) : null}
-                    </div>
-
-                    <div className="flex items-center justify-center gap-3 pt-4">
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleEndSessionClick}
-                          className={cn(
-                            "border-primary/30 hover:bg-primary/10 gap-2",
-                            themeClasses.textPrimary,
-                          )}
-                        >
-                          <Check className="size-4" />
-                          Completar tarea
-                        </Button>
-                      </motion.div>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleEndSessionClick}
-                          className="gap-2"
-                        >
-                          <Timer className="size-4" />
-                          Terminar sesion
-                        </Button>
-                      </motion.div>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-8 pt-4 text-center">
-                      <div>
-                        <motion.div
-                          className="text-2xl font-bold"
-                          key={sessionsToday}
-                          initial={{ scale: 1.5, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 400,
-                            damping: 30,
-                          }}
-                        >
-                          {sessionsToday}
-                        </motion.div>
-                        <div className="text-xs text-muted-foreground">
-                          sesiones hoy
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold">
-                          {totalMinutesToday}m
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          tiempo enfocado
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+      <FullscreenTimerLayout
+        isOpen={isOpen}
+        onClose={onClose}
+        themeClasses={themeClasses}
+        statusText={statusText}
+        statusColor={statusColor}
+        isPulsing={timerState === "running"}
+        soundEnabled={soundEnabled}
+        onSoundToggle={() => setSoundEnabled(!soundEnabled)}
+        showParticles={showParticles}
+        onParticlesToggle={() => setShowParticles(!showParticles)}
+        footerContent={
+          <div className="flex items-center justify-center gap-2">
+            <Zap className="size-4" />
+            <span>
+              {timerState === "running"
+                ? "Modo foco activado. Una tarea a la vez."
+                : "Elige una tarea y enfocate en ella."}
+            </span>
+          </div>
+        }
+      >
+        {timerState === "break" ? (
+          <BreakModeContent
+            timeLeft={timeLeft}
+            sessionsToday={sessionsToday}
+            themeClasses={themeClasses}
+            onSkipBreak={skipBreak}
+          />
+        ) : (
+          <div className="flex flex-col gap-8 w-full max-w-2xl">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Trabajando en
+              </p>
+              <RichText
+                text={task.title}
+                inline
+                emoteSize="2x"
+                className={cn(
+                  "text-3xl md:text-4xl font-bold",
+                  themeClasses.textPrimary,
                 )}
+              />
+              {task.projectId ? (
+                <ProjectName projectId={task.projectId} />
+              ) : null}
+            </div>
+
+            <FocusTimerCircle
+              timeLeft={timeLeft}
+              timerState={timerState}
+              themeClasses={themeClasses}
+              showCelebration={showCelebration}
+              totalTime={totalTime}
+            />
+
+            <TimerControls
+              state={timerState}
+              onPlay={startTimer}
+              onPause={pauseTimer}
+              onReset={resetTimer}
+            />
+
+            <div className="flex items-center justify-center gap-3 pt-4">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEndDialog(true)}
+                  className={cn(
+                    "border-primary/30 hover:bg-primary/10 gap-2",
+                    themeClasses.textPrimary,
+                  )}
+                >
+                  <Check className="size-4" />
+                  Completar tarea
+                </Button>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEndDialog(true)}
+                  className="gap-2"
+                >
+                  <Timer className="size-4" />
+                  Terminar sesion
+                </Button>
               </motion.div>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.3 }}
-              className="text-center pb-8 text-muted-foreground text-sm"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Zap className="size-4" />
-                <span>
-                  {timerState === "running"
-                    ? "Modo foco activado. Una tarea a la vez."
-                    : "Elige una tarea y enfocate en ella."}
-                </span>
+            <div className="flex items-center justify-center gap-8 pt-4 text-center">
+              <div>
+                <motion.div
+                  className="text-2xl font-bold"
+                  key={sessionsToday}
+                  initial={{ scale: 1.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 30,
+                  }}
+                >
+                  {sessionsToday}
+                </motion.div>
+                <div className="text-xs text-muted-foreground">
+                  sesiones hoy
+                </div>
               </div>
-            </motion.div>
-          </motion.div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {totalMinutesToday}m
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  tiempo enfocado
+                </div>
+              </div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </FullscreenTimerLayout>
 
       {showEndDialog && (
         <EndSessionDialog

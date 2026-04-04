@@ -6,8 +6,8 @@ import {
   storageGetList,
   storageSet,
   storageRemove,
-  upsertItem,
 } from "@shared/lib/storage";
+import { upsertItem } from "@shared/lib/array";
 
 const STORAGE_KEYS = {
   SETTINGS: "hyprtodo_sleep_settings",

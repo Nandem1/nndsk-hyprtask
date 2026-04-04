@@ -74,3 +74,20 @@ export function useColacionActions() {
     })),
   );
 }
+
+export function useEmotePrefsState() {
+  return useStore(
+    useShallow((state) => ({
+      animatedEmotes: state.animatedEmotes,
+    })),
+  );
+}
+
+export function useEmotePrefs() {
+  return useStore(
+    useShallow((state) => ({
+      animatedEmotes: state.animatedEmotes,
+      setAnimatedEmotes: state.setAnimatedEmotes,
+    })),
+  );
+}

@@ -1,25 +1,8 @@
-// Tipos para modos de vista de tareas
-
-export type TaskViewMode = "pipeline" | "kanban";
+export type { TaskViewMode } from "@/shared/types/view-mode";
 
 export interface ViewModeConfig {
-  id: TaskViewMode;
+  id: import("@/shared/types/view-mode").TaskViewMode;
   name: string;
   emoji: string;
   description: string;
 }
-
-export const VIEW_MODES: ViewModeConfig[] = [
-  {
-    id: "pipeline",
-    name: "Pipeline",
-    emoji: "🔄",
-    description: "Flujo secuencial de tareas",
-  },
-  {
-    id: "kanban",
-    name: "Kanban",
-    emoji: "📋",
-    description: "Columnas tipo tablero",
-  },
-];

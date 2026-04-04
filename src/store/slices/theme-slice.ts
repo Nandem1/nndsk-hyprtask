@@ -1,4 +1,4 @@
-import { StoreSetter, StoreGetter, PublicActions } from "../types";
+import { StoreSetter, StoreGetter } from "../types";
 import type { ThemePalette, ExtendedThemeClasses } from "@/shared/types/theme";
 import { getExtendedThemeClasses } from "@/shared/theme/config";
 
@@ -45,8 +45,7 @@ export class ThemeActionImpl {
   readonly #get: Getter;
   readonly #set: Setter;
 
-  constructor(set: Setter, get: Getter, _api?: unknown) {
-    void _api;
+  constructor(set: Setter, get: Getter) {
     this.#set = set;
     this.#get = get;
   }
@@ -79,7 +78,9 @@ export class ThemeActionImpl {
 // Slice Factory
 // ============================================================================
 
-export type ThemeActions = PublicActions<ThemeActionImpl>;
+export type ThemeActions = {
+  changePalette: (palette: ThemePalette) => void;
+};
 
-export const createThemeSlice = (set: Setter, get: Getter, api?: unknown) =>
-  new ThemeActionImpl(set, get, api);
+export const createThemeSlice = (set: Setter, get: Getter) =>
+  new ThemeActionImpl(set, get);

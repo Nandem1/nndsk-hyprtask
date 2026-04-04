@@ -6,7 +6,7 @@ import {
   saveSleepSettings,
   getSleepLogs,
 } from "../lib/storage";
-import { asyncWrap } from "@shared/lib/storage";
+import { asyncWrap } from "@shared/lib/utils";
 import { calculateSleepData } from "../lib/calculations";
 import { sleepKeys } from "../model/query-keys";
 

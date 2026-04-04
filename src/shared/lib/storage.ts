@@ -30,23 +30,3 @@ export function storageRemove(key: string): void {
   if (isServer) return;
   localStorage.removeItem(key);
 }
-
-/**
- * Envuelve una función síncrona para devolver Promise<void>,
- * necesario para pasarla como `mutationFn` en TanStack Query.
- */
-export function asyncWrap<T>(fn: (v: T) => void): (v: T) => Promise<void> {
-  return async (v) => { fn(v); };
-}
-
-/**
- * Upsert genérico sobre un array: si existe un item con el mismo id lo reemplaza,
- * si no lo agrega al final. Retorna un nuevo array (no muta el original).
- */
-export function upsertItem<T extends { id: string }>(items: T[], item: T): T[] {
-  const index = items.findIndex((i) => i.id === item.id);
-  if (index >= 0) {
-    return [...items.slice(0, index), item, ...items.slice(index + 1)];
-  }
-  return [...items, item];
-}

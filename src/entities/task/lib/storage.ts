@@ -2,8 +2,8 @@
 // localStorage por ahora, preparado para migrar a Supabase
 
 import type { Task, TaskSettings } from "../model/types";
-import { storageGetList, storageSet, upsertItem } from "@shared/lib/storage";
-import { reorderById } from "@shared/lib/array";
+import { storageGetList, storageGet, storageSet } from "@shared/lib/storage";
+import { upsertItem, reorderById } from "@shared/lib/array";
 
 const STORAGE_KEYS = {
   TASKS: "hyprtodo_tasks",
@@ -61,18 +61,13 @@ export function getTaskById(id: string): Task | null {
 // ============================================
 
 export function getTaskSettings(): TaskSettings {
-  if (typeof window === "undefined") {
-    return { maxActiveTasks: 5, autoArchiveDays: 7 };
-  }
-
-  const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+  const stored = storageGet<TaskSettings>(STORAGE_KEYS.SETTINGS);
   if (!stored) {
     const defaultSettings: TaskSettings = { maxActiveTasks: 5, autoArchiveDays: 7 };
     saveTaskSettings(defaultSettings);
     return defaultSettings;
   }
-
-  return JSON.parse(stored) as TaskSettings;
+  return stored;
 }
 
 export function saveTaskSettings(settings: TaskSettings): void {

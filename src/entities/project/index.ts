@@ -10,24 +10,9 @@ export type {
 export {
   PROJECT_COLOR_CLASSES,
   CATEGORY_COLOR_CLASSES,
-  DEFAULT_PROJECTS,
-  DEFAULT_CATEGORIES,
-} from "./model/types";
+} from "./model/color-constants";
+export { DEFAULT_PROJECTS, DEFAULT_CATEGORIES } from "./model/defaults";
 export { projectKeys, categoryKeys } from "./model/query-keys";
-export {
-  getProjects,
-  getActiveProjects,
-  getProjectById,
-  saveProject,
-  deleteProject,
-  reorderProjects,
-  getCategories,
-  getActiveCategories,
-  getCategoryById,
-  saveCategory,
-  deleteCategory,
-  reorderCategories,
-} from "./lib/storage";
 export {
   useProjects,
   useActiveProjects,
@@ -53,3 +38,4 @@ export {
 
 // UI Components
 export { TaskMetadataBadges } from "./ui/TaskMetadataBadges";
+export { ProjectName } from "./ui/ProjectName";

@@ -4,16 +4,19 @@ import { memo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { transitions, listItemVariants } from "@/shared/lib/animations";
-import { Check, ChevronRight, Zap, Focus, Clock, Lock } from "lucide-react";
+import { ChevronRight, Zap, Focus, Clock } from "lucide-react";
 import type { Task } from "@/entities/task";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { TaskMetadataBadges } from "@/entities/project";
 import { DNAHelix } from "@/shared/ui/dna-helix";
+import { TaskCheckbox } from "@/shared/ui/task-checkbox";
+import { RichText } from "../ConnectedRichText";
 import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";
-import type { useThemeState } from "@/store/hooks";
+import type { ExtendedThemeClasses } from "@/shared/types/theme";
+import { formatTaskDate } from "@/shared/lib/format-date";
 
 interface PipelineStepProps {
   task: Task;
@@ -24,7 +27,7 @@ interface PipelineStepProps {
   onSetCurrent: (id: string) => void;
   onSelect: (task: Task) => void;
   onEnterFocus?: (task: Task) => void;
-  classes: ReturnType<typeof useThemeState>["themeClasses"];
+  classes: ExtendedThemeClasses;
   enableDrag?: boolean;
 }
 
@@ -59,44 +62,14 @@ export const PipelineStep = memo(function PipelineStep({
       className={cn("flex items-start gap-4", isDragging && "opacity-50")}
     >
       <div className="flex flex-col items-center">
-        <motion.button
-          whileHover={shouldReduceMotion ? undefined : { scale: 1.1 }}
-          whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
+        <TaskCheckbox
+          isCompleted={isCompleted}
+          isCurrent={isCurrent}
           onClick={() => onToggle(task.id)}
-          className={cn(
-            "size-10 rounded-full flex items-center justify-center border-2 transition-colors duration-300 shrink-0",
-            isCompleted
-              ? "bg-primary border-primary text-primary-foreground"
-              : isCurrent
-                ? cn("border-primary bg-primary/10", classes.textPrimary)
-                : "border-border bg-card hover:border-primary/50",
-          )}
-        >
-          <AnimatePresence mode="wait">
-            {isCompleted ? (
-              <motion.div
-                key="check"
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0, rotate: 180 }}
-                transition={transitions.springBouncy}
-              >
-                <Check className="size-5" />
-              </motion.div>
-            ) : (
-              <motion.span
-                key="number"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                transition={transitions.spring}
-                className="text-sm font-semibold"
-              >
-                {index + 1}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
+          variant="lg"
+          label={index + 1}
+          textPrimaryClass={classes.textPrimary}
+        />
 
         {!isLast ? (
           <DNAHelix
@@ -138,7 +111,7 @@ export const PipelineStep = memo(function PipelineStep({
                   transition={{ duration: 0.3 }}
                   className={cn(
                     "absolute left-0 top-0 bottom-0 w-1 origin-top",
-                    classes.gradientBg?.replace("/10", "") || "bg-primary",
+                    classes.gradientBgSolid,
                   )}
                 />
               )}
@@ -147,15 +120,15 @@ export const PipelineStep = memo(function PipelineStep({
             <CardContent className={cn("p-4", enableDrag && "pl-10")}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h3
+                  <RichText
+                    text={task.title}
+                    inline
                     className={cn(
                       "font-medium transition-colors duration-300",
                       isCompleted && "line-through text-muted-foreground",
                       isCurrent && cn(classes.textPrimary, "text-lg"),
                     )}
-                  >
-                    {task.title}
-                  </h3>
+                  />
 
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <TaskMetadataBadges
@@ -165,25 +138,22 @@ export const PipelineStep = memo(function PipelineStep({
                     {task.dueDate ? (
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="size-3" />
-                        {new Date(task.dueDate).toLocaleDateString("es-ES", {
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {formatTaskDate(task.dueDate)}
                       </span>
                     ) : null}
                   </div>
 
                   <AnimatePresence>
                     {task.notes ? (
-                      <motion.p
+                      <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
                         className="mt-3 text-sm text-muted-foreground line-clamp-2 bg-muted/30 p-2 rounded"
                       >
-                        {task.notes}
-                      </motion.p>
+                        <RichText text={task.notes} inline emoteSize="1x" />
+                      </motion.div>
                     ) : null}
                   </AnimatePresence>
                 </div>

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion, useReducedMotion } from "framer-motion";
 import { useThemeState } from "@/store/hooks";
-import { autoArchiveCompletedTasks } from "@/entities/task";
+import { autoArchiveCompletedTasks } from "@/entities/task/lib/storage";
 import { TaskSidebar } from "@/widgets/task-sidebar";
 import { Button } from "@/shared/ui/button";
 import { Filter } from "lucide-react";

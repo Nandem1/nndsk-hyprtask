@@ -2,24 +2,10 @@
 // Funciones puras, sin dependencias externas
 
 import type { SleepSettings, SleepCalculation, SleepAlert } from '../model/types';
-import { parseTimeString, timeToMinutes } from '@shared/lib/time-utils';
+import { timeToMinutes, calculateMinutesUntilTime } from '@shared/lib/time-utils';
 
-/**
- * Calcula tiempo hasta hora de dormir en minutos
- */
 export function calculateTimeUntilBedtime(bedtime: string): number {
-  const now = new Date();
-  const { hours, minutes } = parseTimeString(bedtime);
-
-  const bedtimeToday = new Date();
-  bedtimeToday.setHours(hours, minutes, 0, 0);
-
-  // Si ya pasó la hora de dormir hoy, calcular para mañana
-  if (bedtimeToday <= now) {
-    bedtimeToday.setDate(bedtimeToday.getDate() + 1);
-  }
-
-  return Math.floor((bedtimeToday.getTime() - now.getTime()) / (1000 * 60));
+  return calculateMinutesUntilTime(bedtime);
 }
 
 /**

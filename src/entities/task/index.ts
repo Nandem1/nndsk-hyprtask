@@ -1,29 +1,9 @@
 // Public API for entities/task
 export type { Task, TaskPriority, TaskSettings } from "./model/types";
 export type { TaskViewMode, ViewModeConfig } from "./model/view-mode";
-export { VIEW_MODES } from "./model/view-mode";
 export { taskKeys } from "./model/query-keys";
 
-// Storage de tareas
-export {
-  getTasks,
-  getActiveTasks,
-  getCurrentTask,
-  getTaskById,
-  getTaskSettings,
-  saveTask,
-  saveTaskSettings,
-  deleteTask,
-  toggleTask,
-  setCurrentTask,
-  autoArchiveCompletedTasks,
-  updateTaskNotes,
-  getTaskParent,
-  getTaskChild,
-  setTaskParent,
-  setTaskChild,
-} from "./lib/storage";
-export { getTaskViewMode, saveTaskViewMode } from "./lib/view-mode-storage";
+
 
 // Hooks de tareas
 export {

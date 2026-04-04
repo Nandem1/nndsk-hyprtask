@@ -74,6 +74,7 @@ export function getThemeClassesString(palette: ThemePalette) {
     genshin: {
       gradient: "from-blue-500 to-cyan-500",
       gradientBg: "bg-blue-500/10",
+      gradientBgSolid: "bg-blue-500",
       gradientBgSubtle: "bg-blue-500/5",
       border: "border-blue-500/30",
       borderHover: "border-blue-500/50",
@@ -89,6 +90,7 @@ export function getThemeClassesString(palette: ThemePalette) {
     zenless: {
       gradient: "from-purple-500 to-pink-500",
       gradientBg: "bg-purple-500/10",
+      gradientBgSolid: "bg-purple-500",
       gradientBgSubtle: "bg-purple-500/5",
       border: "border-purple-500/30",
       borderHover: "border-purple-500/50",
@@ -104,6 +106,7 @@ export function getThemeClassesString(palette: ThemePalette) {
     wuthering: {
       gradient: "from-teal-500 to-cyan-500",
       gradientBg: "bg-teal-500/10",
+      gradientBgSolid: "bg-teal-500",
       gradientBgSubtle: "bg-teal-500/5",
       border: "border-teal-500/30",
       borderHover: "border-teal-500/50",
@@ -119,6 +122,7 @@ export function getThemeClassesString(palette: ThemePalette) {
     osu: {
       gradient: "from-pink-500 to-rose-500",
       gradientBg: "bg-pink-500/10",
+      gradientBgSolid: "bg-pink-500",
       gradientBgSubtle: "bg-pink-500/5",
       border: "border-pink-500/30",
       borderHover: "border-pink-500/50",
@@ -134,6 +138,7 @@ export function getThemeClassesString(palette: ThemePalette) {
     mario: {
       gradient: "from-red-500 to-orange-500",
       gradientBg: "bg-red-500/10",
+      gradientBgSolid: "bg-red-500",
       gradientBgSubtle: "bg-red-500/5",
       border: "border-red-500/30",
       borderHover: "border-red-500/50",

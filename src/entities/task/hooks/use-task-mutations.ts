@@ -11,7 +11,7 @@ import {
   setTaskParent,
   setTaskChild,
 } from "../lib/storage";
-import { asyncWrap } from "@shared/lib/storage";
+import { asyncWrap } from "@shared/lib/utils";
 import type { TaskSettings } from "../model/types";
 import type { Task } from "../model/types";
 import { taskKeys } from "../model/query-keys";

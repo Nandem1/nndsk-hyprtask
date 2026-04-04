@@ -1,5 +1,5 @@
-import { StoreSetter, StoreGetter, PublicActions } from "../types";
-import type { TaskViewMode } from "@/entities/task";
+import { StoreSetter, StoreGetter } from "../types";
+import type { TaskViewMode } from "@/shared/types/view-mode";
 
 // ============================================================================
 // State
@@ -27,8 +27,7 @@ export class ViewModeActionImpl {
   readonly #get: Getter;
   readonly #set: Setter;
 
-  constructor(set: Setter, get: Getter, _api?: unknown) {
-    void _api;
+  constructor(set: Setter, get: Getter) {
     this.#set = set;
     this.#get = get;
   }
@@ -56,7 +55,9 @@ export class ViewModeActionImpl {
 // Slice Factory
 // ============================================================================
 
-export type ViewModeActions = PublicActions<ViewModeActionImpl>;
+export type ViewModeActions = {
+  setViewMode: (mode: TaskViewMode) => void;
+};
 
-export const createViewModeSlice = (set: Setter, get: Getter, api?: unknown) =>
-  new ViewModeActionImpl(set, get, api);
+export const createViewModeSlice = (set: Setter, get: Getter) =>
+  new ViewModeActionImpl(set, get);

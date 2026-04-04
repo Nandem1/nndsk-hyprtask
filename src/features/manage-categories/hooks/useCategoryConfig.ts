@@ -13,6 +13,7 @@ import { useConfirm } from "@/shared/hooks/use-confirm";
 import { getCategoryIcon } from "@/entities/project";
 
 export function useCategoryConfig(onClose: () => void) {
+  void onClose;
   const { data: entities = [] } = useActiveCategories();
   const saveCategoryMutation = useSaveCategory();
   const deleteCategoryMutation = useDeleteCategory();

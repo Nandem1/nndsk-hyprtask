@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSleepSettings, useSaveSleepSettings } from "@/entities/sleep";
-import { defaultValues, type SleepConfigFormData } from "../model/types";
+import { defaultValues } from "../model/types";
 
 export function useSleepConfig() {
   const { data: settings } = useSleepSettings();

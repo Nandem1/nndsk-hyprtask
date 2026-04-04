@@ -36,7 +36,7 @@ export function TaskCreateModal({
   defaultProjectId,
   defaultCategoryId,
 }: TaskCreateModalProps) {
-  const { control, watch, isSubmitting, isValid, errors, onSubmit, titleValue, canCreate } =
+  const { control, watch, isSubmitting, errors, onSubmit, titleValue, canCreate } =
     useTaskCreate({
       maxTasks,
       currentTasks,

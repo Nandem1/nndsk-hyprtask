@@ -126,3 +126,41 @@ export const reducedMotionVariants: Variants = {
   visible: { opacity: 1 },
   exit: { opacity: 0 },
 };
+
+// ============================================================================
+// Fullscreen Timer Variants
+// ============================================================================
+
+export const fullscreenContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] },
+  },
+};
+
+export const contentVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 },
+  },
+  exit: { opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } },
+};
+
+export const timerModeVariants: Variants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] },
+  },
+  exit: { opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.2 } },
+};

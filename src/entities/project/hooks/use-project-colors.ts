@@ -6,6 +6,8 @@ import { useCategory } from "./use-categories";
 import {
   PROJECT_COLOR_CLASSES,
   CATEGORY_COLOR_CLASSES,
+} from "../model/color-constants";
+import {
   type ProjectIcon,
   type CategoryIcon,
 } from "../model/types";

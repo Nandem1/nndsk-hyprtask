@@ -38,3 +38,23 @@ export function formatMinutesToReadable(minutes: number): string {
   }
   return `${hours}h ${mins}m`;
 }
+
+export function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+}
+
+export function calculateMinutesUntilTime(hhmm: string): number {
+  const now = new Date();
+  const { hours, minutes } = parseTimeString(hhmm);
+
+  const target = new Date();
+  target.setHours(hours, minutes, 0, 0);
+
+  if (target <= now) {
+    target.setDate(target.getDate() + 1);
+  }
+
+  return Math.floor((target.getTime() - now.getTime()) / (1000 * 60));
+}

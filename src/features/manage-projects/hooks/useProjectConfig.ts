@@ -13,6 +13,7 @@ import { useConfirm } from "@/shared/hooks/use-confirm";
 import { getProjectIcon } from "@/entities/project";
 
 export function useProjectConfig(onClose: () => void) {
+  void onClose;
   const { data: entities = [] } = useActiveProjects();
   const saveProjectMutation = useSaveProject();
   const deleteProjectMutation = useDeleteProject();

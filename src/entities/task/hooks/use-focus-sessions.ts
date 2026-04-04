@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+import { storageGet, storageSet } from "@shared/lib/storage";
 
-const STORAGE_KEY = "hyprtask-focus-sessions";
+const STORAGE_KEY = "hyprtodo_focus_sessions";
 
 export interface FocusSessionData {
   count: number;
@@ -17,21 +18,13 @@ function getInitialData(): FocusSessionData {
     return { count: 0, lastDate: getToday(), totalMinutes: 0 };
   }
 
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const data: FocusSessionData = JSON.parse(stored);
-      const today = getToday();
-
-      // Reset if it's a new day
-      if (data.lastDate !== today) {
-        return { count: 0, lastDate: today, totalMinutes: 0 };
-      }
-
-      return data;
+  const data = storageGet<FocusSessionData>(STORAGE_KEY);
+  if (data) {
+    const today = getToday();
+    if (data.lastDate !== today) {
+      return { count: 0, lastDate: today, totalMinutes: 0 };
     }
-  } catch {
-    // Invalid data, start fresh
+    return data;
   }
 
   return { count: 0, lastDate: getToday(), totalMinutes: 0 };
@@ -43,7 +36,7 @@ export function useFocusSessions() {
   // Persist to localStorage whenever sessions change
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+      storageSet(STORAGE_KEY, sessions);
     }
   }, [sessions]);
 

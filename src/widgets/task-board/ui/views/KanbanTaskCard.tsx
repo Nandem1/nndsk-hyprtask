@@ -3,10 +3,12 @@
 import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
-import { Check, Trash2, Target, Zap } from "lucide-react";
+import { Trash2, Target, Zap } from "lucide-react";
 import type { Task } from "@/entities/task";
-import type { useThemeState } from "@/store/hooks";
+import type { ExtendedThemeClasses } from "@/shared/types/theme";
 import { TaskMetadataBadges } from "@/entities/project";
+import { TaskCheckbox } from "@/shared/ui/task-checkbox";
+import { RichText } from "../ConnectedRichText";
 import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";
 
@@ -18,7 +20,7 @@ interface KanbanTaskCardProps {
   onSetCurrent: (id: string) => void;
   onSelect: (task: Task) => void;
   onEnterFocus: (task: Task) => void;
-  classes: ReturnType<typeof useThemeState>["themeClasses"];
+  classes: ExtendedThemeClasses;
   enableDrag?: boolean;
 }
 
@@ -72,40 +74,29 @@ export const KanbanTaskCard = memo(function KanbanTaskCard({
           <div
             className={cn(
               "absolute left-0 top-0 bottom-0 w-1",
-              classes.gradientBg?.replace("/10", "") || "bg-primary",
+              classes.gradientBgSolid,
             )}
           />
         )}
 
         <div className={cn("flex items-start gap-3", enableDrag && "pl-8")}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle(task.id);
-            }}
-            className={cn(
-              "mt-0.5 size-5 rounded border-2 flex items-center justify-center transition-colors shrink-0",
-              task.isCompleted
-                ? "bg-primary border-primary"
-                : "border-border hover:border-primary bg-background",
-            )}
-          >
-            {task.isCompleted ? (
-              <Check className="size-3 text-primary-foreground" />
-            ) : null}
-          </button>
+          <TaskCheckbox
+            isCompleted={task.isCompleted}
+            onClick={() => onToggle(task.id)}
+            variant="sm"
+          />
 
           <div className="flex-1 min-w-0">
-            <p
+            <RichText
+              text={task.title}
+              inline
               className={cn(
                 "text-sm leading-relaxed pr-2",
                 task.isCompleted && "line-through text-muted-foreground",
                 task.isCurrent && cn(classes.textPrimary, "font-medium"),
                 !task.isCompleted && !task.isCurrent && "text-foreground",
               )}
-            >
-              {task.title}
-            </p>
+            />
 
             {(task.projectId || task.categoryId) && !task.isCompleted && (
               <div className="flex items-center gap-1.5 mt-2 flex-wrap">

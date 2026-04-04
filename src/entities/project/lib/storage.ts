@@ -2,13 +2,13 @@
 // localStorage por ahora, preparado para migrar a Supabase
 
 import type { Project, Category } from "../model/types";
-import { DEFAULT_PROJECTS, DEFAULT_CATEGORIES } from "../model/types";
-import { storageSet, upsertItem } from "@shared/lib/storage";
-import { reorderById } from "@shared/lib/array";
+import { DEFAULT_PROJECTS, DEFAULT_CATEGORIES } from "../model/defaults";
+import { storageGetList, storageSet } from "@shared/lib/storage";
+import { upsertItem, reorderById } from "@shared/lib/array";
 
 const STORAGE_KEYS = {
-  PROJECTS: "hyprtask_projects",
-  CATEGORIES: "hyprtask_categories",
+  PROJECTS: "hyprtodo_projects",
+  CATEGORIES: "hyprtodo_categories",
 } as const;
 
 // ============================================
@@ -16,12 +16,9 @@ const STORAGE_KEYS = {
 // ============================================
 
 export function getProjects(): Project[] {
-  if (typeof window === "undefined") return initializeDefaultProjects();
-
-  const stored = localStorage.getItem(STORAGE_KEYS.PROJECTS);
-  if (!stored) return initializeDefaultProjects();
-
-  return JSON.parse(stored) as Project[];
+  const stored = storageGetList<Project>(STORAGE_KEYS.PROJECTS);
+  if (stored.length === 0) return initializeDefaultProjects();
+  return stored;
 }
 
 export function getActiveProjects(): Project[] {
@@ -51,9 +48,7 @@ function initializeDefaultProjects(): Project[] {
     ...p,
     createdAt: new Date().toISOString(),
   }));
-  if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
-  }
+  storageSet(STORAGE_KEYS.PROJECTS, projects);
   return projects;
 }
 
@@ -62,12 +57,9 @@ function initializeDefaultProjects(): Project[] {
 // ============================================
 
 export function getCategories(): Category[] {
-  if (typeof window === "undefined") return initializeDefaultCategories();
-
-  const stored = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-  if (!stored) return initializeDefaultCategories();
-
-  return JSON.parse(stored) as Category[];
+  const stored = storageGetList<Category>(STORAGE_KEYS.CATEGORIES);
+  if (stored.length === 0) return initializeDefaultCategories();
+  return stored;
 }
 
 export function getActiveCategories(): Category[] {
@@ -97,8 +89,6 @@ function initializeDefaultCategories(): Category[] {
     ...c,
     createdAt: new Date().toISOString(),
   }));
-  if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
-  }
+  storageSet(STORAGE_KEYS.CATEGORIES, categories);
   return categories;
 }
