@@ -4,8 +4,9 @@ import { memo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { transitions, listItemVariants } from "@/shared/lib/animations";
-import { ChevronRight, Zap, Focus, Clock } from "lucide-react";
+import { ChevronRight, Focus, Clock } from "lucide-react";
 import type { Task } from "@/entities/task";
+import { FocusButton } from "@/entities/task/ui/FocusButton";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
@@ -176,21 +177,13 @@ export const PipelineStep = memo(function PipelineStep({
                   ) : null}
                   {isCurrent ? (
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
+                      <FocusButton
                         onClick={(e) => {
                           e.stopPropagation();
                           onEnterFocus?.(task);
                         }}
-                        className={cn(
-                          "gap-1.5 h-9 transition-colors duration-200 hover:scale-105",
-                          classes.gradientBg,
-                          classes.textPrimary,
-                        )}
-                      >
-                        <Zap className="size-3.5" />
-                        <span className="hidden sm:inline">Foco</span>
-                      </Button>
+                        classes={classes}
+                      />
                       <Badge
                         variant="outline"
                         className={cn(

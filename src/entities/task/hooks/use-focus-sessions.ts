@@ -1,76 +1,41 @@
-import { useState, useEffect, useCallback } from "react";
-import { storageGet, storageSet } from "@shared/lib/storage";
+"use client";
 
-const STORAGE_KEY = "hyprtodo_focus_sessions";
-
-export interface FocusSessionData {
-  count: number;
-  lastDate: string; // ISO date string YYYY-MM-DD
-  totalMinutes: number;
-}
-
-function getToday(): string {
-  return new Date().toISOString().split("T")[0];
-}
-
-function getInitialData(): FocusSessionData {
-  if (typeof window === "undefined") {
-    return { count: 0, lastDate: getToday(), totalMinutes: 0 };
-  }
-
-  const data = storageGet<FocusSessionData>(STORAGE_KEY);
-  if (data) {
-    const today = getToday();
-    if (data.lastDate !== today) {
-      return { count: 0, lastDate: today, totalMinutes: 0 };
-    }
-    return data;
-  }
-
-  return { count: 0, lastDate: getToday(), totalMinutes: 0 };
-}
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { getFocusSessions, incrementFocusSessions } from "../lib/storage";
+import { taskKeys } from "../model/query-keys";
 
 export function useFocusSessions() {
-  const [sessions, setSessions] = useState<FocusSessionData>(getInitialData);
+  const qc = useQueryClient();
 
-  // Persist to localStorage whenever sessions change
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      storageSet(STORAGE_KEY, sessions);
-    }
-  }, [sessions]);
+  const query = useQuery({
+    queryKey: taskKeys.focusSessions(),
+    queryFn: getFocusSessions,
+    staleTime: Infinity,
+  });
 
-  const incrementSession = useCallback((minutes: number = 25) => {
-    setSessions((prev) => ({
-      count: prev.count + 1,
-      lastDate: getToday(),
-      totalMinutes: prev.totalMinutes + minutes,
-    }));
-  }, []);
+  const incrementMutation = useMutation({
+    mutationFn: async (minutes: number) => incrementFocusSessions(minutes),
+    onSuccess: (data) => {
+      qc.setQueryData(taskKeys.focusSessions(), data);
+    },
+  });
 
-  const resetDaily = useCallback(() => {
-    const today = getToday();
-    setSessions((prev) => {
-      if (prev.lastDate !== today) {
-        return { count: 0, lastDate: today, totalMinutes: 0 };
-      }
-      return prev;
-    });
-  }, []);
+  const data = query.data ?? { count: 0, lastDate: "", totalMinutes: 0 };
 
-  const getStats = useCallback(() => {
-    return {
-      sessionsToday: sessions.count,
-      totalMinutesToday: sessions.totalMinutes,
+  const stats = useMemo(
+    () => ({
+      sessionsToday: data.count,
+      totalMinutesToday: data.totalMinutes,
       averageSessionLength:
-        sessions.count > 0 ? Math.round(sessions.totalMinutes / sessions.count) : 0,
-    };
-  }, [sessions]);
+        data.count > 0 ? Math.round(data.totalMinutes / data.count) : 0,
+    }),
+    [data.count, data.totalMinutes],
+  );
 
   return {
-    sessions,
-    incrementSession,
-    resetDaily,
-    getStats,
+    sessions: data,
+    incrementSession: incrementMutation.mutate,
+    getStats: () => stats,
   };
 }

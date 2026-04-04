@@ -29,3 +29,9 @@ export interface TaskSettings {
   maxActiveTasks: number; // Máximo de tareas activas (default: 5)
   autoArchiveDays: number; // Días para auto-archivar completadas (default: 7)
 }
+
+export interface FocusSessionData {
+  count: number;
+  lastDate: string;
+  totalMinutes: number;
+}

@@ -15,65 +15,47 @@ import { asyncWrap } from "@shared/lib/utils";
 import type { TaskSettings } from "../model/types";
 import type { Task } from "../model/types";
 import { taskKeys } from "../model/query-keys";
+import {
+  snapshotTaskList,
+  rollbackTaskList,
+  invalidateAllTasks,
+  invalidateTaskRelation,
+} from "../lib/optimistic-helpers";
 
 export function useCreateTask() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: asyncWrap(saveTask),
     onMutate: async (newTask: Task) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.all });
-      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
-      const previousCurrent = queryClient.getQueryData<Task | null>(
-        taskKeys.current(),
-      );
-      queryClient.setQueryData<Task[]>(taskKeys.active(), (old) =>
+      await qc.cancelQueries({ queryKey: taskKeys.all });
+      const ctx = snapshotTaskList(qc);
+      qc.setQueryData<Task[]>(taskKeys.active(), (old) =>
         old ? [...old, newTask] : [newTask],
       );
       if (newTask.isCurrent) {
-        queryClient.setQueryData(taskKeys.current(), newTask);
+        qc.setQueryData(taskKeys.current(), newTask);
       }
-      return { previousTasks, previousCurrent };
+      return ctx;
     },
-    onError: (_err, _task, context) => {
-      if (context?.previousTasks) {
-        queryClient.setQueryData(taskKeys.active(), context.previousTasks);
-      }
-      if (context?.previousCurrent) {
-        queryClient.setQueryData(taskKeys.current(), context.previousCurrent);
-      }
-    },
+    onError: (_err, _task, ctx) => rollbackTaskList(qc, ctx),
     onSuccess: (_data, variables) => {
-      if (variables.parentTaskId) {
-        queryClient.invalidateQueries({
-          queryKey: [...taskKeys.detail(variables.parentTaskId), "child"],
-        });
-      }
-      if (variables.childTaskId) {
-        queryClient.invalidateQueries({
-          queryKey: [...taskKeys.detail(variables.childTaskId), "parent"],
-        });
-      }
+      invalidateTaskRelation(qc, variables.id, variables.parentTaskId);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-    },
+    onSettled: () => invalidateAllTasks(qc),
   });
 }
 
 export function useToggleTask() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: asyncWrap(toggleTask),
     onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.all });
-      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
-      const previousCurrent = queryClient.getQueryData<Task | null>(
-        taskKeys.current(),
-      );
+      await qc.cancelQueries({ queryKey: taskKeys.all });
+      const ctx = snapshotTaskList(qc);
 
-      queryClient.setQueryData<Task[]>(taskKeys.active(), (old) =>
+      qc.setQueryData<Task[]>(taskKeys.active(), (old) =>
         old
           ? old.map((t) =>
               t.id === id
@@ -90,82 +72,55 @@ export function useToggleTask() {
           : [],
       );
 
-      queryClient.setQueryData<Task | null>(taskKeys.current(), (old) => {
-        if (old?.id === id && !old?.isCompleted) {
-          return null;
-        }
+      qc.setQueryData<Task | null>(taskKeys.current(), (old) => {
+        if (old?.id === id && !old?.isCompleted) return null;
         return old;
       });
 
-      return { previousTasks, previousCurrent };
+      return ctx;
     },
-    onError: (_err, _id, context) => {
-      if (context?.previousTasks) {
-        queryClient.setQueryData(taskKeys.active(), context.previousTasks);
-      }
-      if (context?.previousCurrent) {
-        queryClient.setQueryData(taskKeys.current(), context.previousCurrent);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-    },
+    onError: (_err, _id, ctx) => rollbackTaskList(qc, ctx),
+    onSettled: () => invalidateAllTasks(qc),
   });
 }
 
 export function useDeleteTask() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: asyncWrap(deleteTask),
     onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.all });
-      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
-      const previousCurrent = queryClient.getQueryData<Task | null>(
-        taskKeys.current(),
-      );
+      await qc.cancelQueries({ queryKey: taskKeys.all });
+      const ctx = snapshotTaskList(qc);
 
-      queryClient.setQueryData<Task[]>(taskKeys.active(), (old) =>
+      qc.setQueryData<Task[]>(taskKeys.active(), (old) =>
         old ? old.filter((t) => t.id !== id) : [],
       );
 
-      queryClient.setQueryData<Task | null>(taskKeys.current(), (old) => {
+      qc.setQueryData<Task | null>(taskKeys.current(), (old) => {
         if (old?.id === id) return null;
         return old;
       });
 
-      return { previousTasks, previousCurrent };
+      return ctx;
     },
-    onError: (_err, _id, context) => {
-      if (context?.previousTasks) {
-        queryClient.setQueryData(taskKeys.active(), context.previousTasks);
-      }
-      if (context?.previousCurrent) {
-        queryClient.setQueryData(taskKeys.current(), context.previousCurrent);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-    },
+    onError: (_err, _id, ctx) => rollbackTaskList(qc, ctx),
+    onSettled: () => invalidateAllTasks(qc),
   });
 }
 
 export function useSetCurrentTask() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: asyncWrap(setCurrentTask),
     onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.all });
-      const previousCurrent = queryClient.getQueryData<Task | null>(
-        taskKeys.current(),
-      );
-      const tasks = queryClient.getQueryData<Task[]>(taskKeys.active());
-      const newCurrent = tasks?.find((t) => t.id === id) || null;
+      await qc.cancelQueries({ queryKey: taskKeys.all });
+      const ctx = snapshotTaskList(qc);
+      const newCurrent = ctx.previousTasks?.find((t) => t.id === id) || null;
 
-      queryClient.setQueryData<Task | null>(taskKeys.current(), newCurrent);
-
-      queryClient.setQueryData<Task[]>(
+      qc.setQueryData<Task | null>(taskKeys.current(), newCurrent);
+      qc.setQueryData<Task[]>(
         taskKeys.active(),
         (old) =>
           old?.map((t) => ({
@@ -174,75 +129,63 @@ export function useSetCurrentTask() {
           })) || [],
       );
 
-      return { previousCurrent };
+      return ctx;
     },
-    onError: (_err, _id, context) => {
-      if (context?.previousCurrent) {
-        queryClient.setQueryData(taskKeys.current(), context.previousCurrent);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-    },
+    onError: (_err, _id, ctx) => rollbackTaskList(qc, ctx),
+    onSettled: () => invalidateAllTasks(qc),
   });
 }
 
 export function useUpdateTaskSettings() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: asyncWrap(saveTaskSettings),
     onMutate: async (newSettings: TaskSettings) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.settings() });
-      const previousSettings = queryClient.getQueryData<TaskSettings>(
-        taskKeys.settings(),
-      );
-      queryClient.setQueryData(taskKeys.settings(), newSettings);
+      await qc.cancelQueries({ queryKey: taskKeys.settings() });
+      const previousSettings = qc.getQueryData<TaskSettings>(taskKeys.settings());
+      qc.setQueryData(taskKeys.settings(), newSettings);
       return { previousSettings };
     },
     onError: (_err, _settings, context) => {
       if (context?.previousSettings) {
-        queryClient.setQueryData(taskKeys.settings(), context.previousSettings);
+        qc.setQueryData(taskKeys.settings(), context.previousSettings);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.settings() });
+      qc.invalidateQueries({ queryKey: taskKeys.settings() });
     },
   });
 }
 
 export function useUpdateTaskNotes() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
       updateTaskNotes(id, notes);
     },
     onMutate: async ({ id, notes }) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.all });
-      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.active());
+      await qc.cancelQueries({ queryKey: taskKeys.all });
+      const ctx = snapshotTaskList(qc);
 
-      queryClient.setQueryData<Task[]>(
+      qc.setQueryData<Task[]>(
         taskKeys.active(),
         (old) => old?.map((t) => (t.id === id ? { ...t, notes } : t)) || [],
       );
 
-      return { previousTasks };
+      return ctx;
     },
-    onError: (_err, _vars, context) => {
-      if (context?.previousTasks) {
-        queryClient.setQueryData(taskKeys.active(), context.previousTasks);
-      }
-    },
+    onError: (_err, _vars, ctx) => rollbackTaskList(qc, ctx),
     onSettled: (_data, _error, vars) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.detail(vars.id) });
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+      qc.invalidateQueries({ queryKey: taskKeys.detail(vars.id) });
+      invalidateAllTasks(qc);
     },
   });
 }
 
 export function useSetTaskParent() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
@@ -251,23 +194,18 @@ export function useSetTaskParent() {
     }: {
       taskId: string;
       parentTaskId?: string;
-    }) => { setTaskParent(taskId, parentTaskId); },
+    }) => {
+      setTaskParent(taskId, parentTaskId);
+    },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-      queryClient.invalidateQueries({
-        queryKey: [...taskKeys.detail(variables.taskId), "parent"],
-      });
-      if (variables.parentTaskId) {
-        queryClient.invalidateQueries({
-          queryKey: [...taskKeys.detail(variables.parentTaskId), "child"],
-        });
-      }
+      invalidateAllTasks(qc);
+      invalidateTaskRelation(qc, variables.taskId, variables.parentTaskId);
     },
   });
 }
 
 export function useSetTaskChild() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
@@ -276,17 +214,12 @@ export function useSetTaskChild() {
     }: {
       taskId: string;
       childTaskId?: string;
-    }) => { setTaskChild(taskId, childTaskId); },
+    }) => {
+      setTaskChild(taskId, childTaskId);
+    },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-      queryClient.invalidateQueries({
-        queryKey: [...taskKeys.detail(variables.taskId), "child"],
-      });
-      if (variables.childTaskId) {
-        queryClient.invalidateQueries({
-          queryKey: [...taskKeys.detail(variables.childTaskId), "parent"],
-        });
-      }
+      invalidateAllTasks(qc);
+      invalidateTaskRelation(qc, variables.taskId, variables.childTaskId);
     },
   });
 }

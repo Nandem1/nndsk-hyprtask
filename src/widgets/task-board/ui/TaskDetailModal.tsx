@@ -9,12 +9,12 @@ import {
   ArrowRight,
   Play,
   Trash2,
-  Zap,
   Focus,
   X,
 } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import type { Task } from "@/entities/task";
+import { FocusButton } from "@/entities/task/ui/FocusButton";
 import {
   useUpdateTaskNotes,
   useTaskParent,
@@ -163,21 +163,13 @@ export function TaskDetailModal({
                   </Button>
                 )}
                 {!task.isCompleted && onEnterFocus && (
-                  <Button
-                    size="sm"
+                  <FocusButton
                     onClick={() => {
                       onEnterFocus();
                       onClose();
                     }}
-                    className={cn(
-                      "gap-1.5 h-9 transition-all hover:scale-105",
-                      themeClasses.gradientBg,
-                      themeClasses.textPrimary,
-                    )}
-                  >
-                    <Zap className="size-3.5" />
-                    <span className="hidden sm:inline">Foco</span>
-                  </Button>
+                    classes={themeClasses}
+                  />
                 )}
                 <Button
                   variant="ghost"

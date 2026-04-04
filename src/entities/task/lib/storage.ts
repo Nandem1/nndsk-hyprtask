@@ -1,13 +1,14 @@
 // ABSTRACCIÓN DE ALMACENAMIENTO PARA TAREAS
 // localStorage por ahora, preparado para migrar a Supabase
 
-import type { Task, TaskSettings } from "../model/types";
+import type { Task, TaskSettings, FocusSessionData } from "../model/types";
 import { storageGetList, storageGet, storageSet } from "@shared/lib/storage";
 import { upsertItem, reorderById } from "@shared/lib/array";
 
 const STORAGE_KEYS = {
   TASKS: "hyprtodo_tasks",
   SETTINGS: "hyprtodo_task_settings",
+  FOCUS_SESSIONS: "hyprtodo_focus_sessions",
 } as const;
 
 // ============================================
@@ -177,4 +178,29 @@ export function getTaskChild(taskId: string): Task | null {
 
 export function reorderTasks(orderedIds: string[]): void {
   storageSet(STORAGE_KEYS.TASKS, reorderById(getTasks(), orderedIds));
+}
+
+// ============================================
+// FOCUS SESSIONS
+// ============================================
+
+function getToday(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+export function getFocusSessions(): FocusSessionData {
+  const data = storageGet<FocusSessionData>(STORAGE_KEYS.FOCUS_SESSIONS);
+  if (data && data.lastDate === getToday()) return data;
+  return { count: 0, lastDate: getToday(), totalMinutes: 0 };
+}
+
+export function incrementFocusSessions(minutes: number): FocusSessionData {
+  const current = getFocusSessions();
+  const updated: FocusSessionData = {
+    count: current.count + 1,
+    lastDate: getToday(),
+    totalMinutes: current.totalMinutes + minutes,
+  };
+  storageSet(STORAGE_KEYS.FOCUS_SESSIONS, updated);
+  return updated;
 }

@@ -2,12 +2,14 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { setTaskChild, reorderTasks } from "../lib/storage";
-import { taskKeys } from "../model/query-keys";
 import type { Task } from "../model/types";
+import {
+  invalidateAllTasks,
+  invalidateTaskRelation,
+} from "../lib/optimistic-helpers";
 
-// Hook para conectar dos tareas en el pipeline
 export function useConnectTasks() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
@@ -17,26 +19,18 @@ export function useConnectTasks() {
       fromTaskId: string;
       toTaskId: string;
     }) => {
-      // Establecer fromTask como padre de toTask
       await setTaskChild(fromTaskId, toTaskId);
       return { fromTaskId, toTaskId };
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-      // Invalidar relaciones específicas
-      queryClient.invalidateQueries({
-        queryKey: [...taskKeys.detail(variables.fromTaskId), "child"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [...taskKeys.detail(variables.toTaskId), "parent"],
-      });
+      invalidateAllTasks(qc);
+      invalidateTaskRelation(qc, variables.fromTaskId, variables.toTaskId);
     },
   });
 }
 
-// Hook para desconectar dos tareas
 export function useDisconnectTasks() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
@@ -50,25 +44,17 @@ export function useDisconnectTasks() {
       return { parentTaskId, childTaskId };
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-      // Invalidar relaciones específicas
-      queryClient.invalidateQueries({
-        queryKey: [...taskKeys.detail(variables.parentTaskId), "child"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [...taskKeys.detail(variables.childTaskId), "parent"],
-      });
+      invalidateAllTasks(qc);
+      invalidateTaskRelation(qc, variables.parentTaskId, variables.childTaskId);
     },
   });
 }
 
-// Hook para auto-conectar tareas en orden
 export function useAutoConnectPipeline() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async (tasks: Task[]) => {
-      // Ordenar tareas: primero completadas, luego por orden, luego por fecha
       const sortedTasks = [...tasks].sort((a, b) => {
         if (a.isCompleted !== b.isCompleted) {
           return a.isCompleted ? -1 : 1;
@@ -81,7 +67,6 @@ export function useAutoConnectPipeline() {
         );
       });
 
-      // Establecer relaciones en cadena
       for (let i = 0; i < sortedTasks.length - 1; i++) {
         const current = sortedTasks[i];
         const next = sortedTasks[i + 1];
@@ -94,31 +79,22 @@ export function useAutoConnectPipeline() {
       return sortedTasks;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-      // Invalidar todas las relaciones de las tareas afectadas
+      invalidateAllTasks(qc);
       variables.forEach((task) => {
-        queryClient.invalidateQueries({
-          queryKey: [...taskKeys.detail(task.id), "parent"],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [...taskKeys.detail(task.id), "child"],
-        });
+        invalidateTaskRelation(qc, task.id);
       });
     },
   });
 }
 
-// Hook para reordenar tareas
 export function useReorderTasks() {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async (orderedIds: string[]) => {
       await reorderTasks(orderedIds);
       return orderedIds;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
-    },
+    onSuccess: () => invalidateAllTasks(qc),
   });
 }

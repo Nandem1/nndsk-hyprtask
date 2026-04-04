@@ -4,4 +4,5 @@ export const taskKeys = {
   current: () => [...taskKeys.all, "current"] as const,
   detail: (id: string) => [...taskKeys.all, "detail", id] as const,
   settings: () => [...taskKeys.all, "settings"] as const,
+  focusSessions: () => [...taskKeys.all, "focus-sessions"] as const,
 };

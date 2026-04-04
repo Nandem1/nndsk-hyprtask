@@ -1,6 +1,6 @@
 # Refactoring Plan - SOLID / DRY / KISS / FSD
 
-## Estado: Fase 1 + Fase 2 + Fase 4 completadas
+## Estado: Fase 1 + Fase 2 + Fase 3 + Fase 4 completadas ✅
 
 ### Progreso - Batch 1 (completado previamente)
 - [x] **Item 1**: FullscreenTimerLayout - Extraído correctamente. FocusMode y ColacionMode lo usan.
@@ -26,12 +26,13 @@
 - [x] **2.3**: Consolidar `useFocusTimer` y `useCountdownTimer` en hook extensible. `useCountdownTimer` (shared) ahora soporta fase de break opcional + `timeLeftRef`. `useFocusTimer` es un thin wrapper con nombres de métodos adaptados.
 - [x] **Build + Lint**: `npm run build` pasa. `npm run lint` pasa con 0 errors, 4 warnings (aceptables).
 
-### Items pendientes - Fase 3: Datos + Arquitectura
-- [ ] **3.1**: Migrar `useFocusSessions` de useState+localStorage → TanStack Query (sync reactivo entre componentes)
-- [ ] **3.2**: Refactor `use-task-mutations.ts` (292 líneas): extraer helpers de optimistic update compartidos → ~150 líneas
-- [ ] **3.3**: Extraer `TaskActionButtons` (Actual/Foco/Delete) compartido para PipelineStep, KanbanTaskCard, TaskDetailModal
+### Progreso - Fase 3: Datos + Arquitectura (completado)
+- [x] **3.1**: Migrar `useFocusSessions` de useState+localStorage → TanStack Query. Query key `taskKeys.focusSessions()`, storage functions en `lib/storage.ts`, hook reescrito con `useQuery` + `useMutation`. API pública idéntica (`sessions`, `incrementSession`, `getStats`), FocusMode.tsx sin cambios necesarios.
+- [x] **3.2**: Refactor `use-task-mutations.ts` (292 → 202 líneas): extraídos 4 helpers de optimistic update en `lib/optimistic-helpers.ts` (`snapshotTaskList`, `rollbackTaskList`, `invalidateAllTasks`, `invalidateTaskRelation`). `use-task-relations.ts` consolidado con los mismos helpers (124 → 106 líneas).
+- [x] **3.3**: Extraer `FocusButton` compartido en `entities/task/ui/FocusButton.tsx`. PipelineStep y TaskDetailModal usan el componente compartido (elimina duplicación de icono Zap + gradientBg + textPrimary). KanbanTaskCard mantiene su `<button>` raw por divergencia de estilos (KISS > DRY para duplicación accidental).
+- [x] **Build + Lint**: `npm run build` pasa. `npm run lint` pasa con 0 errors, 4 warnings (aceptables).
 
-### Items pendientes - Fase 4: Limpieza Profunda
+### Progreso - Fase 4: Limpieza Profunda (completado)
 - [x] **4.1**: Dejar de exportar funciones raw de storage desde entity `index.ts`. Eliminadas 17 exports de `entities/task/index.ts` y 12 exports de `entities/project/index.ts`. Unico consumidor externo (`TasksPageContent.tsx`) ahora importa directo de `entities/task/lib/storage`.
 - [x] **4.2**: Split `project/model/types.ts` (312 → 126 líneas): extraídos `model/color-constants.ts` (108 líneas) y `model/defaults.ts` (74 líneas). Index re-exporta desde los nuevos archivos.
 - [x] **4.3**: Merge `colacion-slice` + `emote-prefs-slice` → `ui-preferences-slice`. Un solo slice con `isColacionOpen` + `animatedEmotes`. Hooks existentes sin cambios.
@@ -51,6 +52,8 @@
 - `src/entities/project/model/color-constants.ts` - PROJECT_COLOR_CLASSES, CATEGORY_COLOR_CLASSES (extraído de types.ts)
 - `src/entities/project/model/defaults.ts` - DEFAULT_PROJECTS, DEFAULT_CATEGORIES (extraído de types.ts)
 - `src/store/slices/ui-preferences-slice.ts` - Slice unificado (colacion + emote prefs)
+- `src/entities/task/lib/optimistic-helpers.ts` - Helpers reutilizables para optimistic updates (snapshot, rollback, invalidate)
+- `src/entities/task/ui/FocusButton.tsx` - Botón Foco compartido (Zap + gradientBg)
 
 ### Archivos modificados
 - `src/entities/emote/model/types.ts` - Re-exporta UserEmote desde shared
@@ -85,6 +88,15 @@
 - `src/store/slices/colacion-slice.ts` - ELIMINADO (mergeado en ui-preferences-slice)
 - `src/store/slices/emote-prefs-slice.ts` - ELIMINADO (mergeado en ui-preferences-slice)
 - `src/views/tasks/ui/TasksPageContent.tsx` - Importa autoArchiveCompletedTasks desde storage directo
+- `src/entities/task/model/types.ts` - Agregado tipo `FocusSessionData`
+- `src/entities/task/model/query-keys.ts` - Agregado key `focusSessions()`
+- `src/entities/task/lib/storage.ts` - Agregadas storage functions para focus sessions (`getFocusSessions`, `incrementFocusSessions`)
+- `src/entities/task/hooks/use-focus-sessions.ts` - Reescrito con TanStack Query (useQuery + useMutation con optimistic update). De 76 → 46 líneas.
+- `src/entities/task/hooks/use-task-mutations.ts` - Usa optimistic helpers. De 292 → 202 líneas.
+- `src/entities/task/hooks/use-task-relations.ts` - Usa `invalidateAllTasks`/`invalidateTaskRelation`. De 124 → 106 líneas.
+- `src/entities/task/index.ts` - Exporta `FocusSessionData` desde model/types, exporta `FocusButton`
+- `src/widgets/task-board/ui/views/PipelineStep.tsx` - Usa `FocusButton` compartido
+- `src/widgets/task-board/ui/TaskDetailModal.tsx` - Usa `FocusButton` compartido
 
 ### Warnings aceptables (no arreglables sin cambios mayores)
 - 3x `@next/next/no-img-element` - Emotes externos 7TV, Next Image no aplica para URLs dinámicas
