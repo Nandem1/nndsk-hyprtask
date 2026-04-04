@@ -1,5 +1,19 @@
 # Zustand Store - HyprTask
 
+## Posición en FSD
+
+`src/store/` actúa como la capa **app** implícita en este proyecto (Next.js ocupa `app/` para el router, por lo que el store vive aquí como equivalente).
+
+**Reglas que debe cumplir:**
+- Puede importar desde cualquier capa inferior (`entities`, `shared`, etc.)
+- **Ninguna capa inferior debe importar desde `@/store`** — solo `widgets` y capas superiores
+
+**Jerarquía:** `store (app)` → `widgets` → `features` → `entities` → `shared`
+
+**Ejemplo válido:** `store/slices/view-mode-slice.ts` importa `TaskViewMode` de `@/entities/task` — correcto (app → entity).
+
+---
+
 Implementación de estado global usando Zustand v5 con patrón class-based y middleware oficial de persistencia.
 
 ## Estructura
@@ -119,8 +133,9 @@ function ViewSelector() {
 │  ├── TaskBoard             → useTaskFiltersState()          │
 │  ├── Header                → useThemeState()                │
 ├─────────────────────────────────────────────────────────────┤
-│  ENTITIES (src/entities/)                                   │
-│  ├── task/ui/TaskSidebar   → setSelectedProject()           │
+│  FEATURES (src/features/)                                   │
+│  ├── manage-projects       → ProjectConfigModal             │
+│  ├── manage-categories     → CategoryConfigModal            │
 ├─────────────────────────────────────────────────────────────┤
 │  STORE (src/store/)                                         │
 │  ├── theme-slice.ts        ✅                               │
@@ -131,9 +146,10 @@ function ViewSelector() {
 
 ## Cambios Realizados
 
-### ✅ Eliminada capa `features/`
-- Ya no existe `src/features/`
-- Los hooks se consumen directamente desde `@/store/hooks`
+### ✅ Capa `features/` restaurada con CRUD modals
+- `features/manage-projects` — ProjectConfigModal
+- `features/manage-categories` — CategoryConfigModal
+- Los hooks del store se consumen directamente desde `@/store/hooks` en widgets
 
 ### ✅ Filtros migrados a Zustand
 - Eliminado props drilling de filtros (3 niveles)

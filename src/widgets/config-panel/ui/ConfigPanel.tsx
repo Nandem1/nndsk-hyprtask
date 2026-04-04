@@ -1,7 +1,7 @@
 "use client";
 
 import { useThemeState } from "@/store/hooks";
-import { ThemePaletteSelector } from "@/shared/theme";
+import { ThemePaletteSelector } from "./ThemePaletteSelector";
 import { SleepConfigForm } from "@/entities/sleep";
 import { WorkConfigForm } from "@/entities/work";
 

@@ -105,6 +105,7 @@ export {
 export { useFocusSessions } from "./hooks/use-focus-sessions";
 export type { FocusSessionData } from "./hooks/use-focus-sessions";
 
-// UI Components (solo modales de configuración — TaskSidebar movido a widgets/task-sidebar)
-export { ProjectConfigModal } from "./ui/ProjectConfigModal";
-export { CategoryConfigModal } from "./ui/CategoryConfigModal";
+// UI Components
+export { TaskMetadataBadges } from "./ui/TaskMetadataBadges";
+// CategoryConfigModal → features/manage-categories
+// ProjectConfigModal  → features/manage-projects

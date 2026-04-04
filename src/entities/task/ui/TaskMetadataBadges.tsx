@@ -6,7 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import {
   useProjectInfo,
   useCategoryInfo,
-} from "@/entities/task/hooks/use-project-colors";
+} from "../hooks/use-project-colors";
 
 interface TaskMetadataBadgesProps {
   projectId?: string;

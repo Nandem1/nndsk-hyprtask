@@ -14,238 +14,223 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Separator } from "@/shared/ui/separator";
 import {
-  useActiveProjects,
-  useSaveProject,
-  useDeleteProject,
-} from "../hooks/use-projects";
-import type {
-  Project,
-  ProjectColor,
-  ProjectIcon,
-} from "../model/project-types";
-import { PROJECT_COLOR_CLASSES } from "../model/project-types";
+  useActiveCategories,
+  useSaveCategory,
+  useDeleteCategory,
+  type Category,
+  type CategoryColor,
+  type CategoryIcon,
+  CATEGORY_COLOR_CLASSES,
+} from "@/entities/task";
 import {
-  Server,
-  Code,
-  Bot,
-  FolderOpen,
-  FolderKanban,
-  Layers,
-  Box,
-  Container,
-  Database,
-  Cloud,
-  Globe,
-  Smartphone,
-  Monitor,
-  Laptop,
-  Cpu,
-  CircuitBoard,
-  GitBranch,
-  GitCommit,
-  Github,
-  Terminal,
-  FileCode,
-  Briefcase,
-  Building,
-  Home,
-  Rocket,
+  Bug,
+  Wrench,
   Zap,
-  Star,
-  Heart,
-  Bookmark,
-  Flag,
-  Target,
-  Crosshair,
+  Sparkles,
+  FolderKanban,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  FileText,
+  FileCheck,
+  Clipboard,
+  ClipboardList,
+  List,
+  ListChecks,
+  ListTodo,
+  Layout,
+  LayoutGrid,
+  BarChart,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
 import { Plus, Trash2, GripVertical } from "lucide-react";
+
+const CATEGORY_ICON_MAP: Record<CategoryIcon, React.ComponentType<{ className?: string }>> = {
+  Bug,
+  Wrench,
+  Zap,
+  Sparkles,
+  FolderKanban,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  HelpCircle: AlertCircle,
+  FileText,
+  FileCheck,
+  FilePlus: FileCheck,
+  FileMinus: FileText,
+  FileX: FileText,
+  FileQuestion: FileText,
+  Clipboard,
+  ClipboardCheck: Clipboard,
+  ClipboardList,
+  List,
+  ListChecks,
+  ListTodo,
+  Layout,
+  LayoutGrid,
+  Grid: LayoutGrid,
+  Table: LayoutGrid,
+  BarChart,
+  PieChart: BarChart,
+  TrendingUp,
+  TrendingDown: TrendingUp,
+  Activity,
+  Pulse: Activity,
+};
 import { useConfirm } from "@/shared/hooks/use-confirm";
 
-interface ProjectConfigModalProps {
+interface CategoryConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const AVAILABLE_COLORS: ProjectColor[] = [
-  "blue",
-  "indigo",
-  "purple",
-  "green",
-  "teal",
-  "cyan",
-  "pink",
-  "rose",
+const AVAILABLE_COLORS: CategoryColor[] = [
+  "red",
   "orange",
   "amber",
   "yellow",
+  "green",
+  "teal",
+  "cyan",
+  "blue",
+  "indigo",
+  "purple",
+  "pink",
+  "rose",
   "gray",
 ];
 
-const PROJECT_ICON_MAP: Record<ProjectIcon, React.ComponentType<{ className?: string }>> = {
-  Server,
-  Code,
-  Bot,
-  FolderOpen,
-  FolderKanban,
-  Layers,
-  Box,
-  Container,
-  Database,
-  Cloud,
-  Globe,
-  Smartphone,
-  Monitor,
-  Laptop,
-  Cpu,
-  CircuitBoard,
-  GitBranch,
-  GitCommit,
-  Github,
-  Terminal,
-  FileCode,
-  Briefcase,
-  Building,
-  Home,
-  Rocket,
-  Zap,
-  Star,
-  Heart,
-  Bookmark,
-  Flag,
-  Target,
-  Crosshair,
-};
-
-const AVAILABLE_ICONS: ProjectIcon[] = [
-  "Server",
-  "Code",
-  "Bot",
-  "FolderOpen",
-  "FolderKanban",
-  "Layers",
-  "Box",
-  "Database",
-  "Cloud",
-  "Globe",
-  "Monitor",
-  "Laptop",
-  "Cpu",
-  "GitBranch",
-  "Terminal",
-  "Briefcase",
-  "Building",
-  "Home",
-  "Rocket",
+const AVAILABLE_ICONS: CategoryIcon[] = [
+  "Bug",
+  "Wrench",
   "Zap",
-  "Star",
-  "Heart",
-  "Bookmark",
-  "Flag",
-  "Target",
+  "Sparkles",
+  "FolderKanban",
+  "CheckCircle",
+  "AlertCircle",
+  "AlertTriangle",
+  "Info",
+  "FileText",
+  "FileCheck",
+  "Clipboard",
+  "ClipboardList",
+  "List",
+  "ListChecks",
+  "ListTodo",
+  "Layout",
+  "LayoutGrid",
+  "BarChart",
+  "TrendingUp",
+  "Activity",
 ];
 
-export function ProjectConfigModal({
+export function CategoryConfigModal({
   isOpen,
   onClose,
-}: ProjectConfigModalProps) {
-  const { data: projects = [] } = useActiveProjects();
-  const saveProjectMutation = useSaveProject();
-  const deleteProjectMutation = useDeleteProject();
-  const { confirm } = useConfirm();
+}: CategoryConfigModalProps) {
+  const { data: categories = [] } = useActiveCategories();
+  const saveCategoryMutation = useSaveCategory();
+  const deleteCategoryMutation = useDeleteCategory();
 
   const [isCreating, setIsCreating] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const [name, setName] = useState("");
-  const [color, setColor] = useState<ProjectColor>("blue");
-  const [icon, setIcon] = useState<ProjectIcon>("FolderKanban");
+  const [color, setColor] = useState<CategoryColor>("blue");
+  const [icon, setIcon] = useState<CategoryIcon>("FolderKanban");
+
+  const { confirm } = useConfirm();
 
   const resetForm = () => {
     setName("");
     setColor("blue");
     setIcon("FolderKanban");
     setIsCreating(false);
-    setEditingProject(null);
+    setEditingCategory(null);
   };
 
   const handleSave = () => {
     if (!name.trim()) return;
 
-    const project: Project = {
-      id: editingProject?.id || crypto.randomUUID(),
+    const category: Category = {
+      id: editingCategory?.id || crypto.randomUUID(),
       name: name.trim(),
       color,
       icon,
       isActive: true,
-      order: editingProject?.order ?? projects.length,
-      createdAt: editingProject?.createdAt || new Date().toISOString(),
+      order: editingCategory?.order ?? categories.length,
+      createdAt: editingCategory?.createdAt || new Date().toISOString(),
     };
 
-    saveProjectMutation.mutate(project, {
+    saveCategoryMutation.mutate(category, {
       onSuccess: resetForm,
     });
   };
 
-  const handleDelete = async (project: Project) => {
+  const handleDelete = async (category: Category) => {
     const confirmed = await confirm({
-      title: "Eliminar proyecto",
-      description: `¿Estás seguro de que quieres eliminar "${project.name}"?`,
+      title: "Eliminar categoría",
+      description: `¿Estás seguro de que quieres eliminar "${category.name}"?`,
       confirmText: "Eliminar",
       cancelText: "Cancelar",
       variant: "destructive",
     });
     if (confirmed) {
-      deleteProjectMutation.mutate(project.id);
+      deleteCategoryMutation.mutate(category.id);
     }
   };
 
-  const startEditing = (project: Project) => {
-    setEditingProject(project);
-    setName(project.name);
-    setColor(project.color);
-    setIcon(project.icon);
+  const startEditing = (category: Category) => {
+    setEditingCategory(category);
+    setName(category.name);
+    setColor(category.color);
+    setIcon(category.icon);
     setIsCreating(true);
   };
 
-  const getIconComponent = (iconName: ProjectIcon) => {
-    return PROJECT_ICON_MAP[iconName] || FolderKanban;
+  const getIconComponent = (iconName: CategoryIcon) => {
+    return CATEGORY_ICON_MAP[iconName] || FolderKanban;
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Configurar Proyectos</DialogTitle>
+          <DialogTitle>Configurar Categorías</DialogTitle>
           <DialogDescription>
-            Gestiona tus proyectos. Los cambios se aplican inmediatamente.
+            Gestiona tus categorías. Los cambios se aplican inmediatamente.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-2 my-4">
-          {projects.map((project) => {
-            const colorClasses = PROJECT_COLOR_CLASSES[project.color];
-            const IconComponent = getIconComponent(project.icon);
+          {categories.map((category) => {
+            const colorClasses = CATEGORY_COLOR_CLASSES[category.color];
+            const IconComponent = getIconComponent(category.icon);
             return (
               <div
-                key={project.id}
+                key={category.id}
                 className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
               >
                 <GripVertical className="size-4 text-muted-foreground cursor-grab" />
                 <div className={cn("p-2 rounded-md", colorClasses.bg)}>
                   <IconComponent className={cn("size-4", colorClasses.text)} />
                 </div>
-                <span className="flex-1 font-medium">{project.name}</span>
+                <span className="flex-1 font-medium">{category.name}</span>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => startEditing(project)}
+                  onClick={() => startEditing(category)}
                 >
                   Editar
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDelete(project)}
+                  onClick={() => handleDelete(category)}
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 />
@@ -260,16 +245,16 @@ export function ProjectConfigModal({
             <Separator />
             <div className="flex flex-col gap-4 pt-4">
               <h4 className="font-medium">
-                {editingProject ? "Editar Proyecto" : "Nuevo Proyecto"}
+                {editingCategory ? "Editar Categoría" : "Nueva Categoría"}
               </h4>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="project-name">Nombre</Label>
+                <Label htmlFor="category-name">Nombre</Label>
                 <Input
-                  id="project-name"
+                  id="category-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Nombre del proyecto"
+                  placeholder="Nombre de la categoría"
                 />
               </div>
 
@@ -282,7 +267,7 @@ export function ProjectConfigModal({
                       onClick={() => setColor(c)}
                       className={cn(
                         "size-8 rounded-full",
-                        PROJECT_COLOR_CLASSES[c].bg,
+                        CATEGORY_COLOR_CLASSES[c].bg,
                         "border-2",
                         color === c
                           ? "border-foreground"
@@ -320,7 +305,7 @@ export function ProjectConfigModal({
 
               <div className="flex gap-2">
                 <Button onClick={handleSave} className="flex-1">
-                  {editingProject ? "Guardar Cambios" : "Crear Proyecto"}
+                  {editingCategory ? "Guardar Cambios" : "Crear Categoría"}
                 </Button>
                 <Button variant="outline" onClick={resetForm}>
                   Cancelar
@@ -329,10 +314,10 @@ export function ProjectConfigModal({
             </div>
           </>
         ) : (
-          <Button onClick={() => setIsCreating(true)} className="w-full">
-            <Plus data-icon="inline-start" />
-            Agregar Proyecto
-          </Button>
+        <Button onClick={() => setIsCreating(true)} className="w-full">
+          <Plus data-icon="inline-start" />
+          Agregar Categoría
+        </Button>
         )}
       </DialogContent>
     </Dialog>

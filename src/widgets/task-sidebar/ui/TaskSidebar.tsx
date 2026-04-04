@@ -6,8 +6,8 @@ import { X, Settings, Tag } from "lucide-react";
 import { useThemeState, useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
 import { useActiveTasks, useActiveProjects, useActiveCategories } from "@/entities/task";
 import { Button } from "@/shared/ui/button";
-import { ProjectConfigModal } from "@/entities/task/ui/ProjectConfigModal";
-import { CategoryConfigModal } from "@/entities/task/ui/CategoryConfigModal";
+import { ProjectConfigModal } from "@/features/manage-projects";
+import { CategoryConfigModal } from "@/features/manage-categories";
 import {
   Server,
   Code,

@@ -6,7 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import { Check, Trash2, Target, Zap } from "lucide-react";
 import type { Task } from "@/entities/task";
 import type { useThemeState } from "@/store/hooks";
-import { TaskMetadataBadges } from "@/shared/ui/task-metadata-badges";
+import { TaskMetadataBadges } from "@/entities/task";
 import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";
 
