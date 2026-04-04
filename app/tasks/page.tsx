@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { Header } from "@/widgets";
-import { TasksPageContent } from "./TasksPageContent";
-import { TasksPageSkeleton } from "./TasksPageSkeleton";
+import { TasksPageContent, TasksPageSkeleton } from "@views/tasks";
 
 // Server Component - Main Page
 export default function TasksPage() {

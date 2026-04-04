@@ -21,7 +21,7 @@ import {
   type ProjectColor,
   type ProjectIcon,
   PROJECT_COLOR_CLASSES,
-} from "@/entities/task";
+} from "@/entities/project";
 import {
   Server,
   Code,

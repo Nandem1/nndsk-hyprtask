@@ -4,57 +4,6 @@ export type { TaskViewMode, ViewModeConfig } from "./model/view-mode";
 export { VIEW_MODES } from "./model/view-mode";
 export { taskKeys } from "./model/query-keys";
 
-// Tipos de proyectos/categorías configurables
-export type {
-  Project,
-  Category,
-  ProjectColor,
-  CategoryColor,
-  ProjectIcon,
-  CategoryIcon,
-} from "./model/project-types";
-export {
-  PROJECT_COLOR_CLASSES,
-  CATEGORY_COLOR_CLASSES,
-  DEFAULT_PROJECTS,
-  DEFAULT_CATEGORIES,
-  LEGACY_PROJECT_MAP,
-  LEGACY_CATEGORY_MAP,
-} from "./model/project-types";
-export { projectKeys, categoryKeys } from "./model/project-query-keys";
-
-// Storage de proyectos/categorías
-export {
-  getProjects,
-  getActiveProjects,
-  getProjectById,
-  saveProject,
-  deleteProject,
-  getCategories,
-  getActiveCategories,
-  getCategoryById,
-  saveCategory,
-  deleteCategory,
-  migrateLegacyProjectsAndCategories,
-} from "./lib/project-storage";
-
-// Hooks de proyectos/categorías
-export {
-  useProjects,
-  useActiveProjects,
-  useProject,
-  useSaveProject,
-  useDeleteProject,
-} from "./hooks/use-projects";
-export {
-  useCategories,
-  useActiveCategories,
-  useCategory,
-  useSaveCategory,
-  useDeleteCategory,
-} from "./hooks/use-categories";
-export { useProjectInfo, useCategoryInfo } from "./hooks/use-project-colors";
-
 // Storage de tareas
 export {
   getTasks,
@@ -104,8 +53,3 @@ export {
 // Hooks de focus sessions
 export { useFocusSessions } from "./hooks/use-focus-sessions";
 export type { FocusSessionData } from "./hooks/use-focus-sessions";
-
-// UI Components
-export { TaskMetadataBadges } from "./ui/TaskMetadataBadges";
-// CategoryConfigModal → features/manage-categories
-// ProjectConfigModal  → features/manage-projects

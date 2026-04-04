@@ -16,12 +16,12 @@ const SleepDashboard = dynamic(
 
 /**
  * SleepDashboardWrapper
- * 
+ *
  * Arquitectura: Islands of Interactivity
  * - La página (sleep/page.tsx) permanece como Server Component
  * - Este wrapper es Client Component y maneja el dynamic import
  * - Solo esta "isla" se hidrata en el cliente
- * 
+ *
  * Beneficios:
  * - SSR para el layout y skeleton inicial
  * - Code splitting automático del dashboard pesado

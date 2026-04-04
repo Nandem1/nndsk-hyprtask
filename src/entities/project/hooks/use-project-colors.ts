@@ -8,7 +8,7 @@ import {
   CATEGORY_COLOR_CLASSES,
   type ProjectIcon,
   type CategoryIcon,
-} from "../model/project-types";
+} from "../model/types";
 
 // Objetos constantes para evitar recreación
 const DEFAULT_PROJECT_INFO = {
@@ -62,10 +62,6 @@ const FALLBACK_COLOR_CLASSES = {
   badge: "bg-gray-500/10 border-gray-500/30 text-gray-600 dark:text-gray-400",
 };
 
-/**
- * Hook para obtener la información de un proyecto
- * Optimizado con useMemo para evitar re-renders innecesarios
- */
 export function useProjectInfo(projectId: string | undefined) {
   const { data: project } = useProject(projectId || "");
 
@@ -88,10 +84,6 @@ export function useProjectInfo(projectId: string | undefined) {
   }, [projectId, project]);
 }
 
-/**
- * Hook para obtener la información de una categoría
- * Optimizado con useMemo para evitar re-renders innecesarios
- */
 export function useCategoryInfo(categoryId: string | undefined) {
   const { data: category } = useCategory(categoryId || "");
 

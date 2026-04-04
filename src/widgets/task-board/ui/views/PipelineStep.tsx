@@ -9,7 +9,7 @@ import type { Task } from "@/entities/task";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
-import { TaskMetadataBadges } from "@/entities/task";
+import { TaskMetadataBadges } from "@/entities/project";
 import { DNAHelix } from "@/shared/ui/dna-helix";
 import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";

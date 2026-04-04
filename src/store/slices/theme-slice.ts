@@ -1,6 +1,6 @@
 import { StoreSetter, StoreGetter, PublicActions } from "../types";
 import type { ThemePalette, ExtendedThemeClasses } from "@/shared/types/theme";
-import { getExtendedThemeClasses } from "@/shared/config/theme/utils";
+import { getExtendedThemeClasses } from "@/shared/theme/config";
 
 // ============================================================================
 // Constants

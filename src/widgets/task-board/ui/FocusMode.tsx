@@ -18,9 +18,9 @@ import {
 } from "lucide-react";
 import { useThemeState } from "@/store/hooks";
 import type { Task } from "@/entities/task";
-import { useProjectInfo } from "@/entities/task";
+import { useProjectInfo } from "@/entities/project";
 import { Button } from "@/shared/ui/button";
-import { DNAHelixBackground } from "@/shared/components/dna-helix-background";
+import { DNAHelixBackground } from "@/shared/ui/dna-helix-background";
 import { useFocusSessions } from "@/entities/task";
 import { EndSessionDialog } from "./EndSessionDialog";
 import { playSuccessSound } from "@/shared/lib/audio";

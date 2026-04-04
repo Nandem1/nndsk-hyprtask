@@ -21,7 +21,7 @@ import {
   type CategoryColor,
   type CategoryIcon,
   CATEGORY_COLOR_CLASSES,
-} from "@/entities/task";
+} from "@/entities/project";
 import {
   Bug,
   Wrench,

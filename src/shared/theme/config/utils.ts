@@ -3,7 +3,7 @@ import type { ThemePalette, ExtendedThemeClasses } from "@/shared/types/theme";
 // Helper para construir clases dinámicas extendidas
 export function getExtendedThemeClasses(palette: ThemePalette): ExtendedThemeClasses {
   const baseClasses = getThemeClassesString(palette);
-  
+
   const extendedMap: Record<ThemePalette, Omit<ExtendedThemeClasses, keyof typeof baseClasses>> = {
     genshin: {
       glassBg: "bg-blue-500/5 backdrop-blur-xl",

@@ -2,8 +2,8 @@
 
 import { useThemeState } from "@/store/hooks";
 import { ThemePaletteSelector } from "./ThemePaletteSelector";
-import { SleepConfigForm } from "@/entities/sleep";
-import { WorkConfigForm } from "@/entities/work";
+import { SleepConfigForm } from "@/features/configure-sleep";
+import { WorkConfigForm } from "@/features/configure-work";
 
 export function ConfigPanel() {
   const { themeClasses } = useThemeState();

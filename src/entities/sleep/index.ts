@@ -33,4 +33,3 @@ export {
 export { SleepTimerCard } from "./ui/SleepTimerCard";
 export { SleepStatsCard } from "./ui/SleepStatsCard";
 export { WindDownCard } from "./ui/WindDownCard";
-export { SleepConfigForm } from "./ui/SleepConfigForm";

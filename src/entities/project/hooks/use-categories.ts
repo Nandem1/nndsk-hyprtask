@@ -7,28 +7,22 @@ import {
   getCategoryById,
   saveCategory,
   deleteCategory,
-} from "../lib/project-storage";
-import { categoryKeys } from "../model/project-query-keys";
-import type { Category } from "../model/project-types";
+} from "../lib/storage";
+import { categoryKeys } from "../model/query-keys";
+import type { Category } from "../model/types";
 
 // ============================================================================
 // Query Hooks
 // ============================================================================
 
-/**
- * Hook para obtener todas las categorías
- */
 export function useCategories() {
   return useQuery({
     queryKey: categoryKeys.lists(),
     queryFn: getCategories,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5,
   });
 }
 
-/**
- * Hook para obtener solo categorías activas (ordenadas)
- */
 export function useActiveCategories() {
   return useQuery({
     queryKey: categoryKeys.list({ isActive: true }),
@@ -37,9 +31,6 @@ export function useActiveCategories() {
   });
 }
 
-/**
- * Hook para obtener una categoría específica
- */
 export function useCategory(id: string) {
   return useQuery({
     queryKey: categoryKeys.detail(id),
@@ -53,9 +44,6 @@ export function useCategory(id: string) {
 // Mutation Hooks
 // ============================================================================
 
-/**
- * Hook para crear o actualizar una categoría
- */
 export function useSaveCategory() {
   const queryClient = useQueryClient();
 
@@ -95,9 +83,6 @@ export function useSaveCategory() {
   });
 }
 
-/**
- * Hook para eliminar una categoría (soft delete)
- */
 export function useDeleteCategory() {
   const queryClient = useQueryClient();
 
@@ -113,7 +98,6 @@ export function useDeleteCategory() {
         categoryKeys.list({ isActive: true }),
       );
 
-      // Optimistic update: marcar como inactiva
       queryClient.setQueryData<Category[]>(categoryKeys.lists(), (old) =>
         old?.map((c) => (c.id === id ? { ...c, isActive: false } : c)),
       );

@@ -15,4 +15,3 @@ export {
 
 // UI Components
 export { WorkTimerCard } from "./ui/WorkTimerCard";
-export { WorkConfigForm } from "./ui/WorkConfigForm";

@@ -16,8 +16,8 @@ import { Settings, Save } from "lucide-react";
 import {
   useSleepSettings,
   useSaveSleepSettings,
-} from "../hooks/use-sleep-settings";
-import type { SleepSettings } from "../model/types";
+  type SleepSettings,
+} from "@/entities/sleep";
 
 export function SleepConfigForm() {
   const { data: settings } = useSleepSettings();

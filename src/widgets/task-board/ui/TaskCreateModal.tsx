@@ -14,11 +14,8 @@ import {
   TaskCreateFields,
   TaskCreateFooter,
 } from "@/features/task-create";
-import {
-  useActiveProjects,
-  useActiveCategories,
-  useActiveTasks,
-} from "@/entities/task";
+import { useActiveTasks } from "@/entities/task";
+import { useActiveProjects, useActiveCategories } from "@/entities/project";
 
 interface TaskCreateModalProps {
   isOpen: boolean;

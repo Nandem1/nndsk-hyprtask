@@ -11,8 +11,7 @@ import { Filter } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet";
 
 const TaskBoard = dynamic(
-  () =>
-    import("@/widgets/task-board/ui/TaskBoard").then((mod) => mod.TaskBoard),
+  () => import("@/widgets/task-board").then((mod) => mod.TaskBoard),
   {
     ssr: false,
   },

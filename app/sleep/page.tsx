@@ -1,6 +1,5 @@
 import { Header } from "@/widgets";
-import { SleepPageSkeleton } from "./SleepPageSkeleton";
-import { SleepDashboardWrapper } from "./SleepDashboardWrapper";
+import { SleepDashboardWrapper } from "@views/sleep";
 
 /**
  * SleepPage - Server Component

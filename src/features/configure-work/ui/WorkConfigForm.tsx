@@ -15,8 +15,8 @@ import { Briefcase, Save } from "lucide-react";
 import {
   useWorkSettings,
   useSaveWorkSettings,
-} from "../hooks/use-work-settings";
-import type { WorkSettings } from "../model/types";
+  type WorkSettings,
+} from "@/entities/work";
 
 export function WorkConfigForm() {
   const { data: settings } = useWorkSettings();

@@ -24,9 +24,8 @@ import {
   useUpdateTaskNotes,
   useTaskParent,
   useTaskChild,
-  useProjectInfo,
-  useCategoryInfo,
 } from "@/entities/task";
+import { useProjectInfo, useCategoryInfo } from "@/entities/project";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";

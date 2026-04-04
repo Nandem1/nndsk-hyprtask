@@ -7,28 +7,22 @@ import {
   getProjectById,
   saveProject,
   deleteProject,
-} from "../lib/project-storage";
-import { projectKeys } from "../model/project-query-keys";
-import type { Project } from "../model/project-types";
+} from "../lib/storage";
+import { projectKeys } from "../model/query-keys";
+import type { Project } from "../model/types";
 
 // ============================================================================
 // Query Hooks
 // ============================================================================
 
-/**
- * Hook para obtener todos los proyectos
- */
 export function useProjects() {
   return useQuery({
     queryKey: projectKeys.lists(),
     queryFn: getProjects,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5,
   });
 }
 
-/**
- * Hook para obtener solo proyectos activos (ordenados)
- */
 export function useActiveProjects() {
   return useQuery({
     queryKey: projectKeys.list({ isActive: true }),
@@ -37,9 +31,6 @@ export function useActiveProjects() {
   });
 }
 
-/**
- * Hook para obtener un proyecto específico
- */
 export function useProject(id: string) {
   return useQuery({
     queryKey: projectKeys.detail(id),
@@ -53,9 +44,6 @@ export function useProject(id: string) {
 // Mutation Hooks
 // ============================================================================
 
-/**
- * Hook para crear o actualizar un proyecto
- */
 export function useSaveProject() {
   const queryClient = useQueryClient();
 
@@ -92,9 +80,6 @@ export function useSaveProject() {
   });
 }
 
-/**
- * Hook para eliminar un proyecto (soft delete)
- */
 export function useDeleteProject() {
   const queryClient = useQueryClient();
 
@@ -110,7 +95,6 @@ export function useDeleteProject() {
         projectKeys.list({ isActive: true }),
       );
 
-      // Optimistic update: marcar como inactivo
       queryClient.setQueryData<Project[]>(projectKeys.lists(), (old) =>
         old?.map((p) => (p.id === id ? { ...p, isActive: false } : p)),
       );
