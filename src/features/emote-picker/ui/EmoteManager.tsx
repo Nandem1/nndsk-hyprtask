@@ -45,7 +45,7 @@ const EmoteItem = memo(function EmoteItem({
         size="sm"
         onClick={() => onToggle(emote)}
         className={cn(
-          "h-8 gap-1.5 shrink-0 transition-all",
+          "h-8 min-w-[110px] gap-1.5 shrink-0 transition-all",
           isInCollection
             ? "gap-1.5"
             : "hover:border-primary/50",
@@ -141,7 +141,7 @@ export function EmoteManager() {
         </div>
       </div>
 
-      <div className="max-h-[400px] overflow-y-auto p-2">
+      <div className="h-[400px] overflow-y-auto p-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-12 text-muted-foreground">
             <Loader2 className="size-5 animate-spin mr-2" />

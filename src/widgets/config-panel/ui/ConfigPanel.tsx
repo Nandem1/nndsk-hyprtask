@@ -11,7 +11,7 @@ export function ConfigPanel() {
   const { themeClasses } = useThemeState();
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
         <h1
           className={`text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
@@ -22,8 +22,11 @@ export function ConfigPanel() {
       </div>
 
       <div className="flex flex-col gap-6">
-        <SleepConfigForm />
-        <WorkConfigForm />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <SleepConfigForm />
+          <WorkConfigForm />
+        </div>
+
         <ThemePaletteSelector />
 
         <div>

@@ -79,7 +79,7 @@ export function HeaderClient() {
           ) : null}
 
           <Button variant="ghost" size="icon" asChild className="size-9">
-            <Link href="/sleep/config">
+            <Link href="/config">
               <Settings />
               <span className="sr-only">Configuracion</span>
             </Link>

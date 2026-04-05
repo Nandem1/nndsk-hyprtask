@@ -38,8 +38,8 @@ export function ThemePaletteSelector() {
           Selecciona la paleta de colores de la aplicacion
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <div className="grid grid-cols-1 gap-3">
+      <CardContent>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {(Object.keys(THEMES) as ThemePalette[]).map((themeKey) => {
             const theme = THEMES[themeKey];
             const isSelected = palette === themeKey;
@@ -48,7 +48,7 @@ export function ThemePaletteSelector() {
               <label
                 key={themeKey}
                 className={cn(
-                  "relative flex items-center gap-3 rounded-md border p-4 cursor-pointer transition-colors",
+                  "relative flex flex-col items-center gap-2 rounded-lg border p-3 cursor-pointer transition-colors",
                   isSelected
                     ? getThemeBorder(themeKey)
                     : "border-border hover:border-border/80 bg-card",
@@ -62,34 +62,26 @@ export function ThemePaletteSelector() {
                   onChange={() => changePalette(themeKey)}
                   className="sr-only"
                 />
-                <div className="flex-1 flex items-center gap-3">
-                  <div
+                <div
+                  className={cn(
+                    "size-full aspect-video rounded-md",
+                    "bg-gradient-to-r",
+                    theme.colors.gradient,
+                  )}
+                />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">{theme.emoji}</span>
+                  <span
                     className={cn(
-                      "size-10 rounded-md border shrink-0",
-                      themeClasses.border,
-                      "bg-gradient-to-r",
-                      theme.colors.gradient,
+                      "text-sm font-medium",
+                      isSelected ? themeClasses.textPrimary : "text-foreground",
                     )}
-                  />
-                  <div className="flex-1">
-                    <div
-                      className={cn(
-                        "font-medium",
-                        isSelected
-                          ? themeClasses.textPrimary
-                          : "text-foreground",
-                      )}
-                    >
-                      {theme.emoji} {theme.name}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {theme.colors.primary} → {theme.colors.secondary} →{" "}
-                      {theme.colors.accent}
-                    </div>
-                  </div>
-                  {isSelected ? (
-                    <Check className={cn("size-5", themeClasses.textPrimary)} />
-                  ) : null}
+                  >
+                    {theme.name}
+                  </span>
+                  {isSelected && (
+                    <Check className={cn("size-3.5", themeClasses.textPrimary)} />
+                  )}
                 </div>
               </label>
             );
