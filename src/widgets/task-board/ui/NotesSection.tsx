@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { Tag, Save, Smile } from "lucide-react";
@@ -39,6 +39,12 @@ export function NotesSection({
   const [isSaving, setIsSaving] = useState(false);
   const textareaElRef = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(() => {
+    if (!isEditing) return;
+    const id = requestAnimationFrame(() => textareaElRef.current?.focus());
+    return () => cancelAnimationFrame(id);
+  }, [isEditing]);
+
   const handleSave = useCallback(async () => {
     setIsSaving(true);
     await onSave(notes);
@@ -56,10 +62,7 @@ export function NotesSection({
     if (el) {
       const start = el.selectionStart;
       const end = el.selectionEnd;
-      const before = notes.slice(0, start);
-      const after = notes.slice(end);
-      const next = `${before}${name} ${after}`;
-      setNotes(next);
+      setNotes((prev) => `${prev.slice(0, start)}${name} ${prev.slice(end)}`);
       requestAnimationFrame(() => {
         el.selectionStart = el.selectionEnd = start + name.length + 1;
         el.focus();
@@ -67,7 +70,7 @@ export function NotesSection({
     } else {
       setNotes((prev) => `${prev} ${name}`);
     }
-  }, [notes]);
+  }, []);
 
   return (
     <div>
@@ -138,31 +141,22 @@ export function NotesSection({
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        {isEditing ? (
-          <motion.div
-            key="textarea"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.12, ease: EASE }}
-          >
-            <Textarea
-              ref={textareaElRef}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Escribe aquí tus notas, comandos SQL, snippets de código..."
-              className="min-h-[16rem] font-mono text-sm resize-none transition-colors duration-200 focus-visible:border-primary/30 focus-visible:ring-primary/20"
-              autoFocus
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="view"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.12, ease: EASE }}
+      <div className="relative">
+        <Textarea
+          ref={textareaElRef}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Escribe aquí tus notas, comandos SQL, snippets de código..."
+          className={cn(
+            "min-h-[16rem] font-mono text-sm resize-none [field-sizing:fixed]",
+            "border-border/50 bg-muted/30",
+            isEditing
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none absolute inset-0",
+          )}
+        />
+        {!isEditing && (
+          <div
             onClick={() => setIsEditing(true)}
             className={cn(
               "min-h-[16rem] p-4 rounded-lg border border-l-2 cursor-text font-mono text-sm transition-all duration-200",
@@ -177,9 +171,9 @@ export function NotesSection({
             ) : (
               "Haz click aquí para agregar notas, comandos SQL, links..."
             )}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 }
