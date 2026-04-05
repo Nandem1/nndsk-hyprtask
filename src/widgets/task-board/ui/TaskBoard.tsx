@@ -129,15 +129,17 @@ export function TaskBoard() {
         defaultCategoryId={selectedCategoryId !== "all" ? selectedCategoryId : undefined}
       />
 
-      <React.Suspense fallback={null}>
-        <FocusMode
-          task={focusTask || selectedTask || tasks[0]}
-          isOpen={isFocusModeOpen}
-          onClose={handleCloseFocusMode}
-          onComplete={handleCloseFocusMode}
-          onToggleTask={handleToggleFocusTask}
-        />
-      </React.Suspense>
+      {(focusTask || selectedTask || tasks[0]) && (
+        <React.Suspense fallback={null}>
+          <FocusMode
+            task={focusTask || selectedTask || tasks[0]}
+            isOpen={isFocusModeOpen}
+            onClose={handleCloseFocusMode}
+            onComplete={handleCloseFocusMode}
+            onToggleTask={handleToggleFocusTask}
+          />
+        </React.Suspense>
+      )}
 
       <React.Suspense fallback={null}>
         <ColacionMode isOpen={isColacionOpen} onClose={closeColacion} />
