@@ -12,11 +12,13 @@ import {
 } from "@/store/hooks";
 import { useActiveTasks, useTaskSettings, useFilteredTasks } from "@/entities/task";
 import { useTaskBoardState } from "../hooks/useTaskBoardState";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { TaskDetailModal } from "./TaskDetailModal";
 import { TaskCreateModal } from "./TaskCreateModal";
 import { TaskBoardHeader } from "./TaskBoardHeader";
 import { TaskBoardFAB } from "./TaskBoardFAB";
 import { TaskBoardContent } from "./TaskBoardContent";
+import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 
 const FocusMode = React.lazy(() =>
   import("./FocusMode").then((mod) => ({ default: mod.FocusMode })),
@@ -67,6 +69,23 @@ export function TaskBoard() {
 
   const canAddTask = allTasks.length < maxTasks;
   const remainingSlots = maxTasks - allTasks.length;
+
+  const { isShortcutsDialogOpen, setIsShortcutsDialogOpen } = useKeyboardShortcuts({
+    tasks,
+    actions: {
+      onOpenCreateModal: handleOpenCreateModal,
+      onSelectTask: handleSelectTask,
+      onToggleTask: handleToggle,
+      onDeleteTask: handleDelete,
+      onSetCurrent: handleSetCurrent,
+      onEnterFocus: handleEnterFocus,
+    },
+    modals: {
+      isDetailOpen: isDetailModalOpen,
+      isCreateOpen: isCreateModalOpen,
+      isFocusOpen: isFocusModeOpen,
+    },
+  });
 
   const handleCloseDetailModal = useCallback(() => setIsDetailModalOpen(false), [setIsDetailModalOpen]);
   const handleCloseFocusMode = useCallback(() => setIsFocusModeOpen(false), [setIsFocusModeOpen]);
@@ -151,6 +170,11 @@ export function TaskBoard() {
       <React.Suspense fallback={null}>
         <ColacionMode isOpen={isColacionOpen} onClose={closeColacion} />
       </React.Suspense>
+
+      <KeyboardShortcutsDialog
+        isOpen={isShortcutsDialogOpen}
+        onClose={() => setIsShortcutsDialogOpen(false)}
+      />
     </div>
   );
 }

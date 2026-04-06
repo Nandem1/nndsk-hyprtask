@@ -16,6 +16,7 @@ import {
 } from "@/features/task-create";
 import { useActiveTasks } from "@/entities/task";
 import { useActiveProjects, useActiveCategories } from "@/entities/project";
+import { stopSpacePropagation } from "@/shared/lib/keyboard-shortcuts";
 
 interface TaskCreateModalProps {
   isOpen: boolean;
@@ -56,7 +57,11 @@ export function TaskCreateModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent size="lg" className="sm:max-w-[500px]">
+      <DialogContent
+        size="lg"
+        className="sm:max-w-[500px]"
+        onKeyDown={stopSpacePropagation}
+      >
         <form onSubmit={onSubmit}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

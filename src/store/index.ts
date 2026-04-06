@@ -30,6 +30,12 @@ import {
   type UIPreferencesState,
   type UIPreferencesActions,
 } from "./slices/ui-preferences-slice";
+import {
+  createKeyboardSelectionSlice,
+  initialKeyboardSelectionState,
+  type KeyboardSelectionState,
+  type KeyboardSelectionActions,
+} from "./slices/keyboard-selection-slice";
 
 // ============================================================================
 // Store Type
@@ -41,21 +47,24 @@ export interface AppStore
     TaskFiltersState,
     ViewModeState,
     UIPreferencesState,
+    KeyboardSelectionState,
     ThemeActions,
     TaskFiltersActions,
     ViewModeActions,
-    UIPreferencesActions {
+    UIPreferencesActions,
+    KeyboardSelectionActions {
 }
 
 // ============================================================================
 // Initial State
 // ============================================================================
 
-const initialState: ThemeState & TaskFiltersState & ViewModeState & UIPreferencesState = {
+const initialState: ThemeState & TaskFiltersState & ViewModeState & UIPreferencesState & KeyboardSelectionState = {
   ...initialThemeState,
   ...initialTaskFiltersState,
   ...initialViewModeState,
   ...initialUIPreferencesState,
+  ...initialKeyboardSelectionState,
 };
 
 // ============================================================================
@@ -67,11 +76,12 @@ export const useStore = create<AppStore>()(
     persist(
       ((set, get) => ({
         ...initialState,
-        ...flattenActions<ThemeActions & TaskFiltersActions & ViewModeActions & UIPreferencesActions>([
+        ...flattenActions<ThemeActions & TaskFiltersActions & ViewModeActions & UIPreferencesActions & KeyboardSelectionActions>([
           createThemeSlice(set, get),
           createTaskFiltersSlice(set, get),
           createViewModeSlice(set, get),
           createUIPreferencesSlice(set, get),
+          createKeyboardSelectionSlice(set, get),
         ]),
       })) satisfies StateCreator<AppStore>,
       {

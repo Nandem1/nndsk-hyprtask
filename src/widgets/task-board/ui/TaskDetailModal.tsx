@@ -38,6 +38,7 @@ import { TaskCheckbox } from "@/shared/ui/task-checkbox";
 import { ContextCard } from "./ContextCard";
 import { useConfirm } from "@/shared/hooks/use-confirm";
 import { formatTaskDate } from "@/shared/lib/format-date";
+import { stopSpacePropagation } from "@/shared/lib/keyboard-shortcuts";
 
 
 interface TaskDetailModalProps {
@@ -114,6 +115,7 @@ export function TaskDetailModal({
       <DialogContent 
         className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0" 
         showCloseButton={false}
+        onKeyDown={stopSpacePropagation}
       >
         <DialogHeader className="px-6 py-5 border-b border-border/50">
           <div className="flex flex-col gap-3">

@@ -18,6 +18,7 @@ import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";
 import type { ExtendedThemeClasses } from "@/shared/types/theme";
 import { formatTaskDate } from "@/shared/lib/format-date";
+import { useKeyboardSelected } from "@/shared/hooks/use-keyboard-selected";
 
 interface PipelineStepProps {
   task: Task;
@@ -47,6 +48,7 @@ export const PipelineStep = memo(function PipelineStep({
   const isCompleted = status === "completed";
   const isCurrent = status === "current";
   const shouldReduceMotion = useReducedMotion();
+  const { scrollRef, selectedClass } = useKeyboardSelected(task.id);
 
   const { attributes, listeners, setNodeRef, style, isDragging } =
     useOptionalTaskDrag(task.id, enableDrag);
@@ -87,6 +89,7 @@ export const PipelineStep = memo(function PipelineStep({
           whileHover={shouldReduceMotion ? undefined : { y: -2, transition: { duration: 0.2 } }}
         >
           <Card
+            ref={scrollRef}
             className={cn(
               "relative cursor-pointer overflow-hidden",
               "backdrop-blur-sm bg-white/5 dark:bg-black/10",
@@ -96,6 +99,7 @@ export const PipelineStep = memo(function PipelineStep({
                 : "hover:border-primary/30",
               "hover:shadow-lg",
               isDragging && "shadow-2xl scale-105 rotate-1",
+              selectedClass,
             )}
             onClick={() => onSelect(task)}
           >

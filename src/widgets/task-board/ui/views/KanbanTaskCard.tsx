@@ -11,6 +11,7 @@ import { TaskCheckbox } from "@/shared/ui/task-checkbox";
 import { RichText } from "../ConnectedRichText";
 import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";
+import { useKeyboardSelected } from "@/shared/hooks/use-keyboard-selected";
 
 interface KanbanTaskCardProps {
   task: Task;
@@ -36,6 +37,7 @@ export const KanbanTaskCard = memo(function KanbanTaskCard({
   enableDrag = false,
 }: KanbanTaskCardProps) {
   const shouldReduceMotion = useReducedMotion();
+  const { scrollRef, selectedClass } = useKeyboardSelected(task.id);
 
   const { attributes, listeners, setNodeRef, style, isDragging } =
     useOptionalTaskDrag(task.id, enableDrag);
@@ -55,6 +57,7 @@ export const KanbanTaskCard = memo(function KanbanTaskCard({
       className="group"
     >
       <div
+        ref={scrollRef}
         onClick={() => onSelect(task)}
         className={cn(
           "relative rounded-xl border p-4 cursor-pointer overflow-hidden",
@@ -63,7 +66,8 @@ export const KanbanTaskCard = memo(function KanbanTaskCard({
           task.isCurrent
             ? cn(classes.border, "bg-accent/50 ring-1 ring-primary/20")
             : "hover:border-primary/30 hover:shadow-lg",
-          isDragging && "shadow-2xl scale-105 rotate-1 z-50"
+          isDragging && "shadow-2xl scale-105 rotate-1 z-50",
+          selectedClass
         )}
       >
         {enableDrag && (

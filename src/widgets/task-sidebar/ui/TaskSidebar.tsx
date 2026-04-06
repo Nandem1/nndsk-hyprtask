@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { cn } from "@/shared/lib/utils";
-import { X, Tag, FolderKanban } from "lucide-react";
+import { X, Tag, FolderKanban, Keyboard } from "lucide-react";
 import { useTheme, useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
 import { useActiveTasks } from "@/entities/task";
 import type { Task } from "@/entities/task";
@@ -12,6 +12,8 @@ import { Button } from "@/shared/ui/button";
 import { ProjectConfigModal } from "@/features/manage-projects";
 import { CategoryConfigModal } from "@/features/manage-categories";
 import { FilterSection } from "./FilterSection";
+import { KeyboardShortcutBadge } from "@/shared/ui/keyboard-shortcut-badge";
+import { SHORTCUTS, SIDEBAR_SHORTCUT_IDS } from "@/shared/lib/keyboard-shortcuts";
 
 interface TaskSidebarProps {
   onClose?: () => void;
@@ -45,7 +47,7 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
 
   return (
     <aside className="w-72 border-r border-border bg-card h-full overflow-y-auto">
-      <div className="p-4 flex flex-col gap-6">
+      <div className="p-4 flex flex-col gap-6 h-full min-h-0">
         {onClose ? (
           <div className="flex justify-end md:hidden">
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -94,6 +96,31 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
           onSettings={() => setIsCategoryModalOpen(true)}
           themeClasses={themeClasses}
         />
+
+        <div className="mt-auto pt-4 border-t border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <Keyboard className="size-4 text-muted-foreground" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Atajos
+            </span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {SIDEBAR_SHORTCUT_IDS.map((id) => {
+              const s = SHORTCUTS[id];
+              return (
+                <div key={id} className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">{s.description}</span>
+                  <KeyboardShortcutBadge className="text-[10px] min-w-[1.5rem] h-5 px-1">
+                    {s.keys.join("/")}
+                  </KeyboardShortcutBadge>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground/60 mt-3 text-center">
+            Presiona <KeyboardShortcutBadge className="text-[10px] min-w-[1rem] h-5 px-1">?</KeyboardShortcutBadge> para ver todos
+          </p>
+        </div>
       </div>
 
       <ProjectConfigModal

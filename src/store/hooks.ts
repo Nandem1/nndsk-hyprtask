@@ -73,3 +73,20 @@ export function useEmotePrefs() {
     })),
   );
 }
+
+export function useKeyboardSelectionState() {
+  return useStore(
+    useShallow((state) => ({
+      keyboardSelectedId: state.keyboardSelectedId,
+    })),
+  );
+}
+
+export function useKeyboardSelectionActions() {
+  return useStore(
+    useShallow((state) => ({
+      setKeyboardSelectedId: state.setKeyboardSelectedId,
+      clearKeyboardSelection: state.clearKeyboardSelection,
+    })),
+  );
+}
