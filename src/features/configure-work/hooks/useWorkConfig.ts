@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useWorkSettings, useSaveWorkSettings } from "@/entities/work";
+import { useWorkSettings, useSaveWorkSettings, type WorkSettings } from "@/entities/work";
+import { buildSettingsPayload } from "@/shared/lib/form";
 import { defaultValues } from "../model/types";
 
 export function useWorkConfig() {
@@ -21,15 +22,9 @@ export function useWorkConfig() {
   }, [settings]);
 
   const handleSave = () => {
-    const newSettings = {
-      id: settings?.id || crypto.randomUUID(),
-      startTime,
-      endTime,
-      breakDuration,
-      updatedAt: new Date().toISOString(),
-      ...(settings?.createdAt && { createdAt: settings.createdAt }),
-    };
-    saveSettingsMutation.mutate(newSettings);
+    saveSettingsMutation.mutate(
+      buildSettingsPayload<WorkSettings>(settings ?? undefined, { startTime, endTime, breakDuration }),
+    );
   };
 
   return {

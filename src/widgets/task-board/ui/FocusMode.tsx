@@ -19,6 +19,7 @@ import { playSuccessSound } from "@/shared/lib/audio";
 import {
   FOCUS_DURATION,
   BREAK_DURATION,
+  getElapsedMinutes,
 } from "../lib/focus-timer-constants";
 import { FocusTimerCircle } from "./FocusTimerCircle";
 import { BreakModeContent } from "./BreakModeContent";
@@ -90,9 +91,7 @@ export function FocusMode({
   }, [showCelebration]);
 
   const handleConfirmComplete = () => {
-    const elapsedMinutes = Math.round(
-      (FOCUS_DURATION - timeLeftRef.current) / 60,
-    );
+    const elapsedMinutes = getElapsedMinutes(timeLeftRef);
     if (elapsedMinutes > 0) {
       incrementSession(elapsedMinutes);
     }
@@ -105,9 +104,7 @@ export function FocusMode({
   };
 
   const handleConfirmClose = () => {
-    const elapsedMinutes = Math.round(
-      (FOCUS_DURATION - timeLeftRef.current) / 60,
-    );
+    const elapsedMinutes = getElapsedMinutes(timeLeftRef);
     if (elapsedMinutes > 0) {
       incrementSession(elapsedMinutes);
     }

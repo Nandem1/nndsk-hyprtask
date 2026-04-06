@@ -20,8 +20,7 @@ import {
   useTaskParent,
   useTaskChild,
 } from "@/entities/task";
-import { useCategoryInfo } from "@/entities/project";
-import { ProjectName } from "@/entities/project";
+import { ProjectName, CategoryName } from "@/entities/project";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
@@ -40,12 +39,6 @@ import { ContextCard } from "./ContextCard";
 import { useConfirm } from "@/shared/hooks/use-confirm";
 import { formatTaskDate } from "@/shared/lib/format-date";
 
-function CategoryName({ categoryId }: { categoryId: string }) {
-  const { name, colorClasses } = useCategoryInfo(categoryId);
-  return (
-    <span className={cn("text-xs font-medium", colorClasses.text)}>{name}</span>
-  );
-}
 
 interface TaskDetailModalProps {
   task: Task;

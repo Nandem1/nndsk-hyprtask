@@ -1,3 +1,22 @@
+interface BaseSettings {
+  id?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** Construye el payload de guardado para configuraciones con id y timestamps */
+export function buildSettingsPayload<T extends BaseSettings>(
+  existing: T | undefined,
+  fields: Omit<T, "id" | "createdAt" | "updatedAt">,
+): T {
+  return {
+    id: existing?.id ?? crypto.randomUUID(),
+    ...(existing?.createdAt ? { createdAt: existing.createdAt } : {}),
+    updatedAt: new Date().toISOString(),
+    ...fields,
+  } as T;
+}
+
 /**
  * Valor centinela para campos Select opcionales.
  * Representa "sin selección" en el DOM (los Select no admiten undefined como value).

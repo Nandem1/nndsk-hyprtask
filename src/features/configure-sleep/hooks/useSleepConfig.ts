@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSleepSettings, useSaveSleepSettings } from "@/entities/sleep";
+import { useSleepSettings, useSaveSleepSettings, type SleepSettings } from "@/entities/sleep";
+import { buildSettingsPayload } from "@/shared/lib/form";
 import { defaultValues } from "../model/types";
 
 export function useSleepConfig() {
@@ -27,15 +28,9 @@ export function useSleepConfig() {
   }, [settings]);
 
   const handleSave = () => {
-    const newSettings = {
-      id: settings?.id || crypto.randomUUID(),
-      wakeupTime,
-      desiredSleepHours,
-      sleepReminders,
-      updatedAt: new Date().toISOString(),
-      ...(settings?.createdAt && { createdAt: settings.createdAt }),
-    };
-    saveSettingsMutation.mutate(newSettings);
+    saveSettingsMutation.mutate(
+      buildSettingsPayload<SleepSettings>(settings ?? undefined, { wakeupTime, desiredSleepHours, sleepReminders }),
+    );
   };
 
   return {

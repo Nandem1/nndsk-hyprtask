@@ -39,3 +39,4 @@ export {
 // UI Components
 export { TaskMetadataBadges } from "./ui/TaskMetadataBadges";
 export { ProjectName } from "./ui/ProjectName";
+export { CategoryName } from "./ui/CategoryName";
