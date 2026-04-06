@@ -43,7 +43,7 @@ src/shared/   → Reusable primitives. No internal imports allowed
 
 ### State management
 
-- **Zustand** (`src/store/`) — persisted to `localStorage` key `"hyprtask-store"`. Slices: `themeSlice`, `taskFiltersSlice`, `viewModeSlice`
+- **Zustand** (`src/store/`) — persisted to `localStorage` key `"hyprtask-store"`. Slices: `themeSlice`, `taskFiltersSlice`, `viewModeSlice`, `uiPreferencesSlice` (holds `isColacionOpen` + `animatedEmotes`)
   - Each slice separates state and actions into dedicated hooks: `useXState()`, `useXActions()`, `useX()` (combined)
   - Uses `useShallow` from `zustand/react/shallow` for shallow comparison
   - SSR-safe via `skipHydration` flag + `_hasHydrated` pattern
@@ -121,5 +121,12 @@ Five palettes: `'genshin'`, `'zenless'`, `'wuthering'`, `'osu'`, `'mario'`. Each
 ### Shared utilities worth knowing
 
 - `src/shared/hooks/use-confirm.tsx` — `confirm()` returns `Promise<boolean>`, backed by a global `ConfirmProvider`; use for destructive actions instead of `window.confirm`
+- `src/shared/hooks/use-countdown-timer.ts` — generic countdown hook; `useFocusTimer` is a thin wrapper around it
 - `src/shared/lib/audio.ts` — `playSuccessSound()` via Web Audio API for task completion feedback
 - `src/shared/lib/array.ts` — `reorderById()` updates `order` fields after drag-and-drop
+- `src/shared/lib/seventv-api.ts` + `src/shared/lib/emote-parser.ts` — 7TV emote fetching and text parsing
+- `src/shared/ui/rich-text.tsx` — pure presentational component; accepts `collection` as a prop. `ConnectedRichText.tsx` (widget layer) injects live emote data — always use the connected wrapper in widgets/features
+
+### Keyboard shortcuts
+
+`react-hotkeys-hook` is used for keyboard shortcuts. Register hotkeys at the feature/widget level, not inside entity components.
