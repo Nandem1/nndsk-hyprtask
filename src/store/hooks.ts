@@ -1,15 +1,6 @@
 import { useStore } from "./index";
 import { useShallow } from "zustand/react/shallow";
 
-export function useThemeState() {
-  return useStore(
-    useShallow((state) => ({
-      palette: state.palette,
-      themeClasses: state.themeClasses,
-    })),
-  );
-}
-
 export function useTheme() {
   return useStore(
     useShallow((state) => ({
@@ -45,7 +36,6 @@ export function useViewModeState() {
   return useStore(
     useShallow((state) => ({
       viewMode: state.viewMode,
-      isTransitioning: state.isTransitioning,
     })),
   );
 }
@@ -71,14 +61,6 @@ export function useColacionActions() {
     useShallow((state) => ({
       openColacion: state.openColacion,
       closeColacion: state.closeColacion,
-    })),
-  );
-}
-
-export function useEmotePrefsState() {
-  return useStore(
-    useShallow((state) => ({
-      animatedEmotes: state.animatedEmotes,
     })),
   );
 }

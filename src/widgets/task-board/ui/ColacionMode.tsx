@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { cn } from "@/shared/lib/utils";
 import {
   UtensilsCrossed,
 } from "lucide-react";
-import { useThemeState } from "@/store/hooks";
+import { useTheme } from "@/store/hooks";
 import { useWorkSettings } from "@/entities/work";
 import { playSuccessSound } from "@/shared/lib/audio";
 import { useCountdownTimer } from "@/shared/hooks/use-countdown-timer";
+import { useFullscreenTimerState } from "../hooks/useFullscreenTimerState";
 import { FocusTimerCircle } from "./FocusTimerCircle";
 import { FullscreenTimerLayout } from "./FullscreenTimerLayout";
 import { TimerControls } from "./TimerControls";
@@ -19,19 +20,30 @@ interface ColacionModeProps {
 }
 
 export function ColacionMode({ isOpen, onClose }: ColacionModeProps) {
-  const { themeClasses } = useThemeState();
+  const { themeClasses } = useTheme();
   const { data: settings } = useWorkSettings();
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [showParticles, setShowParticles] = useState(true);
-  const [showCelebration, setShowCelebration] = useState(false);
+  const {
+    soundEnabled,
+    setSoundEnabled,
+    showParticles,
+    setShowParticles,
+    showCelebration,
+    setShowCelebration,
+  } = useFullscreenTimerState();
 
   const breakDurationSeconds = (settings?.breakDuration ?? 30) * 60;
 
   const handleComplete = useCallback(() => {
     if (soundEnabled) playSuccessSound();
     setShowCelebration(true);
-    setTimeout(onClose, 2000);
-  }, [soundEnabled, onClose]);
+  }, [soundEnabled, setShowCelebration]);
+
+  useEffect(() => {
+    if (showCelebration) {
+      const t = setTimeout(onClose, 2000);
+      return () => clearTimeout(t);
+    }
+  }, [showCelebration, onClose]);
 
   const {
     state: timerState,
@@ -49,7 +61,7 @@ export function ColacionMode({ isOpen, onClose }: ColacionModeProps) {
       reset();
       setShowCelebration(false);
     }
-  }, [isOpen, reset]);
+  }, [isOpen, reset, setShowCelebration]);
 
   const statusText =
     timerState === "running"

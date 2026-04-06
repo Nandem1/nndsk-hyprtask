@@ -110,38 +110,22 @@ export const KanbanTaskCard = memo(function KanbanTaskCard({
 
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {!task.isCurrent && !task.isCompleted && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSetCurrent(task.id);
-                  }}
-                  className={cn(
-                    "p-1.5 rounded-md border transition-colors",
-                    "border-border hover:border-primary/50 hover:bg-accent",
-                    classes.textPrimary,
-                  )}
-                  title="Marcar como actual"
-                >
-                  <Target className="size-3.5" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEnterFocus(task);
-                  }}
-                  className={cn(
-                    "p-1.5 rounded-md border transition-colors",
-                    "border-border hover:border-primary/50 hover:bg-accent",
-                    classes.textPrimary,
-                  )}
-                  title="Modo Foco"
-                >
-                  <Zap className="size-3.5" />
-                </button>
-              </>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSetCurrent(task.id);
+                }}
+                className={cn(
+                  "p-1.5 rounded-md border transition-colors",
+                  "border-border hover:border-primary/50 hover:bg-accent",
+                  classes.textPrimary,
+                )}
+                title="Marcar como actual"
+              >
+                <Target className="size-3.5" />
+              </button>
             )}
-            {task.isCurrent && (
+            {!task.isCompleted && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -149,8 +133,10 @@ export const KanbanTaskCard = memo(function KanbanTaskCard({
                 }}
                 className={cn(
                   "p-1.5 rounded-md border transition-colors",
-                  "border-primary/30 bg-primary/10 hover:bg-primary/20",
                   classes.textPrimary,
+                  task.isCurrent
+                    ? "border-primary/30 bg-primary/10 hover:bg-primary/20"
+                    : "border-border hover:border-primary/50 hover:bg-accent",
                 )}
                 title="Modo Foco"
               >

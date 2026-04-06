@@ -4,6 +4,8 @@ import type { Variants, Transition } from "framer-motion";
 // Easing Functions
 // ============================================================================
 
+const EASE_DEFAULT = [0.25, 0.1, 0.25, 1] as [number, number, number, number];
+
 // ============================================================================
 // Performance-First Transition System
 // Categorized by use case for consistent, GPU-accelerated animations
@@ -16,7 +18,7 @@ export const transitions = {
    */
   enterExit: {
     duration: 0.2,
-    ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    ease: EASE_DEFAULT,
   } satisfies Transition,
 
   /**
@@ -39,37 +41,6 @@ export const transitions = {
     stiffness: 300,
   } satisfies Transition,
 } as const;
-
-// ============================================================================
-// Animation Variants
-// ============================================================================
-
-export const animations: Record<string, Variants> = {
-  fadeIn: {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  },
-  fadeInUp: {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  },
-  fadeInDown: {
-    hidden: { opacity: 0, y: -20 },
-    visible: { opacity: 1, y: 0 },
-  },
-  fadeInLeft: {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 },
-  },
-  fadeInRight: {
-    hidden: { opacity: 0, x: 20 },
-    visible: { opacity: 1, x: 0 },
-  },
-  scaleIn: {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1 },
-  },
-};
 
 // ============================================================================
 // Container Variants (for staggered children)
@@ -135,11 +106,11 @@ export const fullscreenContainerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.3, ease: EASE_DEFAULT },
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.2, ease: EASE_DEFAULT },
   },
 };
 
@@ -149,7 +120,7 @@ export const contentVariants: Variants = {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 },
+    transition: { duration: 0.3, ease: EASE_DEFAULT, delay: 0.1 },
   },
   exit: { opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } },
 };
@@ -160,7 +131,7 @@ export const timerModeVariants: Variants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.25, ease: EASE_DEFAULT },
   },
   exit: { opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.2 } },
 };

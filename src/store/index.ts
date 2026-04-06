@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create, type StateCreator } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import { flattenActions } from "./utils";
 
@@ -65,15 +65,15 @@ const initialState: ThemeState & TaskFiltersState & ViewModeState & UIPreference
 export const useStore = create<AppStore>()(
   devtools(
     persist(
-      (...params: any[]) => ({
+      ((set, get) => ({
         ...initialState,
         ...flattenActions<ThemeActions & TaskFiltersActions & ViewModeActions & UIPreferencesActions>([
-          createThemeSlice(params[0], params[1]),
-          createTaskFiltersSlice(params[0], params[1]),
-          createViewModeSlice(params[0], params[1]),
-          createUIPreferencesSlice(params[0], params[1]),
+          createThemeSlice(set, get),
+          createTaskFiltersSlice(set, get),
+          createViewModeSlice(set, get),
+          createUIPreferencesSlice(set, get),
         ]),
-      }),
+      })) satisfies StateCreator<AppStore>,
       {
         name: "hyprtask-store",
         // Persist theme, filters and view mode

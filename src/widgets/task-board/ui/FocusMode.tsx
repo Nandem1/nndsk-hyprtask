@@ -8,7 +8,7 @@ import {
   Timer,
   Zap,
 } from "lucide-react";
-import { useThemeState } from "@/store/hooks";
+import { useTheme } from "@/store/hooks";
 import type { Task } from "@/entities/task";
 import { ProjectName } from "@/entities/project";
 import { Button } from "@/shared/ui/button";
@@ -23,9 +23,10 @@ import {
 } from "../lib/focus-timer-constants";
 import { FocusTimerCircle } from "./FocusTimerCircle";
 import { BreakModeContent } from "./BreakModeContent";
-import { useFocusTimer } from "../hooks/useFocusTimer";
+import { useCountdownTimer } from "@/shared/hooks/use-countdown-timer";
 import { FullscreenTimerLayout } from "./FullscreenTimerLayout";
 import { TimerControls } from "./TimerControls";
+import { useFullscreenTimerState } from "../hooks/useFullscreenTimerState";
 
 interface FocusModeProps {
   task: Task;
@@ -42,12 +43,17 @@ export function FocusMode({
   onComplete,
   onToggleTask,
 }: FocusModeProps) {
-  const { themeClasses } = useThemeState();
+  const { themeClasses } = useTheme();
   const { incrementSession, getStats } = useFocusSessions();
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [showParticles, setShowParticles] = useState(true);
+  const {
+    soundEnabled,
+    setSoundEnabled,
+    showParticles,
+    setShowParticles,
+    showCelebration,
+    setShowCelebration,
+  } = useFullscreenTimerState();
   const [showEndDialog, setShowEndDialog] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
 
   const handleFocusComplete = useCallback(() => {
     incrementSession(FOCUS_DURATION / 60);
@@ -55,20 +61,20 @@ export function FocusMode({
       playSuccessSound();
     }
     setShowCelebration(true);
-  }, [soundEnabled, incrementSession]);
+  }, [soundEnabled, incrementSession, setShowCelebration]);
 
   const {
-    timerState,
+    state: timerState,
     timeLeft,
     timeLeftRef,
-    startTimer,
-    pauseTimer,
-    resetTimer,
+    start: startTimer,
+    pause: pauseTimer,
+    reset: resetTimer,
     skipBreak,
-  } = useFocusTimer({
-    focusDuration: FOCUS_DURATION,
+  } = useCountdownTimer({
+    duration: FOCUS_DURATION,
     breakDuration: BREAK_DURATION,
-    onFocusComplete: handleFocusComplete,
+    onComplete: handleFocusComplete,
   });
 
   const { sessionsToday, totalMinutesToday } = getStats();
@@ -80,15 +86,14 @@ export function FocusMode({
       resetTimer();
       setShowCelebration(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, resetTimer, setShowCelebration]);
 
   useEffect(() => {
     if (showCelebration) {
       const timer = setTimeout(() => setShowCelebration(false), 2000);
       return () => clearTimeout(timer);
     }
-  }, [showCelebration]);
+  }, [showCelebration, setShowCelebration]);
 
   const handleConfirmComplete = () => {
     const elapsedMinutes = getElapsedMinutes(timeLeftRef);

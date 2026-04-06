@@ -1,54 +1,29 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   getSleepSettings,
   saveSleepSettings,
   getSleepLogs,
 } from "../lib/storage";
-import { asyncWrap } from "@shared/lib/utils";
 import { calculateSleepData } from "../lib/calculations";
 import { sleepKeys } from "../model/query-keys";
+import { createSettingsHooks } from "@shared/hooks/use-settings-query";
 
 export { sleepKeys };
 
-// Hook para obtener configuración de sueño
-export function useSleepSettings() {
-  return useQuery({
-    queryKey: sleepKeys.settings(),
-    queryFn: getSleepSettings,
-    staleTime: Infinity,
-  });
-}
+const sleepHooks = createSettingsHooks({
+  keys: sleepKeys,
+  getSettings: getSleepSettings,
+  saveSettings: saveSleepSettings,
+  calculateData: calculateSleepData,
+});
 
-// Hook para guardar configuración de sueño
-export function useSaveSleepSettings() {
-  const queryClient = useQueryClient();
+export const useSleepSettings = sleepHooks.useSettings;
+export const useSaveSleepSettings = sleepHooks.useSaveSettings;
+export const useSleepCalculations = sleepHooks.useCalculations;
 
-  return useMutation({
-    mutationFn: asyncWrap(saveSleepSettings),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sleepKeys.all });
-    },
-  });
-}
-
-// Hook para cálculos de sueño (derivado de settings)
-export function useSleepCalculations() {
-  const { data: settings } = useSleepSettings();
-
-  return useQuery({
-    queryKey: sleepKeys.calculations(settings || null),
-    queryFn: () => {
-      if (!settings) return null;
-      return calculateSleepData(settings);
-    },
-    enabled: !!settings,
-    staleTime: Infinity,
-  });
-}
-
-// Hook para obtener logs de sueño (TanStack Query, no useEffect directo)
+// Hook para obtener logs de sueño (específico de sleep, sin equivalente en work)
 export function useSleepLogs() {
   return useQuery({
     queryKey: sleepKeys.logs(),

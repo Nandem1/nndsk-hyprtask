@@ -13,11 +13,15 @@ import { taskKeys } from "../model/query-keys";
 
 export { taskKeys };
 
+const STALE_NEVER = Infinity;
+const STALE_30S = 1000 * 30;
+const STALE_5MIN = 1000 * 60 * 5;
+
 export function useActiveTasks() {
   return useQuery({
     queryKey: taskKeys.active(),
     queryFn: getActiveTasks,
-    staleTime: Infinity,
+    staleTime: STALE_NEVER,
   });
 }
 
@@ -25,7 +29,7 @@ export function useCurrentTask() {
   return useQuery({
     queryKey: taskKeys.current(),
     queryFn: getCurrentTask,
-    staleTime: Infinity,
+    staleTime: STALE_NEVER,
   });
 }
 
@@ -34,7 +38,7 @@ export function useTaskById(id: string) {
     queryKey: taskKeys.detail(id),
     queryFn: () => getTaskById(id),
     enabled: !!id,
-    staleTime: Infinity,
+    staleTime: STALE_NEVER,
   });
 }
 
@@ -42,7 +46,7 @@ export function useTaskSettings() {
   return useQuery({
     queryKey: taskKeys.settings(),
     queryFn: getTaskSettings,
-    staleTime: Infinity,
+    staleTime: STALE_NEVER,
   });
 }
 
@@ -51,7 +55,7 @@ export function useTaskParent(taskId: string) {
     queryKey: [...taskKeys.detail(taskId), "parent"],
     queryFn: () => getTaskParent(taskId),
     enabled: !!taskId,
-    staleTime: 1000 * 30,
+    staleTime: STALE_30S,
   });
 }
 
@@ -60,7 +64,7 @@ export function useTaskChild(taskId: string) {
     queryKey: [...taskKeys.detail(taskId), "child"],
     queryFn: () => getTaskChild(taskId),
     enabled: !!taskId,
-    staleTime: 1000 * 30,
+    staleTime: STALE_30S,
   });
 }
 
@@ -72,14 +76,14 @@ export function usePrefetchTask() {
       return queryClient.prefetchQuery({
         queryKey: taskKeys.detail(id),
         queryFn: () => getTaskById(id),
-        staleTime: 1000 * 60 * 5,
+        staleTime: STALE_5MIN,
       });
     },
     prefetchActiveTasks: () => {
       return queryClient.prefetchQuery({
         queryKey: taskKeys.active(),
         queryFn: getActiveTasks,
-        staleTime: 1000 * 30,
+        staleTime: STALE_30S,
       });
     },
   };

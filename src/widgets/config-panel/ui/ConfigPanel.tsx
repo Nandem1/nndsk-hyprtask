@@ -1,6 +1,6 @@
 "use client";
 
-import { useThemeState } from "@/store/hooks";
+import { useTheme } from "@/store/hooks";
 import { ThemePaletteSelector } from "./ThemePaletteSelector";
 import { SleepConfigForm } from "@/features/configure-sleep";
 import { WorkConfigForm } from "@/features/configure-work";
@@ -8,7 +8,7 @@ import { EmoteManager } from "@/features/emote-picker";
 import { Smile } from "lucide-react";
 
 export function ConfigPanel() {
-  const { themeClasses } = useThemeState();
+  const { themeClasses } = useTheme();
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

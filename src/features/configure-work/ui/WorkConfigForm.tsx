@@ -14,16 +14,7 @@ import { Briefcase, Save } from "lucide-react";
 import { useWorkConfig } from "../hooks/useWorkConfig";
 
 export function WorkConfigForm() {
-  const {
-    startTime,
-    setStartTime,
-    endTime,
-    setEndTime,
-    breakDuration,
-    setBreakDuration,
-    isSaving,
-    handleSave,
-  } = useWorkConfig();
+  const { fields, setField, isSaving, handleSave } = useWorkConfig();
 
   return (
     <Card>
@@ -40,8 +31,8 @@ export function WorkConfigForm() {
           <Input
             id="startTime"
             type="time"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
+            value={fields.startTime}
+            onChange={(e) => setField("startTime", e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
             A que hora empiezas a trabajar
@@ -53,8 +44,8 @@ export function WorkConfigForm() {
           <Input
             id="endTime"
             type="time"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
+            value={fields.endTime}
+            onChange={(e) => setField("endTime", e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
             A que hora terminas de trabajar
@@ -68,8 +59,8 @@ export function WorkConfigForm() {
             type="number"
             min={5}
             max={120}
-            value={breakDuration}
-            onChange={(e) => setBreakDuration(Number(e.target.value))}
+            value={fields.breakDuration}
+            onChange={(e) => setField("breakDuration", Number(e.target.value))}
           />
           <p className="text-xs text-muted-foreground">
             Cuanto dura tu colacion en minutos

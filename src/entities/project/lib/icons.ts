@@ -130,14 +130,16 @@ const ENTITY_ICON_MAP: Record<string, IconComponent> = {
   ...CATEGORY_ICON_MAP,
 };
 
+const DEFAULT_ICON: IconComponent = FolderKanban;
+
 export function getProjectIcon(name: ProjectIcon): IconComponent {
-  return PROJECT_ICON_MAP[name] ?? FolderKanban;
+  return PROJECT_ICON_MAP[name] ?? DEFAULT_ICON;
 }
 
 export function getCategoryIcon(name: CategoryIcon): IconComponent {
-  return CATEGORY_ICON_MAP[name] ?? FolderKanban;
+  return CATEGORY_ICON_MAP[name] ?? DEFAULT_ICON;
 }
 
 export function getEntityIcon(name: string): IconComponent {
-  return ENTITY_ICON_MAP[name] ?? FolderKanban;
+  return ENTITY_ICON_MAP[name] ?? DEFAULT_ICON;
 }

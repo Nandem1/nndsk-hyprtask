@@ -3,7 +3,10 @@
 import { EntityConfigModal } from "@/shared/ui/entity-config-modal";
 import { CATEGORY_COLOR_CLASSES } from "@/entities/project";
 import { useCategoryConfig } from "../hooks/useCategoryConfig";
-import { AVAILABLE_COLORS, AVAILABLE_ICONS } from "../model/constants";
+import {
+  AVAILABLE_CATEGORY_COLORS as AVAILABLE_COLORS,
+  AVAILABLE_CATEGORY_ICONS as AVAILABLE_ICONS,
+} from "@/entities/project/model/available-options";
 import type { CategoryConfigModalProps } from "../model/types";
 
 export function CategoryConfigModal({ isOpen, onClose }: CategoryConfigModalProps) {

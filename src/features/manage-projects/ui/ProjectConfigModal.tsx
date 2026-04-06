@@ -3,7 +3,10 @@
 import { EntityConfigModal } from "@/shared/ui/entity-config-modal";
 import { PROJECT_COLOR_CLASSES } from "@/entities/project";
 import { useProjectConfig } from "../hooks/useProjectConfig";
-import { AVAILABLE_COLORS, AVAILABLE_ICONS } from "../model/constants";
+import {
+  AVAILABLE_PROJECT_COLORS as AVAILABLE_COLORS,
+  AVAILABLE_PROJECT_ICONS as AVAILABLE_ICONS,
+} from "@/entities/project/model/available-options";
 import type { ProjectConfigModalProps } from "../model/types";
 
 export function ProjectConfigModal({ isOpen, onClose }: ProjectConfigModalProps) {

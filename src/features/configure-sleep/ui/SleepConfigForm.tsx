@@ -15,16 +15,7 @@ import { Settings, Save } from "lucide-react";
 import { useSleepConfig } from "../hooks/useSleepConfig";
 
 export function SleepConfigForm() {
-  const {
-    wakeupTime,
-    setWakeupTime,
-    desiredSleepHours,
-    setDesiredSleepHours,
-    sleepReminders,
-    setSleepReminders,
-    isSaving,
-    handleSave,
-  } = useSleepConfig();
+  const { fields, setField, isSaving, handleSave } = useSleepConfig();
 
   return (
     <Card>
@@ -43,8 +34,8 @@ export function SleepConfigForm() {
           <Input
             id="wakeup"
             type="time"
-            value={wakeupTime}
-            onChange={(e) => setWakeupTime(e.target.value)}
+            value={fields.wakeupTime}
+            onChange={(e) => setField("wakeupTime", e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
             A que hora quieres despertar
@@ -58,8 +49,8 @@ export function SleepConfigForm() {
             type="number"
             min="6"
             max="10"
-            value={desiredSleepHours}
-            onChange={(e) => setDesiredSleepHours(Number(e.target.value))}
+            value={fields.desiredSleepHours}
+            onChange={(e) => setField("desiredSleepHours", Number(e.target.value))}
           />
           <p className="text-xs text-muted-foreground">
             Cuantas horas de sueno quieres (7 u 8 recomendado)
@@ -69,8 +60,8 @@ export function SleepConfigForm() {
         <div className="flex items-center gap-3">
           <Switch
             id="reminders"
-            checked={sleepReminders}
-            onCheckedChange={setSleepReminders}
+            checked={fields.sleepReminders}
+            onCheckedChange={(v) => setField("sleepReminders", v)}
           />
           <Label htmlFor="reminders" className="cursor-pointer">
             Activar recordatorios inteligentes

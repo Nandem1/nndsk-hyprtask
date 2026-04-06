@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import {
-  useThemeState,
+  useTheme,
   useViewModeState,
   useViewModeActions,
   useTaskFiltersState,
@@ -27,8 +27,9 @@ const ColacionMode = React.lazy(() =>
 );
 
 export function TaskBoard() {
-  const { themeClasses } = useThemeState();
-  const { viewMode, isTransitioning } = useViewModeState();
+  const { themeClasses } = useTheme();
+  const { viewMode } = useViewModeState();
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const { setViewMode } = useViewModeActions();
   const { selectedProjectId, selectedCategoryId } = useTaskFiltersState();
   const { isColacionOpen } = useColacionState();
@@ -36,6 +37,12 @@ export function TaskBoard() {
   const { data: allTasks = [] } = useActiveTasks();
   const { data: settings } = useTaskSettings();
   const maxTasks = settings?.maxActiveTasks ?? 5;
+
+  useEffect(() => {
+    setIsTransitioning(true);
+    const t = setTimeout(() => setIsTransitioning(false), 250);
+    return () => clearTimeout(t);
+  }, [viewMode]);
 
   const {
     selectedTask,

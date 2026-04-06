@@ -9,6 +9,7 @@ import { formatMinutesToReadable } from "@/shared/lib/time-utils";
 import { Button } from "@/shared/ui/button";
 import { ThemeToggle } from "@/shared/theme";
 import { useColacionActions } from "@/store/hooks";
+import { HeaderPill } from "./HeaderPill";
 
 export function HeaderClient() {
   const { data: currentTask } = useCurrentTask();
@@ -45,25 +46,20 @@ export function HeaderClient() {
 
         <div className="flex items-center gap-1">
           {sleepData ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 text-sm border-r border-border">
-              <Bed className="size-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Dormir:</span>
-              <span className="font-medium">
-                {sleepData.recommendedBedtime}
-              </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-muted-foreground">
-                {formatMinutesToReadable(sleepData.timeUntilBedtime)}
-              </span>
-            </div>
+            <HeaderPill
+              icon={<Bed className="size-4 text-muted-foreground" />}
+              label="Dormir:"
+              value={sleepData.recommendedBedtime}
+              secondary={formatMinutesToReadable(sleepData.timeUntilBedtime)}
+            />
           ) : null}
 
           {workData ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 text-sm border-r border-border">
-              <Briefcase className="size-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Trabajo:</span>
-              <span className="font-medium">{workData.endTime}</span>
-            </div>
+            <HeaderPill
+              icon={<Briefcase className="size-4 text-muted-foreground" />}
+              label="Trabajo:"
+              value={workData.endTime}
+            />
           ) : null}
 
           {workSettings ? (

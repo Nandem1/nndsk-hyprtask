@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion, useReducedMotion } from "framer-motion";
-import { useThemeState } from "@/store/hooks";
+import { useTheme } from "@/store/hooks";
 import { autoArchiveCompletedTasks } from "@/entities/task/lib/storage";
 import { TaskSidebar } from "@/widgets/task-sidebar";
 import { Button } from "@/shared/ui/button";
@@ -18,7 +18,7 @@ const TaskBoard = dynamic(
 );
 
 export function TasksPageContent() {
-  const { themeClasses } = useThemeState();
+  const { themeClasses } = useTheme();
   const shouldReduceMotion = useReducedMotion();
 
   // Auto-archivar tareas completadas al cargar

@@ -1,45 +1,19 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getWorkSettings, saveWorkSettings } from "../lib/storage";
-import { asyncWrap } from "@shared/lib/utils";
 import { calculateWorkData } from "../lib/calculations";
 import { workKeys } from "../model/query-keys";
+import { createSettingsHooks } from "@shared/hooks/use-settings-query";
 
 export { workKeys };
 
-// Hook para obtener configuración de horario laboral
-export function useWorkSettings() {
-  return useQuery({
-    queryKey: workKeys.settings(),
-    queryFn: getWorkSettings,
-    staleTime: Infinity,
-  });
-}
+const workHooks = createSettingsHooks({
+  keys: workKeys,
+  getSettings: getWorkSettings,
+  saveSettings: saveWorkSettings,
+  calculateData: calculateWorkData,
+});
 
-// Hook para guardar configuración de horario laboral
-export function useSaveWorkSettings() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: asyncWrap(saveWorkSettings),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: workKeys.all });
-    },
-  });
-}
-
-// Hook para cálculos de horario laboral (derivado de settings)
-export function useWorkCalculations() {
-  const { data: settings } = useWorkSettings();
-
-  return useQuery({
-    queryKey: workKeys.calculations(settings || null),
-    queryFn: () => {
-      if (!settings) return null;
-      return calculateWorkData(settings);
-    },
-    enabled: !!settings,
-    staleTime: Infinity,
-  });
-}
+export const useWorkSettings = workHooks.useSettings;
+export const useSaveWorkSettings = workHooks.useSaveSettings;
+export const useWorkCalculations = workHooks.useCalculations;

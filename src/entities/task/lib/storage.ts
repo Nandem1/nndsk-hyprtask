@@ -32,15 +32,16 @@ export function deleteTask(id: string): void {
 }
 
 export function toggleTask(id: string): void {
-  const tasks = getTasks();
-  const task = tasks.find((t) => t.id === id);
+  const task = getTasks().find((t) => t.id === id);
   if (!task) return;
 
-  task.isCompleted = !task.isCompleted;
-  task.completedAt = task.isCompleted ? new Date().toISOString() : undefined;
-  if (task.isCompleted) task.isCurrent = false;
-
-  saveTask(task);
+  const isCompleted = !task.isCompleted;
+  saveTask({
+    ...task,
+    isCompleted,
+    completedAt: isCompleted ? new Date().toISOString() : undefined,
+    isCurrent: isCompleted ? false : task.isCurrent,
+  });
 }
 
 export function setCurrentTask(id: string): void {
@@ -105,11 +106,9 @@ export function autoArchiveCompletedTasks(): number {
 // ============================================
 
 export function updateTaskNotes(id: string, notes: string): void {
-  const tasks = getTasks();
-  const task = tasks.find((t) => t.id === id);
+  const task = getTasks().find((t) => t.id === id);
   if (!task) return;
-  task.notes = notes;
-  storageSet(STORAGE_KEYS.TASKS, tasks);
+  saveTask({ ...task, notes });
 }
 
 // ============================================

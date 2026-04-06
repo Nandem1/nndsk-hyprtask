@@ -12,7 +12,7 @@ import {
   Focus,
   X,
 } from "lucide-react";
-import { useThemeState } from "@/store/hooks";
+import { useTheme } from "@/store/hooks";
 import type { Task } from "@/entities/task";
 import { FocusButton } from "@/entities/task/ui/FocusButton";
 import {
@@ -61,7 +61,7 @@ export function TaskDetailModal({
   onEnterFocus,
   onNavigateToTask,
 }: TaskDetailModalProps) {
-  const { themeClasses } = useThemeState();
+  const { themeClasses } = useTheme();
   const [showCelebration, setShowCelebration] = useState(false);
   const { confirm } = useConfirm();
 

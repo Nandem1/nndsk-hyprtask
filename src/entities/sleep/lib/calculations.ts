@@ -4,6 +4,13 @@
 import type { SleepSettings, SleepCalculation, SleepAlert } from '../model/types';
 import { timeToMinutes, calculateMinutesUntilTime } from '@shared/lib/time-utils';
 
+const SLEEP_CYCLE_MINUTES = 90;
+const MIN_SLEEP_CYCLES = 4;
+
+function calculateSleepCycles(hours: number): number {
+  return Math.max(MIN_SLEEP_CYCLES, Math.round((hours * 60) / SLEEP_CYCLE_MINUTES));
+}
+
 export function calculateTimeUntilBedtime(bedtime: string): number {
   return calculateMinutesUntilTime(bedtime);
 }
@@ -19,8 +26,7 @@ export function calculateRecommendedBedtime(
   const wakeTotal = timeToMinutes(wakeupTime);
 
   // Calcular ciclos de 90 minutos (redondea al ciclo más cercano)
-  const cycles = Math.round((desiredSleepHours * 60) / 90);
-  const adjustedCycles = Math.max(4, cycles); // Mínimo 4 ciclos (6 horas)
+  const adjustedCycles = calculateSleepCycles(desiredSleepHours);
 
   // Tiempo de sueño en minutos (basado en ciclos completos)
   const sleepMinutes = adjustedCycles * 90;
@@ -53,8 +59,7 @@ export function calculateSleepData(settings: SleepSettings): SleepCalculation {
   const timeUntilBedtime = calculateTimeUntilBedtime(recommendedBedtime);
 
   // Calcular ciclos de sueño
-  const sleepCycles = Math.round((settings.desiredSleepHours * 60) / 90);
-  const adjustedCycles = Math.max(4, sleepCycles);
+  const adjustedCycles = calculateSleepCycles(settings.desiredSleepHours);
 
   // Horas totales de sueño (basadas en ciclos completos)
   const totalSleepHours = (adjustedCycles * 90) / 60;

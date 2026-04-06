@@ -1,48 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSleepSettings, useSaveSleepSettings, type SleepSettings } from "@/entities/sleep";
-import { buildSettingsPayload } from "@/shared/lib/form";
+import { useSleepSettings, useSaveSleepSettings } from "@/entities/sleep";
+import { createSettingsFormHook } from "@/shared/hooks/use-settings-form";
 import { defaultValues } from "../model/types";
 
+const useSleepForm = createSettingsFormHook({
+  useSettings: useSleepSettings,
+  useSaveSettings: useSaveSleepSettings,
+  defaults: defaultValues,
+});
+
 export function useSleepConfig() {
-  const { data: settings } = useSleepSettings();
-  const saveSettingsMutation = useSaveSleepSettings();
-
-  const [wakeupTime, setWakeupTime] = useState<string>(
-    defaultValues.wakeupTime
-  );
-  const [desiredSleepHours, setDesiredSleepHours] = useState<number>(
-    defaultValues.desiredSleepHours
-  );
-  const [sleepReminders, setSleepReminders] = useState<boolean>(
-    defaultValues.sleepReminders
-  );
-
-  useEffect(() => {
-    if (settings) {
-      setWakeupTime(settings.wakeupTime);
-      setDesiredSleepHours(settings.desiredSleepHours);
-      setSleepReminders(settings.sleepReminders);
-    }
-  }, [settings]);
-
-  const handleSave = () => {
-    saveSettingsMutation.mutate(
-      buildSettingsPayload<SleepSettings>(settings ?? undefined, { wakeupTime, desiredSleepHours, sleepReminders }),
-    );
-  };
-
-  return {
-    wakeupTime,
-    setWakeupTime,
-    desiredSleepHours,
-    setDesiredSleepHours,
-    sleepReminders,
-    setSleepReminders,
-    isSaving: saveSettingsMutation.isPending,
-    handleSave,
-  };
+  return useSleepForm();
 }
 
 export type UseSleepConfigReturn = ReturnType<typeof useSleepConfig>;

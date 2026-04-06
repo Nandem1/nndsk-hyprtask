@@ -7,12 +7,10 @@ import type { TaskViewMode } from "@/shared/types/view-mode";
 
 export interface ViewModeState {
   viewMode: TaskViewMode;
-  isTransitioning: boolean;
 }
 
 export const initialViewModeState: ViewModeState = {
   viewMode: "pipeline",
-  isTransitioning: false,
 };
 
 // ============================================================================
@@ -36,18 +34,9 @@ export class ViewModeActionImpl {
   // Public Actions
   // --------------------------------------------------------------------------
 
-  /**
-   * Cambia el modo de vista con animación de transición
-   */
   setViewMode = (mode: TaskViewMode): void => {
     if (this.#get().viewMode === mode) return;
-
-    this.#set({ viewMode: mode, isTransitioning: true });
-
-    // Finalizar transición después del delay
-    setTimeout(() => {
-      this.#set({ isTransitioning: false });
-    }, 250);
+    this.#set({ viewMode: mode });
   };
 }
 
