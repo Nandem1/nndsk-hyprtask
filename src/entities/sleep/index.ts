@@ -31,5 +31,3 @@ export {
 
 // UI Components
 export { SleepTimerCard } from "./ui/SleepTimerCard";
-export { SleepStatsCard } from "./ui/SleepStatsCard";
-export { WindDownCard } from "./ui/WindDownCard";

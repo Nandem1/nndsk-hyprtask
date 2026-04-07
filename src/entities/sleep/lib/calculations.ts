@@ -64,11 +64,15 @@ export function calculateSleepData(settings: SleepSettings): SleepCalculation {
   // Horas totales de sueño (basadas en ciclos completos)
   const totalSleepHours = (adjustedCycles * 90) / 60;
 
+  // Si faltan más de 12h, la hora de dormir ya pasó — la persona está durmiendo
+  const isSleeping = timeUntilBedtime > 12 * 60;
+
   return {
     recommendedBedtime,
     timeUntilBedtime,
     sleepCycles: adjustedCycles,
     totalSleepHours,
+    isSleeping,
   };
 }
 

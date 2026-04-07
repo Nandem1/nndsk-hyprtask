@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { Tag, Save, Smile } from "lucide-react";
@@ -27,13 +27,16 @@ const staggerItem: Variants = {
   exit: { opacity: 0, scale: 0.95, transition: { duration: 0.1 } },
 };
 
-export function NotesSection({
-  initialNotes,
-  onSave,
-}: {
+export interface NotesSectionHandle {
+  startEdit: () => void;
+  save: () => void;
+  isEditing: () => boolean;
+}
+
+export const NotesSection = forwardRef<NotesSectionHandle, {
   initialNotes: string;
   onSave: (notes: string) => void;
-}) {
+}>(function NotesSection({ initialNotes, onSave }, ref) {
   const [notes, setNotes] = useState(initialNotes);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -56,6 +59,12 @@ export function NotesSection({
     setNotes(initialNotes);
     setIsEditing(false);
   }, [initialNotes]);
+
+  useImperativeHandle(ref, () => ({
+    startEdit: () => setIsEditing(true),
+    save: () => { if (isEditing) handleSave(); },
+    isEditing: () => isEditing,
+  }), [isEditing, handleSave]);
 
   const handleInsertEmote = useCallback((name: string) => {
     const el = textareaElRef.current;
@@ -176,4 +185,4 @@ export function NotesSection({
       </div>
     </div>
   );
-}
+});

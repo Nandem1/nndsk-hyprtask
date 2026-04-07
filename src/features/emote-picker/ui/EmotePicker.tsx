@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useCallback } from "react";
+import Image from "next/image";
 import { cn } from "@/shared/lib/utils";
 import { getEmoteUrl } from "@/shared/lib/seventv-api";
 import { Plus, Minus, Loader2, Search, Globe, Heart, Sparkles } from "lucide-react";
@@ -47,11 +48,13 @@ const EmoteItem = memo(function EmoteItem({
         className="flex items-center gap-2 flex-1 min-w-0 text-left"
         title={`Insertar ${emote.name}`}
       >
-        <img
+        <Image
           src={getEmoteUrl(emote.id, "1x")}
           alt={emote.name}
-          className="h-7 w-7 shrink-0"
-          loading="lazy"
+          width={28}
+          height={28}
+          className="shrink-0"
+          unoptimized
         />
         <span className="text-sm truncate">{emote.name}</span>
         {emote.animated && (

@@ -18,6 +18,7 @@ export {
   useUpdateTaskSettings,
   usePrefetchTask,
   useUpdateTaskNotes,
+  useUpdateTaskPriority,
   useTaskParent,
   useTaskChild,
   useSetTaskParent,

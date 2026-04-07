@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, type ReactNode } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { cn } from "@/shared/lib/utils";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
@@ -50,6 +51,8 @@ export function FullscreenTimerLayout({
 }: FullscreenTimerLayoutProps) {
   const shouldReduceMotion = useReducedMotion();
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useHotkeys("Escape", onClose, { enabled: isOpen }, [isOpen, onClose]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {

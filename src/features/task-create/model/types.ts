@@ -1,4 +1,4 @@
-import type { Control, UseFormWatch, FieldErrors } from "react-hook-form";
+import type { Control, FieldErrors } from "react-hook-form";
 import type { CreateTaskFormData } from "./schema";
 import type { Project, Category } from "@entities/project";
 import type { Task } from "@entities/task";
@@ -25,8 +25,6 @@ export interface UseTaskCreateOptions {
 export interface UseTaskCreateReturn {
   /** Controlador de React Hook Form */
   control: Control<CreateTaskFormData>;
-  /** Función watch de React Hook Form */
-  watch: UseFormWatch<CreateTaskFormData>;
   /** Estado de envío del formulario */
   isSubmitting: boolean;
   /** Si el formulario es válido */
@@ -47,8 +45,6 @@ export interface UseTaskCreateReturn {
 export interface TaskCreateFieldsProps {
   /** Controlador de React Hook Form */
   control: Control<CreateTaskFormData>;
-  /** Función watch de React Hook Form */
-  watch: UseFormWatch<CreateTaskFormData>;
   /** Errores de validación */
   errors: FieldErrors<CreateTaskFormData>;
   /** Lista de proyectos disponibles */

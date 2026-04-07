@@ -20,7 +20,7 @@ export function HeaderClient() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between px-4">
+      <div className="container flex h-12 items-center justify-between px-4">
         <Link
           href="/tasks"
           className="flex items-center gap-2 font-semibold text-lg tracking-tight"
@@ -46,20 +46,27 @@ export function HeaderClient() {
 
         <div className="flex items-center gap-1">
           {sleepData ? (
-            <HeaderPill
-              icon={<Bed className="size-4 text-muted-foreground" />}
-              label="Dormir:"
-              value={sleepData.recommendedBedtime}
-              secondary={formatMinutesToReadable(sleepData.timeUntilBedtime)}
-            />
+            <Link href="/sleep">
+              <HeaderPill
+                icon={<Bed className="size-4 text-muted-foreground" />}
+                label="Dormir:"
+                value={sleepData.recommendedBedtime}
+                secondary={formatMinutesToReadable(sleepData.timeUntilBedtime)}
+              />
+            </Link>
           ) : null}
 
           {workData ? (
-            <HeaderPill
-              icon={<Briefcase className="size-4 text-muted-foreground" />}
-              label="Trabajo:"
-              value={workData.endTime}
-            />
+            <Link href="/work">
+              <HeaderPill
+                icon={<Briefcase className="size-4 text-muted-foreground" />}
+                label="Trabajo:"
+                value={workData.isWorking ? workData.endTime : workData.startTime}
+                secondary={formatMinutesToReadable(
+                  workData.isWorking ? workData.timeUntilEnd : workData.timeUntilStart,
+                )}
+              />
+            </Link>
           ) : null}
 
           {workSettings ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import {
@@ -33,7 +33,8 @@ import {
 } from "@/shared/ui/dialog";
 import { CelebrationEffect } from "@/shared/ui/celebration-effect";
 import { RichText } from "./ConnectedRichText";
-import { NotesSection } from "./NotesSection";
+import { NotesSection, type NotesSectionHandle } from "./NotesSection";
+import { useDetailModalShortcuts } from "../hooks/useDetailModalShortcuts";
 import { TaskCheckbox } from "@/shared/ui/task-checkbox";
 import { ContextCard } from "./ContextCard";
 import { useConfirm } from "@/shared/hooks/use-confirm";
@@ -65,6 +66,9 @@ export function TaskDetailModal({
   const { themeClasses } = useTheme();
   const [showCelebration, setShowCelebration] = useState(false);
   const { confirm } = useConfirm();
+  const notesRef = useRef<NotesSectionHandle>(null);
+
+  useDetailModalShortcuts({ task, isOpen, notesRef });
 
   const updateNotesMutation = useUpdateTaskNotes();
   const { data: parentTask } = useTaskParent(task.id);
@@ -243,6 +247,7 @@ export function TaskDetailModal({
 
               <NotesSection
                 key={task.id}
+                ref={notesRef}
                 initialNotes={task.notes || ""}
                 onSave={handleSaveNotes}
               />

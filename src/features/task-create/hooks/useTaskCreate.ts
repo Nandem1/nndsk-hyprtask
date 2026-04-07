@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateTask, useSetTaskChild, useDeleteTask } from "@/entities/task";
 import { toast } from "sonner";
@@ -37,7 +37,6 @@ export function useTaskCreate(options: UseTaskCreateOptions): UseTaskCreateRetur
   const {
     control,
     handleSubmit,
-    watch,
     formState: { isSubmitting, isValid, errors },
     reset,
   } = useForm<CreateTaskFormData>({
@@ -50,7 +49,7 @@ export function useTaskCreate(options: UseTaskCreateOptions): UseTaskCreateRetur
     mode: "onChange",
   });
 
-  const titleValue = watch("title");
+  const titleValue = useWatch({ control, name: "title", defaultValue: "" });
 
   const canCreate = useMemo(() => {
     return (
@@ -104,7 +103,6 @@ export function useTaskCreate(options: UseTaskCreateOptions): UseTaskCreateRetur
 
   return {
     control,
-    watch,
     isSubmitting: isSubmitting || createTaskMutation.isPending,
     isValid,
     errors,

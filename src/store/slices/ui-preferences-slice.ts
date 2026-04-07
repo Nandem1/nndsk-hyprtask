@@ -3,11 +3,17 @@ import { StoreSetter, StoreGetter } from "../types";
 export interface UIPreferencesState {
   isColacionOpen: boolean;
   animatedEmotes: boolean;
+  isSidebarCollapsed: boolean;
+  isShortcutsPanelCollapsed: boolean;
+  isLeaderActive: boolean;
 }
 
 export const initialUIPreferencesState: UIPreferencesState = {
   isColacionOpen: false,
   animatedEmotes: true,
+  isSidebarCollapsed: false,
+  isShortcutsPanelCollapsed: false,
+  isLeaderActive: false,
 };
 
 type UIPreferencesStore = UIPreferencesState & UIPreferencesActions;
@@ -34,12 +40,27 @@ export class UIPreferencesActionImpl {
   setAnimatedEmotes = (animated: boolean): void => {
     this.#set({ animatedEmotes: animated });
   };
+
+  toggleSidebar = (): void => {
+    this.#set({ isSidebarCollapsed: !this.#get().isSidebarCollapsed });
+  };
+
+  toggleShortcutsPanel = (): void => {
+    this.#set({ isShortcutsPanelCollapsed: !this.#get().isShortcutsPanelCollapsed });
+  };
+
+  setLeaderActive = (active: boolean): void => {
+    this.#set({ isLeaderActive: active });
+  };
 }
 
 export type UIPreferencesActions = {
   openColacion: () => void;
   closeColacion: () => void;
   setAnimatedEmotes: (animated: boolean) => void;
+  toggleSidebar: () => void;
+  toggleShortcutsPanel: () => void;
+  setLeaderActive: (active: boolean) => void;
 };
 
 export const createUIPreferencesSlice = (set: Setter, get: Getter) =>

@@ -27,6 +27,7 @@ import { useCountdownTimer } from "@/shared/hooks/use-countdown-timer";
 import { FullscreenTimerLayout } from "./FullscreenTimerLayout";
 import { TimerControls } from "./TimerControls";
 import { useFullscreenTimerState } from "../hooks/useFullscreenTimerState";
+import { useFocusModeShortcuts } from "../hooks/useFocusModeShortcuts";
 
 interface FocusModeProps {
   task: Task;
@@ -78,6 +79,16 @@ export function FocusMode({
   });
 
   const { sessionsToday, totalMinutesToday } = getStats();
+
+  useFocusModeShortcuts({
+    isOpen,
+    timerState,
+    onPlay: startTimer,
+    onPause: pauseTimer,
+    onReset: resetTimer,
+    onSkipBreak: skipBreak,
+    onOpenEndDialog: () => setShowEndDialog(true),
+  });
 
   const totalTime = timerState === "break" ? BREAK_DURATION : FOCUS_DURATION;
 

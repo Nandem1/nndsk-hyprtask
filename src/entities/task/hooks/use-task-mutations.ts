@@ -184,6 +184,29 @@ export function useUpdateTaskNotes() {
   });
 }
 
+export function useUpdateTaskPriority() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, priority }: { id: string; priority: Task["priority"] }) => {
+      const tasks = qc.getQueryData<Task[]>(taskKeys.active()) ?? [];
+      const task = tasks.find((t) => t.id === id);
+      if (task) saveTask({ ...task, priority });
+    },
+    onMutate: async ({ id, priority }) => {
+      await qc.cancelQueries({ queryKey: taskKeys.all });
+      const ctx = snapshotTaskList(qc);
+      qc.setQueryData<Task[]>(
+        taskKeys.active(),
+        (old) => old?.map((t) => (t.id === id ? { ...t, priority } : t)) ?? [],
+      );
+      return ctx;
+    },
+    onError: (_err, _vars, ctx) => rollbackTaskList(qc, ctx),
+    onSettled: () => invalidateAllTasks(qc),
+  });
+}
+
 export function useSetTaskParent() {
   const qc = useQueryClient();
 

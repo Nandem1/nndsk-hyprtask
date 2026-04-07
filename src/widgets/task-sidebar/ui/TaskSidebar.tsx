@@ -2,8 +2,14 @@
 
 import { useState, useCallback } from "react";
 import { cn } from "@/shared/lib/utils";
-import { X, Tag, FolderKanban, Keyboard } from "lucide-react";
-import { useTheme, useTaskFiltersState, useTaskFiltersActions } from "@/store/hooks";
+import { X, Tag, FolderKanban, PanelLeftClose, PanelLeft } from "lucide-react";
+import {
+  useTheme,
+  useTaskFiltersState,
+  useTaskFiltersActions,
+  useUIPreferencesState,
+  useUIPreferencesActions,
+} from "@/store/hooks";
 import { useActiveTasks } from "@/entities/task";
 import type { Task } from "@/entities/task";
 import { useActiveProjects, useActiveCategories } from "@/entities/project";
@@ -12,8 +18,12 @@ import { Button } from "@/shared/ui/button";
 import { ProjectConfigModal } from "@/features/manage-projects";
 import { CategoryConfigModal } from "@/features/manage-categories";
 import { FilterSection } from "./FilterSection";
-import { KeyboardShortcutBadge } from "@/shared/ui/keyboard-shortcut-badge";
-import { SHORTCUTS, SIDEBAR_SHORTCUT_IDS } from "@/shared/lib/keyboard-shortcuts";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
 
 interface TaskSidebarProps {
   onClose?: () => void;
@@ -23,6 +33,8 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
   const { themeClasses } = useTheme();
   const { selectedProjectId, selectedCategoryId, hasActiveFilters } = useTaskFiltersState();
   const { setSelectedProject, setSelectedCategory } = useTaskFiltersActions();
+  const { isSidebarCollapsed } = useUIPreferencesState();
+  const { toggleSidebar } = useUIPreferencesActions();
   const { data: tasks = [] } = useActiveTasks();
   const { data: projects = [] } = useActiveProjects();
   const { data: categories = [] } = useActiveCategories();
@@ -45,9 +57,130 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
     if (onClose) onClose();
   };
 
+  // Mobile: never collapsed
+  const isCollapsed = !onClose && isSidebarCollapsed;
+
+  if (isCollapsed) {
+    const activeProjectCount = selectedProjectId !== "all" ? 1 : 0;
+    const activeCategoryCount = selectedCategoryId !== "all" ? 1 : 0;
+
+    return (
+      <TooltipProvider delayDuration={300}>
+        <aside className="w-12 border-r border-border bg-card h-full flex flex-col items-center py-3 gap-3">
+          {/* Toggle expand */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                onClick={toggleSidebar}
+                aria-label="Expandir sidebar"
+              >
+                <PanelLeft className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Expandir sidebar</TooltipContent>
+          </Tooltip>
+
+          <div className="flex flex-col items-center gap-1 mt-1">
+            {/* Task count badge */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={cn(
+                  "flex flex-col items-center gap-0.5 px-1.5 py-2 rounded-lg cursor-default",
+                  "text-center"
+                )}>
+                  <span className={cn("text-lg font-bold leading-none", themeClasses.textPrimary)}>
+                    {tasks.length}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">notas</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">{tasks.length} tareas activas</TooltipContent>
+            </Tooltip>
+          </div>
+
+          <div className="w-full border-t border-border/50 my-1" />
+
+          {/* Projects icon */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => {
+                  toggleSidebar();
+                }}
+                className={cn(
+                  "relative flex items-center justify-center size-8 rounded-lg transition-colors",
+                  selectedProjectId !== "all"
+                    ? cn("bg-accent", themeClasses.textPrimary)
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+                aria-label="Proyectos"
+              >
+                <FolderKanban className="size-4" />
+                {activeProjectCount > 0 && (
+                  <span className={cn(
+                    "absolute -top-1 -right-1 size-3.5 rounded-full flex items-center justify-center",
+                    "text-[8px] font-bold bg-primary text-primary-foreground"
+                  )}>
+                    {activeProjectCount}
+                  </span>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Proyectos {selectedProjectId !== "all" ? "(filtro activo)" : ""}
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Categories icon */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => {
+                  toggleSidebar();
+                }}
+                className={cn(
+                  "relative flex items-center justify-center size-8 rounded-lg transition-colors",
+                  selectedCategoryId !== "all"
+                    ? cn("bg-accent", themeClasses.textPrimary)
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+                aria-label="Categorias"
+              >
+                <Tag className="size-4" />
+                {activeCategoryCount > 0 && (
+                  <span className={cn(
+                    "absolute -top-1 -right-1 size-3.5 rounded-full flex items-center justify-center",
+                    "text-[8px] font-bold bg-primary text-primary-foreground"
+                  )}>
+                    {activeCategoryCount}
+                  </span>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Categorias {selectedCategoryId !== "all" ? "(filtro activo)" : ""}
+            </TooltipContent>
+          </Tooltip>
+        </aside>
+
+        <ProjectConfigModal
+          isOpen={isProjectModalOpen}
+          onClose={() => setIsProjectModalOpen(false)}
+        />
+        <CategoryConfigModal
+          isOpen={isCategoryModalOpen}
+          onClose={() => setIsCategoryModalOpen(false)}
+        />
+      </TooltipProvider>
+    );
+  }
+
   return (
-    <aside className="w-72 border-r border-border bg-card h-full overflow-y-auto">
-      <div className="p-4 flex flex-col gap-6 h-full min-h-0">
+    <aside className="w-64 border-r border-border bg-card h-full overflow-y-auto">
+      <div className="p-4 flex flex-col gap-5 h-full min-h-0">
         {onClose ? (
           <div className="flex justify-end md:hidden">
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -58,23 +191,37 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
 
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-muted-foreground">Tareas Activas</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide">Activas</div>
             <div className={cn("text-3xl font-bold", themeClasses.textPrimary)}>
               {tasks.length}
             </div>
           </div>
-          {hasActiveFilters ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSelectedProject("all");
-                setSelectedCategory("all");
-              }}
-            >
-              Limpiar filtros
-            </Button>
-          ) : null}
+          <div className="flex items-center gap-1">
+            {hasActiveFilters ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => {
+                  setSelectedProject("all");
+                  setSelectedCategory("all");
+                }}
+              >
+                Limpiar
+              </Button>
+            ) : null}
+            {!onClose && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7"
+                onClick={toggleSidebar}
+                aria-label="Colapsar sidebar"
+              >
+                <PanelLeftClose className="size-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <FilterSection
@@ -96,31 +243,6 @@ export function TaskSidebar({ onClose }: TaskSidebarProps) {
           onSettings={() => setIsCategoryModalOpen(true)}
           themeClasses={themeClasses}
         />
-
-        <div className="mt-auto pt-4 border-t border-border">
-          <div className="flex items-center gap-2 mb-3">
-            <Keyboard className="size-4 text-muted-foreground" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Atajos
-            </span>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            {SIDEBAR_SHORTCUT_IDS.map((id) => {
-              const s = SHORTCUTS[id];
-              return (
-                <div key={id} className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{s.description}</span>
-                  <KeyboardShortcutBadge className="text-[10px] min-w-[1.5rem] h-5 px-1">
-                    {s.keys.join("/")}
-                  </KeyboardShortcutBadge>
-                </div>
-              );
-            })}
-          </div>
-          <p className="text-[10px] text-muted-foreground/60 mt-3 text-center">
-            Presiona <KeyboardShortcutBadge className="text-[10px] min-w-[1rem] h-5 px-1">?</KeyboardShortcutBadge> para ver todos
-          </p>
-        </div>
       </div>
 
       <ProjectConfigModal

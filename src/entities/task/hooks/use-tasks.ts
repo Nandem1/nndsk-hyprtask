@@ -16,6 +16,7 @@ export {
   useSetCurrentTask,
   useUpdateTaskSettings,
   useUpdateTaskNotes,
+  useUpdateTaskPriority,
   useSetTaskParent,
   useSetTaskChild,
 } from "./use-task-mutations";

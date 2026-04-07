@@ -30,7 +30,10 @@ export function createSettingsFormHook<TSettings extends BaseSettings>(
       if (settings) {
         const { id: _id, createdAt: _ca, updatedAt: _ua, ...rest } = settings as BaseSettings & SettingsFields<TSettings>;
         void _id; void _ca; void _ua;
-        setFields(rest as SettingsFields<TSettings>);
+        const defined = Object.fromEntries(
+          Object.entries(rest).filter(([, v]) => v !== undefined),
+        );
+        setFields({ ...config.defaults, ...defined } as SettingsFields<TSettings>);
       }
     }, [settings]);
 

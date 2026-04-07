@@ -37,12 +37,24 @@ export function WorkTimerCard({ themeClasses }: { themeClasses: ExtendedThemeCla
     );
   }
 
+  const isWorking = workData?.isWorking ?? false;
+  const displayTime = isWorking ? workData?.endTime : workData?.startTime;
+  const timeUntil = isWorking ? workData?.timeUntilEnd : workData?.timeUntilStart;
+  const timeLabel = isWorking ? "para salir" : "para entrar";
+  const description = isWorking
+    ? `Sales a las ${workData?.endTime ?? "--:--"}`
+    : `Entras a las ${workData?.startTime ?? "--:--"}`;
+
+  const totalHours = Math.floor(workData?.workHours ?? 0);
+  const totalMins = Math.round(((workData?.workHours ?? 0) - totalHours) * 60);
+  const workHoursFormatted = totalMins > 0 ? `${totalHours}h ${totalMins}m` : `${totalHours}h`;
+
   return (
     <Card className={cn("border-2", themeClasses.border)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="size-5" />
-          Hora de salida
+          Horario laboral
         </CardTitle>
         <CardDescription>
           Entrada: {settings.startTime} | Salida: {settings.endTime}
@@ -56,25 +68,20 @@ export function WorkTimerCard({ themeClasses }: { themeClasses: ExtendedThemeCla
               themeClasses.textPrimary,
             )}
           >
-            {workData?.endTime || "--:--"}
+            {displayTime || "--:--"}
           </div>
-          <div className="text-sm text-muted-foreground mt-2">
-            Sales a las{" "}
-            <span className={cn("font-semibold", themeClasses.textPrimary)}>
-              {workData?.endTime || "--:--"}
-            </span>
-          </div>
+          <div className="text-sm text-muted-foreground mt-2">{description}</div>
         </div>
 
         <Separator />
 
         <div className="text-center">
           <div className="text-lg font-semibold">
-            {workData ? formatMinutesToReadable(workData.timeUntilEnd) : "--"}{" "}
-            restantes
+            {timeUntil != null ? formatMinutesToReadable(timeUntil) : "--"}{" "}
+            {timeLabel}
           </div>
           <div className="text-xs text-muted-foreground">
-            Tiempo hasta la hora de salida
+            {isWorking ? "Tiempo hasta la hora de salida" : "Tiempo hasta la hora de entrada"}
           </div>
         </div>
 
@@ -82,12 +89,8 @@ export function WorkTimerCard({ themeClasses }: { themeClasses: ExtendedThemeCla
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-2xl font-semibold">
-              {workData ? workData.workHours.toFixed(1) : "0.0"}h
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Horas de trabajo
-            </div>
+            <div className="text-2xl font-semibold">{workHoursFormatted}</div>
+            <div className="text-xs text-muted-foreground">Horas de trabajo</div>
           </div>
           <div>
             <div className="text-2xl font-semibold">{settings.startTime}</div>

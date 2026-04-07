@@ -65,6 +65,26 @@ export function useColacionActions() {
   );
 }
 
+export function useUIPreferencesState() {
+  return useStore(
+    useShallow((state) => ({
+      isSidebarCollapsed: state.isSidebarCollapsed,
+      isShortcutsPanelCollapsed: state.isShortcutsPanelCollapsed,
+      isLeaderActive: state.isLeaderActive,
+    })),
+  );
+}
+
+export function useUIPreferencesActions() {
+  return useStore(
+    useShallow((state) => ({
+      toggleSidebar: state.toggleSidebar,
+      toggleShortcutsPanel: state.toggleShortcutsPanel,
+      setLeaderActive: state.setLeaderActive,
+    })),
+  );
+}
+
 export function useEmotePrefs() {
   return useStore(
     useShallow((state) => ({

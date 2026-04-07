@@ -3,9 +3,10 @@
 import { motion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { transitions } from "@/shared/lib/animations";
-import { AlertCircle, LayoutList, GitBranch } from "lucide-react";
+import { AlertCircle, LayoutList, GitBranch, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/shared/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
+import { Button } from "@/shared/ui/button";
 import type { ExtendedThemeClasses } from "@/shared/types/theme";
 
 const VIEW_MODES = [
@@ -22,6 +23,8 @@ interface TaskBoardHeaderProps {
   canAddTask: boolean;
   remainingSlots: number;
   themeClasses: ExtendedThemeClasses;
+  onMobileFilter?: () => void;
+  activeFilterName?: string;
 }
 
 export function TaskBoardHeader({
@@ -33,25 +36,43 @@ export function TaskBoardHeader({
   canAddTask,
   remainingSlots,
   themeClasses,
+  onMobileFilter,
+  activeFilterName,
 }: TaskBoardHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-6">
-      <div className="flex items-baseline gap-2">
-        <motion.span
-          className={cn("text-3xl font-bold", themeClasses.textPrimary)}
-          key={filteredCount}
-          initial={{ scale: 1.2, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={transitions.spring}
-        >
-          {filteredCount}
-        </motion.span>
-        {filteredCount !== totalCount && (
-          <span className="text-sm text-muted-foreground">/ {totalCount}</span>
+      <div className="flex items-center gap-2">
+        {onMobileFilter && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 md:hidden"
+            onClick={onMobileFilter}
+            aria-label="Filtros"
+          >
+            <SlidersHorizontal className="size-4" />
+          </Button>
         )}
-        <span className="text-sm text-muted-foreground ml-2">
-          {filteredCount === 1 ? "nota" : "notas"}
-        </span>
+        <div className="flex items-baseline gap-2">
+          <motion.span
+            className={cn("text-3xl font-bold", themeClasses.textPrimary)}
+            key={filteredCount}
+            initial={{ scale: 1.2, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={transitions.spring}
+          >
+            {filteredCount}
+          </motion.span>
+          {filteredCount !== totalCount && (
+            <span className="text-sm text-muted-foreground">/ {totalCount}</span>
+          )}
+          <span className="text-sm text-muted-foreground ml-2">
+            {filteredCount === 1 ? "nota" : "notas"}
+          </span>
+          {activeFilterName && (
+            <span className="text-sm text-muted-foreground">· {activeFilterName}</span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

@@ -11,7 +11,7 @@ import {
 } from "@/shared/ui/card";
 import { Separator } from "@/shared/ui/separator";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
-import { Clock, Moon } from "lucide-react";
+import { Clock, Moon, BedDouble } from "lucide-react";
 import {
   useSleepSettings,
   useSleepCalculations,
@@ -44,6 +44,48 @@ export function SleepTimerCard({ themeClasses }: { themeClasses: ExtendedThemeCl
             Configura tus horarios de sueno para comenzar
           </CardDescription>
         </CardHeader>
+      </Card>
+    );
+  }
+
+  if (sleepData?.isSleeping) {
+    return (
+      <Card className={cn("border-2", themeClasses.border)}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BedDouble className="size-5" />
+            Durmiendo
+          </CardTitle>
+          <CardDescription>
+            Alarma: {settings.wakeupTime} | {settings.desiredSleepHours}h de sueno
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="text-center py-4">
+            <div className={cn("text-5xl font-bold tracking-tight", themeClasses.textPrimary)}>
+              {sleepData.recommendedBedtime}
+            </div>
+            <div className="text-sm text-muted-foreground mt-2">
+              Te fuiste a dormir. Despertás a las{" "}
+              <span className={cn("font-semibold", themeClasses.textSecondary)}>
+                {settings.wakeupTime}
+              </span>
+            </div>
+          </div>
+          <Separator />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-2xl font-semibold">
+                {sleepData.totalSleepHours.toFixed(1)}h
+              </div>
+              <div className="text-xs text-muted-foreground">Horas de sueno</div>
+            </div>
+            <div>
+              <div className="text-2xl font-semibold">{sleepData.sleepCycles}</div>
+              <div className="text-xs text-muted-foreground">Ciclos de 90min</div>
+            </div>
+          </div>
+        </CardContent>
       </Card>
     );
   }

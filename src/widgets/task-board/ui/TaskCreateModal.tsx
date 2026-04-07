@@ -37,7 +37,7 @@ export function TaskCreateModal({
   defaultProjectId,
   defaultCategoryId,
 }: TaskCreateModalProps) {
-  const { control, watch, isSubmitting, errors, onSubmit, titleValue, canCreate } =
+  const { control, isSubmitting, errors, onSubmit, titleValue, canCreate } =
     useTaskCreate({
       maxTasks,
       currentTasks,
@@ -76,7 +76,6 @@ export function TaskCreateModal({
           <div className="py-4">
             <TaskCreateFields
               control={control}
-              watch={watch}
               errors={errors}
               projects={projects}
               categories={categories}

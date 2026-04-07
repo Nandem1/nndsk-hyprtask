@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import {
   useTheme,
@@ -11,6 +11,7 @@ import {
   useColacionActions,
 } from "@/store/hooks";
 import { useActiveTasks, useTaskSettings, useFilteredTasks } from "@/entities/task";
+import { useActiveProjects, useActiveCategories } from "@/entities/project";
 import { useTaskBoardState } from "../hooks/useTaskBoardState";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { TaskDetailModal } from "./TaskDetailModal";
@@ -18,7 +19,6 @@ import { TaskCreateModal } from "./TaskCreateModal";
 import { TaskBoardHeader } from "./TaskBoardHeader";
 import { TaskBoardFAB } from "./TaskBoardFAB";
 import { TaskBoardContent } from "./TaskBoardContent";
-import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 
 const FocusMode = React.lazy(() =>
   import("./FocusMode").then((mod) => ({ default: mod.FocusMode })),
@@ -28,7 +28,11 @@ const ColacionMode = React.lazy(() =>
   import("./ColacionMode").then((mod) => ({ default: mod.ColacionMode })),
 );
 
-export function TaskBoard() {
+interface TaskBoardProps {
+  onMobileFilter?: () => void;
+}
+
+export function TaskBoard({ onMobileFilter }: TaskBoardProps) {
   const { themeClasses } = useTheme();
   const { viewMode } = useViewModeState();
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -37,8 +41,20 @@ export function TaskBoard() {
   const { isColacionOpen } = useColacionState();
   const { closeColacion } = useColacionActions();
   const { data: allTasks = [] } = useActiveTasks();
+  const { data: projects = [] } = useActiveProjects();
+  const { data: categories = [] } = useActiveCategories();
   const { data: settings } = useTaskSettings();
   const maxTasks = settings?.maxActiveTasks ?? 5;
+
+  const activeFilterName = useMemo(() => {
+    if (selectedProjectId !== "all") {
+      return projects.find((p) => p.id === selectedProjectId)?.name;
+    }
+    if (selectedCategoryId !== "all") {
+      return categories.find((c) => c.id === selectedCategoryId)?.name;
+    }
+    return undefined;
+  }, [selectedProjectId, selectedCategoryId, projects, categories]);
 
   useEffect(() => {
     setIsTransitioning(true);
@@ -70,7 +86,7 @@ export function TaskBoard() {
   const canAddTask = allTasks.length < maxTasks;
   const remainingSlots = maxTasks - allTasks.length;
 
-  const { isShortcutsDialogOpen, setIsShortcutsDialogOpen } = useKeyboardShortcuts({
+  useKeyboardShortcuts({
     tasks,
     actions: {
       onOpenCreateModal: handleOpenCreateModal,
@@ -84,6 +100,7 @@ export function TaskBoard() {
       isDetailOpen: isDetailModalOpen,
       isCreateOpen: isCreateModalOpen,
       isFocusOpen: isFocusModeOpen,
+      isColacionOpen,
     },
   });
 
@@ -109,6 +126,8 @@ export function TaskBoard() {
         canAddTask={canAddTask}
         remainingSlots={remainingSlots}
         themeClasses={themeClasses}
+        onMobileFilter={onMobileFilter}
+        activeFilterName={activeFilterName}
       />
 
       <TaskBoardContent
@@ -171,10 +190,6 @@ export function TaskBoard() {
         <ColacionMode isOpen={isColacionOpen} onClose={closeColacion} />
       </React.Suspense>
 
-      <KeyboardShortcutsDialog
-        isOpen={isShortcutsDialogOpen}
-        onClose={() => setIsShortcutsDialogOpen(false)}
-      />
     </div>
   );
 }

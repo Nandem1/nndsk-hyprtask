@@ -1,9 +1,9 @@
 "use client";
 
 import { useTheme } from "@/store/hooks";
-import { SleepTimerCard } from "@/entities/sleep";
+import { WorkTimerCard } from "@/entities/work";
 
-export function SleepDashboard() {
+export function WorkDashboard() {
   const { themeClasses } = useTheme();
 
   return (
@@ -12,14 +12,14 @@ export function SleepDashboard() {
         <h1
           className={`text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
         >
-          Sueno
+          Trabajo
         </h1>
         <p className="text-muted-foreground">
-          Gestiona tu descanso de forma inteligente
+          Controla tu horario laboral
         </p>
       </div>
 
-      <SleepTimerCard themeClasses={themeClasses} />
+      <WorkTimerCard themeClasses={themeClasses} />
     </div>
   );
 }

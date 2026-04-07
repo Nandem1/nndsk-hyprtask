@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
@@ -59,7 +59,6 @@ const reducedMotionVariants = {
 
 export function TaskCreateFields({
   control,
-  watch,
   errors,
   projects,
   categories,
@@ -68,7 +67,7 @@ export function TaskCreateFields({
 }: TaskCreateFieldsProps) {
   const shouldReduceMotion = useReducedMotion();
 
-  const parentTaskId = watch("parentTaskId");
+  const parentTaskId = useWatch({ control, name: "parentTaskId" });
 
   const selectedParentTask = useMemo(() => {
     return incompleteTasks.find((t) => t.id === parentTaskId);

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useCallback, memo } from "react";
-import { cn } from "@/shared/lib/utils";
+import { useState, useMemo, memo } from "react";
+import Image from "next/image";
 import { getEmoteUrl } from "@/shared/lib/seventv-api";
-import { Sparkles, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { useEmoteCollection } from "@/entities/emote";
 
@@ -24,11 +24,12 @@ const EmoteButton = memo(function EmoteButton({
       title={`${name}${animated ? " (animated)" : ""}`}
       className="flex items-center justify-center p-1.5 rounded-md hover:bg-muted/80 transition-colors"
     >
-      <img
+      <Image
         src={getEmoteUrl(id, "1x")}
         alt={name}
-        className="h-7 w-7"
-        loading="lazy"
+        width={28}
+        height={28}
+        unoptimized
       />
     </button>
   );

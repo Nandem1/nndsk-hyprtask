@@ -28,6 +28,7 @@ export interface SleepCalculation {
   timeUntilBedtime: number; // minutos hasta la hora de dormir
   sleepCycles: number; // ciclos de 90 minutos
   totalSleepHours: number; // horas totales de sueño
+  isSleeping: boolean; // true cuando ya pasó la hora de dormir
 }
 
 // Tipos para alertas
