@@ -1,8 +1,11 @@
 /**
  * Parsea un string "HH:mm" a sus componentes numéricos
  */
-export function parseTimeString(hhmm: string): { hours: number; minutes: number } {
-  const [hours, minutes] = hhmm.split(':').map(Number);
+export function parseTimeString(hhmm: string): {
+  hours: number;
+  minutes: number;
+} {
+  const [hours, minutes] = hhmm.split(":").map(Number);
   return { hours, minutes };
 }
 
@@ -20,7 +23,7 @@ export function timeToMinutes(hhmm: string): number {
 export function formatMinutesToTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
 
 /**
@@ -37,6 +40,29 @@ export function formatMinutesToReadable(minutes: number): string {
     return `${hours}h`;
   }
   return `${hours}h ${mins}m`;
+}
+
+/**
+ * Formatea minutos a string legible con soporte para días (ej: "1d 2h 30m")
+ */
+export function formatDuration(minutes: number): string {
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = minutes % 60;
+
+  const parts: string[] = [];
+
+  if (days > 0) {
+    parts.push(`${days}d`);
+  }
+  if (hours > 0) {
+    parts.push(`${hours}h`);
+  }
+  if (mins > 0 || parts.length === 0) {
+    parts.push(`${mins}m`);
+  }
+
+  return parts.join(" ");
 }
 
 export function formatTime(seconds: number): string {

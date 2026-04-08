@@ -3,11 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/shared/lib/utils";
 import { motion } from "framer-motion";
-import {
-  Check,
-  Timer,
-  Zap,
-} from "lucide-react";
+import { Check, Timer, Zap } from "lucide-react";
+import { formatDuration } from "@/shared/lib/time-utils";
 import { useTheme } from "@/store/hooks";
 import type { Task } from "@/entities/task";
 import { ProjectName } from "@/entities/project";
@@ -263,7 +260,7 @@ export function FocusMode({
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {totalMinutesToday}m
+                  {formatDuration(totalMinutesToday)}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   tiempo enfocado
