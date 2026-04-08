@@ -132,9 +132,12 @@ CREATE TRIGGER user_preferences_updated_at
 
 -- ============================================================================
 -- 2. PROJECTS
+-- ID es TEXT (no UUID) porque el frontend genera IDs semánticos como
+-- 'proj-mh-backend'. Los nuevos proyectos también usan IDs generados
+-- por el frontend (crypto.randomUUID() u equivalente).
 -- ============================================================================
 CREATE TABLE projects (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   color TEXT NOT NULL,
@@ -146,9 +149,10 @@ CREATE TABLE projects (
 
 -- ============================================================================
 -- 3. CATEGORIES
+-- Mismo criterio que projects: id TEXT generado por el frontend.
 -- ============================================================================
 CREATE TABLE categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   color TEXT NOT NULL,
@@ -168,8 +172,8 @@ CREATE TABLE tasks (
   is_completed BOOLEAN DEFAULT false,
   is_current BOOLEAN DEFAULT false,
   priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
-  project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
-  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+  project_id TEXT REFERENCES projects(id) ON DELETE SET NULL,
+  category_id TEXT REFERENCES categories(id) ON DELETE SET NULL,
   notes TEXT,
   parent_task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
   child_task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
@@ -336,10 +340,12 @@ CREATE POLICY "focus_sessions_crud" ON focus_sessions
 ```sql
 -- ============================================================================
 -- RPC: Reorder genérico (projects, categories, tasks)
+-- SECURITY INVOKER: respeta RLS automáticamente — solo afecta filas del usuario.
+-- No se usa SECURITY DEFINER para evitar que un cliente pase IDs ajenos.
 -- ============================================================================
 CREATE OR REPLACE FUNCTION reorder_items(
   table_name TEXT,
-  item_ids UUID[],
+  item_ids TEXT[],
   new_orders INTEGER[]
 )
 RETURNS void AS $$
@@ -347,76 +353,82 @@ DECLARE
   i INTEGER;
 BEGIN
   FOR i IN 1..array_length(item_ids, 1) LOOP
-    EXECUTE format('UPDATE %I SET "order" = $1 WHERE id = $2', table_name)
+    EXECUTE format('UPDATE %I SET "order" = $1 WHERE id = $2 AND user_id = auth.uid()', table_name)
       USING new_orders[i], item_ids[i];
   END LOOP;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY INVOKER;
 
 -- ============================================================================
 -- RPC: Actualizar relación bidireccional de tasks
+-- SECURITY INVOKER: usa auth.uid() internamente — no acepta user_id como
+-- parámetro para evitar que un cliente manipule tasks de otro usuario.
 -- ============================================================================
 CREATE OR REPLACE FUNCTION set_task_relation(
   p_task_id UUID,
-  p_child_task_id UUID,  -- NULL para desconectar
-  p_user_id UUID
+  p_child_task_id UUID  -- NULL para desconectar
 )
 RETURNS void AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
 BEGIN
   -- Limpiar relación anterior del child viejo
   UPDATE tasks
   SET parent_task_id = NULL
   WHERE child_task_id = p_task_id
-    AND user_id = p_user_id
+    AND user_id = v_user_id
     AND id IS DISTINCT FROM p_child_task_id;
 
   -- Limpiar relación anterior del parent viejo
   UPDATE tasks
   SET child_task_id = NULL
   WHERE parent_task_id = p_task_id
-    AND user_id = p_user_id
+    AND user_id = v_user_id
     AND id IS DISTINCT FROM p_child_task_id;
 
   -- Actualizar el task principal
   IF p_child_task_id IS NOT NULL THEN
     UPDATE tasks SET child_task_id = p_child_task_id
-      WHERE id = p_task_id AND user_id = p_user_id;
+      WHERE id = p_task_id AND user_id = v_user_id;
     UPDATE tasks SET parent_task_id = p_task_id
-      WHERE id = p_child_task_id AND user_id = p_user_id;
+      WHERE id = p_child_task_id AND user_id = v_user_id;
   ELSE
     UPDATE tasks SET child_task_id = NULL
-      WHERE id = p_task_id AND user_id = p_user_id;
+      WHERE id = p_task_id AND user_id = v_user_id;
   END IF;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY INVOKER;
 
 -- ============================================================================
 -- RPC: Auto-conectar pipeline
+-- SECURITY INVOKER: usa auth.uid() internamente — no acepta user_id como
+-- parámetro para evitar que un cliente reconecte el pipeline de otro usuario.
 -- ============================================================================
-CREATE OR REPLACE FUNCTION auto_connect_pipeline(p_user_id UUID)
+CREATE OR REPLACE FUNCTION auto_connect_pipeline()
 RETURNS void AS $$
 DECLARE
+  v_user_id UUID := auth.uid();
   task_record RECORD;
   prev_id UUID := NULL;
 BEGIN
   FOR task_record IN
     SELECT id FROM tasks
-    WHERE user_id = p_user_id AND is_completed = false
+    WHERE user_id = v_user_id AND is_completed = false
     ORDER BY "order" ASC, created_at ASC
   LOOP
     IF prev_id IS NOT NULL THEN
       -- Desconectar relaciones previas de este task
       UPDATE tasks SET parent_task_id = NULL
-        WHERE child_task_id = task_record.id AND user_id = p_user_id;
+        WHERE child_task_id = task_record.id AND user_id = v_user_id;
       -- Conectar
       UPDATE tasks SET child_task_id = task_record.id
-        WHERE id = prev_id AND user_id = p_user_id;
+        WHERE id = prev_id AND user_id = v_user_id;
       UPDATE tasks SET parent_task_id = prev_id
-        WHERE id = task_record.id AND user_id = p_user_id;
+        WHERE id = task_record.id AND user_id = v_user_id;
     ELSE
       -- Primer task: sin parent
       UPDATE tasks SET parent_task_id = NULL
-        WHERE id = task_record.id AND user_id = p_user_id;
+        WHERE id = task_record.id AND user_id = v_user_id;
     END IF;
     prev_id := task_record.id;
   END LOOP;
@@ -424,10 +436,10 @@ BEGIN
   -- El último task no tiene child
   IF prev_id IS NOT NULL THEN
     UPDATE tasks SET child_task_id = NULL
-      WHERE id = prev_id AND user_id = p_user_id;
+      WHERE id = prev_id AND user_id = v_user_id;
   END IF;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY INVOKER;
 
 -- ============================================================================
 -- RPC: Seed de defaults para nuevo usuario
@@ -460,6 +472,26 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================================
+-- RPC: Establecer tarea actual (atómico — evita race condition)
+-- Primero resetea is_current en todas las tareas del usuario,
+-- luego activa la tarea objetivo. Se necesita ser atómico porque dos
+-- UPDATE separados desde el cliente dejarían un window donde ninguna
+-- tarea es current.
+-- ============================================================================
+CREATE OR REPLACE FUNCTION set_current_task(p_task_id UUID)
+RETURNS void AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+BEGIN
+  UPDATE tasks SET is_current = false
+    WHERE user_id = v_user_id AND is_current = true;
+
+  UPDATE tasks SET is_current = true
+    WHERE id = p_task_id AND user_id = v_user_id AND is_completed = false;
+END;
+$$ LANGUAGE plpgsql SECURITY INVOKER;
 
 -- ============================================================================
 -- TRIGGER: Seed automático al registrar usuario
@@ -748,7 +780,7 @@ export async function reorderProjects(orderedIds: string[]): Promise<void> {
   const orders = orderedIds.map((_, i) => i);
   const { error } = await supabase.rpc('reorder_items', {
     table_name: 'projects',
-    item_ids: orderedIds,
+    item_ids: orderedIds,  // TEXT[] — compatible con ids semánticos y UUIDs
     new_orders: orders,
   });
 
@@ -771,7 +803,7 @@ export async function reorderProjects(orderedIds: string[]): Promise<void> {
 | `src/entities/task/lib/storage.ts` | **REESCRIBIR** — queries Supabase |
 | `src/entities/task/hooks/use-task-queries.ts` | Ajustar queryFn |
 | `src/entities/task/hooks/use-task-mutations.ts` | Ajustar mutationFn |
-| `src/entities/task/hooks/use-task-relations.ts` | Ajustar para usar `set_task_relation` RPC |
+| `src/entities/task/hooks/use-task-relations.ts` | Ajustar para usar `set_task_relation(p_task_id, p_child_task_id)` RPC — sin p_user_id |
 | `src/entities/task/hooks/use-focus-sessions.ts` | Adaptar a modelo de tabla `focus_sessions` |
 | `src/entities/task/lib/optimistic-helpers.ts` | Sin cambios — opera sobre QueryClient |
 
@@ -781,15 +813,20 @@ export async function reorderProjects(orderedIds: string[]): Promise<void> {
 |---|---|
 | `getTasks()` | `supabase.from('tasks').select('*').eq('user_id', userId)` |
 | `getActiveTasks()` | `.eq('is_completed', false)` |
+| `getTaskById(id)` | `.select('*').eq('id', id).single()` |
+| `getCurrentTask()` | `.eq('is_current', true).eq('is_completed', false).maybeSingle()` |
 | `saveTask(task)` | `.upsert(task)` |
-| `deleteTask(id)` | `.delete().eq('id', id)` o soft-delete |
-| `toggleTask(id)` | `.update({ is_completed: !prev }).eq('id', id)` |
-| `setCurrentTask(id)` | Batch: quitar is_current de todos, setear en el nuevo |
-| `setTaskParent/Child` | `supabase.rpc('set_task_relation', ...)` |
-| `reorderTasks(ids)` | `supabase.rpc('reorder_items', ...)` |
+| `deleteTask(id)` | `.delete().eq('id', id)` |
+| `toggleTask(id)` | `.update({ is_completed, completed_at, is_current }).eq('id', id)` (leer estado previo primero o usar RPC) |
+| `setCurrentTask(id)` | `supabase.rpc('set_current_task', { p_task_id: id })` — atómico, ver RPC §3C |
+| `setTaskParent/Child` | `supabase.rpc('set_task_relation', { p_task_id, p_child_task_id })` |
+| `autoConnectPipeline()` | `supabase.rpc('auto_connect_pipeline')` — sin parámetros, usa auth.uid() internamente |
+| `reorderTasks(ids)` | `supabase.rpc('reorder_items', { table_name: 'tasks', item_ids: ids, new_orders })` |
 | `updateTaskNotes(id, notes)` | `.update({ notes }).eq('id', id)` |
 | `updateTaskPriority(id, priority)` | `.update({ priority }).eq('id', id)` |
-| `getFocusSessions()` | Query agregada: `COUNT` + `SUM` de hoy |
+| `autoArchiveCompletedTasks()` | Query: `.update({ is_archived: true }).eq('is_completed', true).lt('completed_at', cutoffDate)` — o eliminar físicamente si no hay soft-delete en tasks |
+| `getTaskParent(id)` / `getTaskChild(id)` | Obtener el task por id y luego `.eq('id', parent_task_id).single()` |
+| `getFocusSessions()` | Query agregada: `COUNT` + `SUM` de hoy con timezone del cliente (ver §9G) |
 | `incrementFocusSessions(min)` | `INSERT INTO focus_sessions` |
 
 **⚠️ Cambio de modelo en FocusSessions:**
@@ -898,40 +935,54 @@ Una vez migrada toda la capa de storage, si `asyncWrap` no se usa en ningún otr
  * 3. Upsert masivo a Supabase
  * 4. Limpiar localStorage si todo salió bien
  */
-export async function migrateLocalDataToSupabase(userId: string) {
+export async function migrateLocalDataToSupabase(userId: string): Promise<void> {
   const supabase = createClient();
 
   // Tasks
   const tasks = storageGetList<Task>('hyprtodo_tasks');
   if (tasks.length > 0) {
     const tasksWithUser = tasks.map(t => ({ ...t, user_id: userId }));
-    await supabase.from('tasks').upsert(tasksWithUser);
+    const { error } = await supabase.from('tasks').upsert(tasksWithUser);
+    if (error) throw new Error(`tasks migration failed: ${error.message}`);
   }
 
   // Projects
   const projects = storageGetList<Project>('hyprtodo_projects');
   if (projects.length > 0) {
     const mapped = projects.map(p => ({ ...p, user_id: userId }));
-    await supabase.from('projects').upsert(mapped);
+    const { error } = await supabase.from('projects').upsert(mapped);
+    if (error) throw new Error(`projects migration failed: ${error.message}`);
   }
 
-  // Categories
-  // ... mismo patrón
+  // Categories — mismo patrón con throw en error
+  // Sleep settings — mismo patrón
+  // Sleep logs — mismo patrón
+  // Work settings — mismo patrón
+  // Emotes — mismo patrón
+  // User preferences (palette, viewMode, animatedEmotes) — mismo patrón
 
-  // Sleep settings
-  // Sleep logs
-  // Work settings
-  // Emotes
-  // User preferences (palette, viewMode, animatedEmotes)
-
-  // Si todo OK, limpiar localStorage
+  // SOLO limpiar localStorage si TODAS las operaciones anteriores tuvieron éxito.
+  // Si alguna lanzó, este bloque no se alcanza y los datos locales quedan intactos.
   localStorage.removeItem('hyprtodo_tasks');
   localStorage.removeItem('hyprtodo_projects');
   localStorage.removeItem('hyprtodo_categories');
-  // ... etc
-
+  localStorage.removeItem('hyprtodo_task_settings');
+  localStorage.removeItem('hyprtodo_focus_sessions');
+  localStorage.removeItem('hyprtodo_sleep_settings');
+  localStorage.removeItem('hyprtodo_sleep_logs');
+  localStorage.removeItem('hyprtodo_work_settings');
+  localStorage.removeItem('hyprtodo_user_emotes');
   localStorage.removeItem('hyprtask-store'); // Zustand
 }
+
+// Uso en el flujo de primer login:
+// try {
+//   await migrateLocalDataToSupabase(user.id);
+//   toast.success('Datos migrados correctamente');
+// } catch (err) {
+//   toast.error('Error en migración — tus datos locales están intactos');
+//   console.error(err);
+// }
 ```
 
 **UI:** Agregar un botón/flujo "Migrar mis datos" que aparezca cuando el usuario se loguea y tiene datos locales.
@@ -965,8 +1016,6 @@ src/entities/emote/hooks/use-emote-queries.ts       ← Fase 4C
 src/entities/emote/hooks/use-emote-mutations.ts     ← Fase 4C
 src/entities/sleep/hooks/use-sleep-settings.ts      ← Fase 4A
 src/entities/work/hooks/use-work-settings.ts        ← Fase 4B
-
-src/shared/hooks/use-settings-query.ts              ← Fase 1
 ```
 
 ### 🟡 MODIFICAR store (~5 archivos)
@@ -1024,6 +1073,7 @@ src/shared/hooks/use-confirm.tsx
 src/shared/hooks/use-countdown-timer.ts
 src/shared/hooks/use-entity-config.ts
 src/shared/hooks/use-settings-form.ts
+src/shared/hooks/use-settings-query.ts  ← factory no cambia; solo cambian las fns que se le pasan
 src/shared/types/**
 src/entities/task/lib/optimistic-helpers.ts
 src/entities/task/model/view-mode.ts
@@ -1146,10 +1196,13 @@ Las query keys (`taskKeys`, `projectKeys`, `categoryKeys`, etc.) **no cambian**.
 - [ ] CRUD de tasks funciona
 - [ ] Toggle task funciona
 - [ ] Set current task funciona
-- [ ] Pipeline parent/child funciona via RPC
-- [ ] Auto-connect pipeline funciona via RPC
-- [ ] Reorder funciona via RPC
+- [ ] Set current task funciona via RPC `set_current_task` (atómico)
+- [ ] Pipeline parent/child funciona via RPC `set_task_relation`
+- [ ] Auto-connect pipeline funciona via RPC `auto_connect_pipeline` (sin parámetros)
+- [ ] Reorder funciona via RPC `reorder_items`
+- [ ] `autoArchiveCompletedTasks` funciona con query por fecha en Supabase
 - [ ] Focus sessions: INSERT y query agregada funcionan
+- [ ] Focus sessions: timezone del navegador manejada correctamente (ver §9G)
 - [ ] Pipeline View funciona end-to-end
 - [ ] Kanban View funciona end-to-end
 - [ ] Focus Mode funciona end-to-end
@@ -1246,6 +1299,34 @@ Sleep, Work y Emotes son 3 sistemas independientes sin dependencias cruzadas. Ah
 ### 9G. `getFocusSessions` — timezone handling
 
 La query agregada de focus sessions necesita manejo de timezone. El día "hoy" se calcula con `new Date().toISOString().split('T')[0]` en UTC. Si el usuario está en UTC-X, el rango de sesiones debería usar la timezone del navegador. Considerar usar una RPC que calcule `startOfDay` y `endOfDay` en la timezone del usuario.
+
+---
+
+## 10. Correcciones post-revisión (v3) — Claude Sonnet 4.6
+
+### 10A. IDs de projects/categories cambiados a TEXT
+
+El schema usaba `id UUID PRIMARY KEY DEFAULT gen_random_uuid()` en projects y categories, pero el frontend genera IDs semánticos como `'proj-mh-backend'` que no son UUIDs válidos. PostgreSQL rechazaría el INSERT del seed. **Fix:** columna `id TEXT PRIMARY KEY` (sin default — el frontend siempre provee el ID). Las FK en tasks actualizadas a `TEXT REFERENCES projects(id)`.
+
+### 10B. RPCs con SECURITY DEFINER eliminados
+
+Los tres RPCs originales (`reorder_items`, `set_task_relation`, `auto_connect_pipeline`) usaban `SECURITY DEFINER` y aceptaban `user_id` o `p_user_id` como parámetro del cliente. Esto permite que un usuario autenticado manipule filas de otro usuario si conoce sus UUIDs. **Fix:** cambiados a `SECURITY INVOKER` (respetan RLS automáticamente) y usan `auth.uid()` internamente en lugar de aceptar user_id como parámetro. Firma de `auto_connect_pipeline` simplificada a cero parámetros. Firma de `set_task_relation` eliminó el parámetro `p_user_id`.
+
+### 10C. Nuevo RPC `set_current_task` para operación atómica
+
+`setCurrentTask` en localStorage era un loop in-memory atómico. Con dos UPDATEs Supabase separados desde el cliente existe un window donde ninguna tarea tiene `is_current = true`. **Fix:** nuevo RPC `set_current_task(p_task_id UUID)` que hace el reset global y el set en una sola transacción con `SECURITY INVOKER`.
+
+### 10D. `autoArchiveCompletedTasks` agregada al plan de Fase 3
+
+La función existía en `src/entities/task/lib/storage.ts` pero no aparecía en ninguna tabla de mapping ni checklist. **Fix:** agregada al mapping de Fase 3 con su equivalente Supabase y al checklist.
+
+### 10E. Migration script con rollback implícito
+
+El script original hacía `localStorage.removeItem(...)` al final sin verificar errores previos. Si algún upsert fallaba silenciosamente, los datos locales se perdían. **Fix:** cada operación hace `if (error) throw new Error(...)`, y el bloque de limpieza de localStorage solo se alcanza si todas las operaciones previas tuvieron éxito.
+
+### 10F. `use-settings-query.ts` movido a NO SE TOCAN
+
+Aparecía en la lista MODIFICAR pero la corrección 9E ya aclaraba que no necesita cambios de firma. **Fix:** movido a la sección ✅ NO SE TOCAN con nota aclaratoria.
 
 ---
 
