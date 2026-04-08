@@ -1,1 +1,1 @@
-export { Header } from './ui/Header';
+export { HeaderClient as Header } from "./ui/HeaderClient";

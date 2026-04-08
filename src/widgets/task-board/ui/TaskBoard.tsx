@@ -10,7 +10,11 @@ import {
   useColacionState,
   useColacionActions,
 } from "@/store/hooks";
-import { useActiveTasks, useTaskSettings, useFilteredTasks } from "@/entities/task";
+import {
+  useActiveTasks,
+  useTaskSettings,
+  useFilteredTasks,
+} from "@/entities/task";
 import { useActiveProjects, useActiveCategories } from "@/entities/project";
 import { useTaskBoardState } from "../hooks/useTaskBoardState";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
@@ -20,13 +24,8 @@ import { TaskBoardHeader } from "./TaskBoardHeader";
 import { TaskBoardFAB } from "./TaskBoardFAB";
 import { TaskBoardContent } from "./TaskBoardContent";
 
-const FocusMode = React.lazy(() =>
-  import("./FocusMode").then((mod) => ({ default: mod.FocusMode })),
-);
-
-const ColacionMode = React.lazy(() =>
-  import("./ColacionMode").then((mod) => ({ default: mod.ColacionMode })),
-);
+import { FocusModeWrapper } from "./FocusModeWrapper";
+import { ColacionModeWrapper } from "./ColacionModeWrapper";
 
 interface TaskBoardProps {
   onMobileFilter?: () => void;
@@ -81,7 +80,11 @@ export function TaskBoard({ onMobileFilter }: TaskBoardProps) {
     handleTaskCreated,
   } = useTaskBoardState();
 
-  const tasks = useFilteredTasks(allTasks, selectedProjectId, selectedCategoryId);
+  const tasks = useFilteredTasks(
+    allTasks,
+    selectedProjectId,
+    selectedCategoryId,
+  );
 
   const canAddTask = allTasks.length < maxTasks;
   const remainingSlots = maxTasks - allTasks.length;
@@ -104,8 +107,14 @@ export function TaskBoard({ onMobileFilter }: TaskBoardProps) {
     },
   });
 
-  const handleCloseDetailModal = useCallback(() => setIsDetailModalOpen(false), [setIsDetailModalOpen]);
-  const handleCloseFocusMode = useCallback(() => setIsFocusModeOpen(false), [setIsFocusModeOpen]);
+  const handleCloseDetailModal = useCallback(
+    () => setIsDetailModalOpen(false),
+    [setIsDetailModalOpen],
+  );
+  const handleCloseFocusMode = useCallback(
+    () => setIsFocusModeOpen(false),
+    [setIsFocusModeOpen],
+  );
 
   const handleEnterFocusFromDetail = useCallback(() => {
     if (selectedTask) handleEnterFocus(selectedTask);
@@ -170,26 +179,23 @@ export function TaskBoard({ onMobileFilter }: TaskBoardProps) {
         onTaskCreated={handleTaskCreated}
         maxTasks={maxTasks}
         currentTasks={allTasks.length}
-        defaultProjectId={selectedProjectId !== "all" ? selectedProjectId : undefined}
-        defaultCategoryId={selectedCategoryId !== "all" ? selectedCategoryId : undefined}
+        defaultProjectId={
+          selectedProjectId !== "all" ? selectedProjectId : undefined
+        }
+        defaultCategoryId={
+          selectedCategoryId !== "all" ? selectedCategoryId : undefined
+        }
       />
 
-      {(focusTask || selectedTask || tasks[0]) && (
-        <React.Suspense fallback={null}>
-          <FocusMode
-            task={focusTask || selectedTask || tasks[0]}
-            isOpen={isFocusModeOpen}
-            onClose={handleCloseFocusMode}
-            onComplete={handleCloseFocusMode}
-            onToggleTask={handleToggleFocusTask}
-          />
-        </React.Suspense>
-      )}
+      <FocusModeWrapper
+        task={focusTask || selectedTask || tasks[0] || null}
+        isOpen={isFocusModeOpen}
+        onClose={handleCloseFocusMode}
+        onComplete={handleCloseFocusMode}
+        onToggleTask={handleToggleFocusTask}
+      />
 
-      <React.Suspense fallback={null}>
-        <ColacionMode isOpen={isColacionOpen} onClose={closeColacion} />
-      </React.Suspense>
-
+      <ColacionModeWrapper isOpen={isColacionOpen} onClose={closeColacion} />
     </div>
   );
 }

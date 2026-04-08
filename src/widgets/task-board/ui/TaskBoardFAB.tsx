@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { transitions } from "@/shared/lib/animations";
 import { Button } from "@/shared/ui/button";
+import { preloadTaskCreateModal } from "@/widgets/task-board/lib/preload";
 
 interface TaskBoardFABProps {
   show: boolean;
@@ -12,6 +13,11 @@ interface TaskBoardFABProps {
 
 export function TaskBoardFAB({ show, onClick }: TaskBoardFABProps) {
   if (!show) return null;
+
+  const handleMouseEnter = () => {
+    // Preload TaskCreateModal on hover for faster perceived loading
+    preloadTaskCreateModal();
+  };
 
   return (
     <motion.div
@@ -23,6 +29,7 @@ export function TaskBoardFAB({ show, onClick }: TaskBoardFABProps) {
       <Button
         size="default"
         onClick={onClick}
+        onMouseEnter={handleMouseEnter}
         className="shadow-lg hover:shadow-xl transition-shadow rounded-full size-12"
       >
         <Plus className="size-5" />
