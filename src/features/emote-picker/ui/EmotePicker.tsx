@@ -4,7 +4,15 @@ import { memo, useCallback } from "react";
 import Image from "next/image";
 import { cn } from "@/shared/lib/utils";
 import { getEmoteUrl } from "@/shared/lib/seventv-api";
-import { Plus, Minus, Loader2, Search, Globe, Heart, Sparkles } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  Loader2,
+  Search,
+  Globe,
+  Heart,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { useEmotePicker } from "../hooks/useEmotePicker";
@@ -53,7 +61,6 @@ const EmoteItem = memo(function EmoteItem({
           alt={emote.name}
           width={28}
           height={28}
-          className="shrink-0"
           unoptimized
         />
         <span className="text-sm truncate">{emote.name}</span>
@@ -142,9 +149,7 @@ export function EmotePicker({ onInsert }: EmotePickerProps) {
               value={state.searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={
-                state.tab === "search"
-                  ? "Buscar en 7TV..."
-                  : "Filtrar..."
+                state.tab === "search" ? "Buscar en 7TV..." : "Filtrar..."
               }
               className="h-8 pl-8 text-sm"
             />

@@ -4,7 +4,15 @@ import { memo, useCallback } from "react";
 import Image from "next/image";
 import { cn } from "@/shared/lib/utils";
 import { getEmoteUrl } from "@/shared/lib/seventv-api";
-import { Plus, Minus, Loader2, Search, Globe, Heart, Sparkles } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  Loader2,
+  Search,
+  Globe,
+  Heart,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { useEmotePicker } from "../hooks/useEmotePicker";
@@ -32,7 +40,6 @@ const EmoteItem = memo(function EmoteItem({
         alt={emote.name}
         width={40}
         height={40}
-        className="shrink-0"
         unoptimized
       />
       <div className="flex-1 min-w-0">
@@ -49,9 +56,7 @@ const EmoteItem = memo(function EmoteItem({
         onClick={() => onToggle(emote)}
         className={cn(
           "h-8 min-w-[110px] gap-1.5 shrink-0 transition-all",
-          isInCollection
-            ? "gap-1.5"
-            : "hover:border-primary/50",
+          isInCollection ? "gap-1.5" : "hover:border-primary/50",
         )}
       >
         {isInCollection ? (
@@ -121,7 +126,8 @@ export function EmoteManager() {
         })}
         <div className="ml-auto pr-3">
           <span className="text-xs text-muted-foreground">
-            {collectionIds.size} emote{collectionIds.size !== 1 ? "s" : ""} guardado{collectionIds.size !== 1 ? "s" : ""}
+            {collectionIds.size} emote{collectionIds.size !== 1 ? "s" : ""}{" "}
+            guardado{collectionIds.size !== 1 ? "s" : ""}
           </span>
         </div>
       </div>
