@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
+import {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { cn } from "@/shared/lib/utils";
 import { Tag, Save, Smile } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Textarea } from "@/shared/ui/textarea";
-import { RichText } from "./ConnectedRichText";
+import { RichText } from "@/entities/emote";
 import { EmoteGridPicker } from "@/features/emote-picker/ui/EmoteGridPicker";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 
 const EASE = [0.25, 0.1, 0.25, 1] as [number, number, number, number];
 
@@ -33,10 +36,13 @@ export interface NotesSectionHandle {
   isEditing: () => boolean;
 }
 
-export const NotesSection = forwardRef<NotesSectionHandle, {
-  initialNotes: string;
-  onSave: (notes: string) => void;
-}>(function NotesSection({ initialNotes, onSave }, ref) {
+export const NotesSection = forwardRef<
+  NotesSectionHandle,
+  {
+    initialNotes: string;
+    onSave: (notes: string) => void;
+  }
+>(function NotesSection({ initialNotes, onSave }, ref) {
   const [notes, setNotes] = useState(initialNotes);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -60,11 +66,17 @@ export const NotesSection = forwardRef<NotesSectionHandle, {
     setIsEditing(false);
   }, [initialNotes]);
 
-  useImperativeHandle(ref, () => ({
-    startEdit: () => setIsEditing(true),
-    save: () => { if (isEditing) handleSave(); },
-    isEditing: () => isEditing,
-  }), [isEditing, handleSave]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      startEdit: () => setIsEditing(true),
+      save: () => {
+        if (isEditing) handleSave();
+      },
+      isEditing: () => isEditing,
+    }),
+    [isEditing, handleSave],
+  );
 
   const handleInsertEmote = useCallback((name: string) => {
     const el = textareaElRef.current;
@@ -100,7 +112,13 @@ export const NotesSection = forwardRef<NotesSectionHandle, {
                 transition={{ duration: 0.1 }}
                 className="flex items-center gap-1.5"
               >
-                <motion.div variants={staggerItem} initial="hidden" animate="visible" exit="exit" custom={0}>
+                <motion.div
+                  variants={staggerItem}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  custom={0}
+                >
                   <Button
                     size="sm"
                     onClick={handleSave}
@@ -111,7 +129,13 @@ export const NotesSection = forwardRef<NotesSectionHandle, {
                     {isSaving ? "Guardando..." : "Guardar"}
                   </Button>
                 </motion.div>
-                <motion.div variants={staggerItem} initial="hidden" animate="visible" exit="exit" custom={1}>
+                <motion.div
+                  variants={staggerItem}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  custom={1}
+                >
                   <Button
                     variant="ghost"
                     size="sm"
@@ -121,7 +145,13 @@ export const NotesSection = forwardRef<NotesSectionHandle, {
                     Cancelar
                   </Button>
                 </motion.div>
-                <motion.div variants={staggerItem} initial="hidden" animate="visible" exit="exit" custom={2}>
+                <motion.div
+                  variants={staggerItem}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  custom={2}
+                >
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8">
@@ -135,7 +165,14 @@ export const NotesSection = forwardRef<NotesSectionHandle, {
                 </motion.div>
               </motion.div>
             ) : (
-              <motion.div key="viewing" variants={staggerItem} initial="hidden" animate="visible" exit="exit" custom={0}>
+              <motion.div
+                key="viewing"
+                variants={staggerItem}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                custom={0}
+              >
                 <Button
                   variant="ghost"
                   size="sm"
@@ -176,7 +213,11 @@ export const NotesSection = forwardRef<NotesSectionHandle, {
             )}
           >
             {notes ? (
-              <RichText text={notes} emoteSize="2x" className="whitespace-pre-wrap" />
+              <RichText
+                text={notes}
+                emoteSize="2x"
+                className="whitespace-pre-wrap"
+              />
             ) : (
               "Haz click aquí para agregar notas, comandos SQL, links..."
             )}

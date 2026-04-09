@@ -11,7 +11,7 @@ import { ProjectName } from "@/entities/project";
 import { Button } from "@/shared/ui/button";
 import { useFocusSessions } from "@/entities/task";
 import { EndSessionDialog } from "./EndSessionDialog";
-import { RichText } from "./ConnectedRichText";
+import { RichText } from "@/entities/emote";
 import { playSuccessSound } from "@/shared/lib/audio";
 import {
   FOCUS_DURATION,

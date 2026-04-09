@@ -32,7 +32,7 @@ import {
   DialogDescription,
 } from "@/shared/ui/dialog";
 import { CelebrationEffect } from "@/shared/ui/celebration-effect";
-import { RichText } from "./ConnectedRichText";
+import { RichText } from "@/entities/emote";
 import { NotesSection, type NotesSectionHandle } from "./NotesSection";
 import { useDetailModalShortcuts } from "../hooks/useDetailModalShortcuts";
 import { TaskCheckbox } from "@/shared/ui/task-checkbox";
@@ -40,7 +40,6 @@ import { ContextCard } from "./ContextCard";
 import { useConfirm } from "@/shared/hooks/use-confirm";
 import { formatTaskDate } from "@/shared/lib/format-date";
 import { stopSpacePropagation } from "@/shared/lib/keyboard-shortcuts";
-
 
 interface TaskDetailModalProps {
   task: Task;
@@ -92,9 +91,12 @@ export function TaskDetailModal({
     }
   }, [onToggle, task.id, task.isCompleted]);
 
-  const handleSaveNotes = useCallback(async (notes: string) => {
-    await updateNotesMutation.mutateAsync({ id: task.id, notes });
-  }, [updateNotesMutation, task.id]);
+  const handleSaveNotes = useCallback(
+    async (notes: string) => {
+      await updateNotesMutation.mutateAsync({ id: task.id, notes });
+    },
+    [updateNotesMutation, task.id],
+  );
 
   const handleDelete = useCallback(async () => {
     const confirmed = await confirm({
@@ -116,8 +118,8 @@ export function TaskDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
-        className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0" 
+      <DialogContent
+        className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0"
         showCloseButton={false}
         onKeyDown={stopSpacePropagation}
       >
@@ -125,9 +127,9 @@ export function TaskDetailModal({
           <div className="flex flex-col gap-3">
             <div className="flex items-start gap-4">
               <div className="relative">
-                <TaskCheckbox 
-                  isCompleted={task.isCompleted} 
-                  onClick={() => handleToggleTask()} 
+                <TaskCheckbox
+                  isCompleted={task.isCompleted}
+                  onClick={() => handleToggleTask()}
                   variant="md"
                 />
                 <CelebrationEffect

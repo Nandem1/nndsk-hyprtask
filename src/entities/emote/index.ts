@@ -19,3 +19,5 @@ export {
   useRemoveEmote,
   useRebuildCollection,
 } from "./hooks/use-emote-mutations";
+
+export { RichText } from "./ui/rich-text-connected";

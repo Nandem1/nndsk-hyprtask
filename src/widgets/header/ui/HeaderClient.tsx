@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Settings, CheckSquare, Briefcase, Bed, UtensilsCrossed } from "lucide-react";
+import {
+  Settings,
+  CheckSquare,
+  Briefcase,
+  Bed,
+  UtensilsCrossed,
+} from "lucide-react";
 import { useCurrentTask } from "@/entities/task";
 import { useSleepCalculations } from "@/entities/sleep";
 import { useWorkCalculations, useWorkSettings } from "@/entities/work";
@@ -9,6 +15,7 @@ import { formatMinutesToReadable } from "@/shared/lib/time-utils";
 import { Button } from "@/shared/ui/button";
 import { ThemeToggle } from "@/shared/theme";
 import { useColacionActions } from "@/store/hooks";
+import { RichText } from "@/entities/emote";
 import { HeaderPill } from "./HeaderPill";
 
 export function HeaderClient() {
@@ -33,9 +40,11 @@ export function HeaderClient() {
             <div className="flex items-center gap-3 text-sm">
               <CheckSquare className="size-4 text-muted-foreground" />
               <span className="text-muted-foreground">En progreso:</span>
-              <span className="font-medium text-foreground truncate max-w-[300px]">
-                {currentTask.title}
-              </span>
+              <RichText
+                text={currentTask.title}
+                inline
+                className="font-medium text-foreground truncate max-w-[300px]"
+              />
             </div>
           ) : (
             <span className="text-sm text-muted-foreground">
@@ -61,9 +70,13 @@ export function HeaderClient() {
               <HeaderPill
                 icon={<Briefcase className="size-4 text-muted-foreground" />}
                 label="Trabajo:"
-                value={workData.isWorking ? workData.endTime : workData.startTime}
+                value={
+                  workData.isWorking ? workData.endTime : workData.startTime
+                }
                 secondary={formatMinutesToReadable(
-                  workData.isWorking ? workData.timeUntilEnd : workData.timeUntilStart,
+                  workData.isWorking
+                    ? workData.timeUntilEnd
+                    : workData.timeUntilStart,
                 )}
               />
             </Link>

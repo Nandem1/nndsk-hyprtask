@@ -13,7 +13,7 @@ import { Badge } from "@/shared/ui/badge";
 import { TaskMetadataBadges } from "@/entities/project";
 import { DNAHelix } from "@/shared/ui/dna-helix";
 import { TaskCheckbox } from "@/shared/ui/task-checkbox";
-import { RichText } from "../ConnectedRichText";
+import { RichText } from "@/entities/emote";
 import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";
 import type { ExtendedThemeClasses } from "@/shared/types/theme";
@@ -86,7 +86,11 @@ export const PipelineStep = memo(function PipelineStep({
 
       <div className="flex-1 pb-8">
         <motion.div
-          whileHover={shouldReduceMotion ? undefined : { y: -2, transition: { duration: 0.2 } }}
+          whileHover={
+            shouldReduceMotion
+              ? undefined
+              : { y: -2, transition: { duration: 0.2 } }
+          }
         >
           <Card
             ref={scrollRef}

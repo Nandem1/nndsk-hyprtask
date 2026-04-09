@@ -8,7 +8,7 @@ import type { Task } from "@/entities/task";
 import type { ExtendedThemeClasses } from "@/shared/types/theme";
 import { TaskMetadataBadges } from "@/entities/project";
 import { TaskCheckbox } from "@/shared/ui/task-checkbox";
-import { RichText } from "../ConnectedRichText";
+import { RichText } from "@/entities/emote";
 import { DragHandle } from "../DragHandle";
 import { useOptionalTaskDrag } from "../../lib/dnd-context";
 import { useKeyboardSelected } from "@/shared/hooks/use-keyboard-selected";
@@ -67,7 +67,7 @@ export const KanbanTaskCard = memo(function KanbanTaskCard({
             ? cn(classes.border, "bg-accent/50 ring-1 ring-primary/20")
             : "hover:border-primary/30 hover:shadow-lg",
           isDragging && "shadow-2xl scale-105 rotate-1 z-50",
-          selectedClass
+          selectedClass,
         )}
       >
         {enableDrag && (
